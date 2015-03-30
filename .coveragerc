@@ -1,0 +1,8 @@
+[run]
+branch = true
+source = flask_multiauth
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__

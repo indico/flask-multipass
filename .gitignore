@@ -1,0 +1,14 @@
+.cache/
+.eggs/
+.idea/
+.tox/
+build/
+dist/
+env/
+htmlcov/
+
+*.egg
+*.egg-info
+*.pyc
+*.swp
+.coverage

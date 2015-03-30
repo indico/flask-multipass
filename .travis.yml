@@ -1,0 +1,18 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+env:
+  - DEPS=release
+  - DEPS=devel
+install:
+  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/flask.git || :'
+  - pip install pytest pytest-cov pytest-pep8 coveralls
+script:
+  - python setup.py develop
+  - py.test --pep8
+after_success:
+  - coveralls
+notifications:
+  email: false
