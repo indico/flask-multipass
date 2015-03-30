@@ -300,7 +300,7 @@ intersphinx_mapping = {
     'flask': ('http://flask.pocoo.org/docs/', None),
 }
 
-
+autodoc_member_order = 'bysource'
 pygments_style = 'flask_theme_support.FlaskyStyle'
 # fall back if theme is not there
 try:
