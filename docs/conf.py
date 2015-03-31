@@ -25,8 +25,10 @@ import os
 sys.path.insert(0, os.path.abspath('_themes'))
 
 # Mock out dependencies
-sys.modules['flask_oauthlib'] = mock.MagicMock()
-sys.modules['flask_oauthlib.client'] = mock.MagicMock()
+mock_modules = ('flask_oauthlib', 'flask_oauthlib.client', 'flask_wtf', 'wtforms', 'wtforms.fields',
+                'wtforms.validators')
+for module in mock_modules:
+    sys.modules[module] = mock.MagicMock()
 
 # -- General configuration ------------------------------------------------
 
