@@ -15,7 +15,6 @@
 
 from __future__ import print_function
 
-import mock
 import sys
 import os
 
@@ -23,12 +22,6 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_themes'))
-
-# Mock out dependencies
-mock_modules = ('flask_oauthlib', 'flask_oauthlib.client', 'flask_wtf', 'wtforms', 'wtforms.fields',
-                'wtforms.validators')
-for module in mock_modules:
-    sys.modules[module] = mock.MagicMock()
 
 # -- General configuration ------------------------------------------------
 

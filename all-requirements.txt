@@ -1,0 +1,8 @@
+# All dependencies; including those only needed for some providers.
+# This file is mostly there so readthedocs can build everything.
+# Strong dependencies are already listed in setup.py
+
+flask
+flask_oauthlib
+flask_wtf
+wtforms
