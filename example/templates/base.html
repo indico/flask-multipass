@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Flask-MultiAuth example</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <ul>
+                {%- for category, message in messages %}
+                    <li>{{ category }}: {{ message }}</li>
+                {% endfor -%}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>

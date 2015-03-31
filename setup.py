@@ -57,4 +57,6 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4'
     ],
+    entry_points={'flask_multiauth.auth_providers': {'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
+                                                     'static = flask_multiauth.providers.static:StaticAuthProvider'}}
 )

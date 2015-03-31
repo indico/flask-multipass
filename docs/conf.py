@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+import mock
 import sys
 import os
 
@@ -22,6 +23,10 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_themes'))
+
+# Mock out dependencies
+sys.modules['flask_oauthlib'] = mock.MagicMock()
+sys.modules['flask_oauthlib.client'] = mock.MagicMock()
 
 # -- General configuration ------------------------------------------------
 
@@ -298,6 +303,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
     'flask': ('http://flask.pocoo.org/docs/', None),
+    'flaskwtf': ('https://flask-wtf.readthedocs.org/en/latest/', None),
 }
 
 autodoc_member_order = 'bysource'

@@ -24,13 +24,13 @@ def test_init_late():
     app = Flask('text')
     multiauth = MultiAuth()
     multiauth.init_app(app)
-    assert app.extensions['multiauth'] is multiauth
+    assert app.extensions['multiauth'].multiauth is multiauth
 
 
 def test_init_immediately():
     app = Flask('test')
     multiauth = MultiAuth(app)
-    assert app.extensions['multiauth'] is multiauth
+    assert app.extensions['multiauth'].multiauth is multiauth
 
 
 def test_multiple_apps():
@@ -41,4 +41,4 @@ def test_multiple_apps():
     # The separate loop here is on purpose as the extension needs to
     # be present on all apps after initializing them
     for app in apps:
-        assert app.extensions['multiauth'] is multiauth
+        assert app.extensions['multiauth'].multiauth is multiauth
