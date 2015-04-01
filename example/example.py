@@ -6,6 +6,8 @@
 
 from __future__ import unicode_literals
 
+import os
+
 from flask import Flask, render_template
 from flask_multiauth import MultiAuth
 from flask_multiauth.providers.oauth import OAuthAuthProvider
@@ -20,8 +22,8 @@ github_config = {
     'type': OAuthAuthProvider,
     'title': 'GitHub',
     'oauth': {
-        'consumer_key': '',  # your client id
-        'consumer_secret': '',  # your client secret
+        'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
+        'consumer_secret': os.environ['MULTIAUTH_GITHUB_CLIENT_SECRET'],
         'request_token_params': {'scope': 'user:email'},
         'base_url': 'https://api.github.com/',
         'request_token_url': None,
