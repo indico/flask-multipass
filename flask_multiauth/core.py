@@ -49,16 +49,15 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
 
-    def initialize(self, app=None):
+    def initialize(self, app):
         """Initializes the providers for the app.
 
         This method must be called once when all multiauth-related
         config options are set to their final values.
 
-        :param app: The flask application. If omitted, the current app
-                    is used.
+        :param app: The flask application.
         """
-        state = get_state(app)
+        state = get_state(app, True)
         if state.initialized:
             return
         with state.app.app_context():
