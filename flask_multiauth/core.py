@@ -41,9 +41,10 @@ class MultiAuth(object):
         app.extensions['multiauth'] = _MultiAuthState(self, app)
         # TODO: write docs for the config (see flask-cache for a pretty example)
         app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
+        app.config.setdefault('MULTIAUTH_LOGIN_SELECTOR_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_FORM_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_ENDPOINT', 'login')
-        app.config.setdefault('MULTIAUTH_LOGIN_URL', '/login/<provider>')
+        app.config.setdefault('MULTIAUTH_LOGIN_URLS', ('/login/', '/login/<provider>'))
         app.config.setdefault('MULTIAUTH_SUCCESS_ENDPOINT', 'index')
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
@@ -86,18 +87,21 @@ class MultiAuth(object):
         """Redirects to whatevr page should be displayed after login"""
         return redirect(self._get_next_url())
 
-    def process_login(self, provider):
+    def process_login(self, provider=None):
         """Handles the login process
 
         This needs to be registered in the Flask routing system and
-        accept GET and POST requests. The URL should contain the
-        ``<provider>`` placeholder. If you do not want the provider
-        in the URL, you need to ensure that it's passed to this
-        function using some other way.
+        accept GET and POST requests on two URLs, one of them
+        containing the ``<provider>`` placeholder. When executed with
+        no provider, the login selector page will be shown unless there
+        is only one provider available - in this case the page will
+        immediately redirect to that provider.
 
         :param provider: The provider named used to log in.
         """
-        # TODO: support provider=None and render a template with the provider list or redirect if only one
+        if provider is None:
+            return self._login_selector()
+
         try:
             provider = self.auth_providers[provider]
         except KeyError:
@@ -118,13 +122,27 @@ class MultiAuth(object):
         # TODO: pass auth into to linked user providers
         flash('Received AuthInfo: {}'.format(auth_info), 'success')
 
+    def render_template(self, template_key, **kwargs):
+        """Renders a template configured in the app config
+
+        :param template_key: The template key to insert in the config
+                             option name ``MULTIAUTH_*_TEMPLATE``
+        :param kwargs: The variables passed to the template/
+        """
+        key = 'MULTIAUTH_{}_TEMPLATE'.format(template_key)
+        template = current_app.config[key]
+        if template is None:
+            raise RuntimeError('Config option missing: ' + key)
+        return render_template(template, **kwargs)
+
     def _create_login_rule(self):
         """Creates the login URL rule if necessary"""
         endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
-        rule = current_app.config['MULTIAUTH_LOGIN_URL']
-        if not endpoint or not rule:
+        rules = current_app.config['MULTIAUTH_LOGIN_URLS']
+        if not endpoint or not rules:
             return
-        current_app.add_url_rule(rule, endpoint, self.process_login, methods=('GET', 'POST'))
+        for rule in rules:
+            current_app.add_url_rule(rule, endpoint, self.process_login, methods=('GET', 'POST'))
 
     def _set_next_url(self):
         """Saves the URL to redirect to after logging in."""
@@ -143,6 +161,17 @@ class MultiAuth(object):
             return session.pop('multiauth_next_url')
         except KeyError:
             return url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
+
+    def _login_selector(self):
+        """Shows the login method (auth provider) selector"""
+        providers = self.auth_providers
+        next_url = request.args.get('next')
+        if len(providers) == 1:
+            provider = next(iter(providers.values()))
+            return redirect(url_for(current_app.config['MULTIAUTH_LOGIN_ENDPOINT'], provider=provider.name,
+                                    next=next_url))
+        else:
+            return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url)
 
     def _login_external(self, provider):
         """Starts the external login process"""
@@ -163,10 +192,7 @@ class MultiAuth(object):
             else:
                 self.handle_auth_info(auth_info)
                 return self.redirect_success()
-        template = current_app.config['MULTIAUTH_LOGIN_FORM_TEMPLATE']
-        if template is None:
-            raise RuntimeError('Config option missing: MULTIAUTH_LOGIN_FORM_TEMPLATE')
-        return render_template(template, form=form, provider=provider)
+        return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
 
 class _MultiAuthState(object):

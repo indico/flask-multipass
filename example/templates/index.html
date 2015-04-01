@@ -1,9 +1,4 @@
 {% extends 'base.html' %}
 {% block content %}
-    Available login providers:
-    <ul>
-        {% for provider in multiauth.auth_providers.values()|sort(attribute='title') %}
-            <li><a href="{{ url_for('login', provider=provider.name) }}">{{ provider.title }}</a></li>
-        {% endfor %}
-    </ul>
+    <a href="{{ url_for('login') }}">Log in</a>
 {% endblock %}
