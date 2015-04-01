@@ -59,11 +59,13 @@ setup(
     ],
     entry_points={
         'flask_multiauth.auth_providers': {
+            'ldap = flask_multiauth.providers.ldap:LDAPAuthProvider',
             'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
             'shibboleth = flask_multiauth.providers.shibboleth:ShibbolethAuthProvider',
             'static = flask_multiauth.providers.static:StaticAuthProvider'
         },
         'flask_multiauth.identity_providers': {
+            'ldap = flask_multiauth.providers.ldap:LDAPIdentityProvider',
             'oauth = flask_multiauth.providers.oauth:OAuthIdentityProvider',
             'shibboleth = flask_multiauth.providers.shibboleth:ShibbolethIdentityProvider',
             'static = flask_multiauth.providers.static:StaticIdentityProvider'
