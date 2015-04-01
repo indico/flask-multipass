@@ -37,25 +37,14 @@ def test_get_state_explicit():
         assert get_state(app2).app is app2
 
 
-def test_get_state(mocker):
+def test_get_state():
     app = Flask('test')
-    initialize = mocker.patch.object(MultiAuth, 'initialize')
     multiauth = MultiAuth(app)
     with app.app_context():
-        # Get state without initialization
-        state = get_state(app, False)
+        state = get_state(app)
         assert state.multiauth is multiauth
         assert state.app is app
-        assert not initialize.called
-        # Get state again - same state, initializing
-        state2 = get_state(app)
-        assert state2 is state
-        assert initialize.call_count == 1
-        state.initialized = True
-        # Get state once again - same state, but not initializing again
-        state3 = get_state(app)
-        assert state3 is state
-        assert initialize.call_count == 1
+        assert get_state(app) is state
 
 
 class DummyBase(object):

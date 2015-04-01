@@ -52,15 +52,13 @@ class MultiAuth(object):
     def initialize(self, app=None):
         """Initializes the providers for the app.
 
-        This is done automatically when necessary, but you can do so
-        explicitly once your application's config is ready to get any
-        initialization-time errors at a convenient time instead of
-        whenever this is called implicitly.
+        This method must be called once when all multiauth-related
+        config options are set to their final values.
 
         :param app: The flask application. If omitted, the current app
                     is used.
         """
-        state = get_state(app, False)
+        state = get_state(app)
         if state.initialized:
             return
         with state.app.app_context():

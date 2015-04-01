@@ -12,7 +12,7 @@ from pkg_resources import iter_entry_points
 from flask import current_app
 
 
-def get_state(app=None, initialize=True):
+def get_state(app=None):
     """Gets the application-specific multiauth data.
 
     :rtype: flask_multiauth.core._MultiAuthState
@@ -22,10 +22,7 @@ def get_state(app=None, initialize=True):
     assert 'multiauth' in app.extensions, \
         'The multiauth extension was not registered to the current application. ' \
         'Please make sure to call init_app() first.'
-    state = app.extensions['multiauth']
-    if initialize and not state.initialized:
-        state.multiauth.initialize(state.app)
-    return state
+    return app.extensions['multiauth']
 
 
 def resolve_provider_type(base, type_):
