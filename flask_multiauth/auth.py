@@ -56,16 +56,5 @@ class AuthProvider(object):
         else:
             raise RuntimeError('This provider uses a login form')
 
-    def process_external_login(self, auth_info):
-        """Called after receiving data from a remote login process.
-
-        :param auth_info: An :class:`.AuthInfo` instance containing
-                          data that can be used to uniquely identify
-                          the user.
-        """
-        if self.login_form is not None:
-            raise RuntimeError('This provider uses a login form')
-        # TODO: forward authinfo to linked user providers
-
     def __repr__(self):
         return '<{}({})>'.format(self.type, self.name)
