@@ -107,7 +107,7 @@ class MultiAuth(object):
         except KeyError:
             raise NotFound('Provider does not exist')
 
-        if provider.login_form is None:
+        if provider.is_external:
             return self._login_external(provider)
         else:
             return self._login_form(provider)

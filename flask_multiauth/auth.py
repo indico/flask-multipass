@@ -32,6 +32,15 @@ class AuthProvider(object):
         self.settings = settings.copy()
         self.title = self.settings.pop('title', self.name)
 
+    @property
+    def is_external(self):
+        """True if the provider is external.
+
+        External providers do not have a login form and instead
+        redirect to a third-party service to perform authentication.
+        """
+        return self.login_form is None
+
     def process_local_login(self, data):
         """Called after successful validation of the login form
 
@@ -40,7 +49,7 @@ class AuthProvider(object):
         :return: An :class:`.AuthInfo` instance containing data that can
                  be used to uniquely identify the user
         """
-        if self.login_form is not None:
+        if not self.is_external:
             raise NotImplementedError
         else:
             raise RuntimeError('This provider has no login form')
@@ -51,7 +60,7 @@ class AuthProvider(object):
         :return: A Flask :class:`~flask.Response`, usually created by
                  :func:`~flask.redirect`
         """
-        if self.login_form is None:
+        if self.is_external:
             raise NotImplementedError
         else:
             raise RuntimeError('This provider uses a login form')
