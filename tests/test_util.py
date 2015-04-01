@@ -6,7 +6,114 @@
 
 from __future__ import unicode_literals
 
-from flask_multiauth.util import classproperty
+from pkg_resources import EntryPoint
+
+import pytest
+from flask import Flask
+
+from flask_multiauth import MultiAuth
+from flask_multiauth.util import classproperty, get_state, resolve_provider_type
+
+
+def test_get_state_app_not_initialized():
+    app = Flask('test')
+    with pytest.raises(AssertionError):
+        get_state(app)
+
+
+def test_get_state_explicit():
+    app = Flask('test')
+    app2 = Flask('test2')
+    multiauth = MultiAuth()
+    multiauth.init_app(app)
+    multiauth.init_app(app2)
+    # outside app ctx
+    with pytest.raises(RuntimeError):
+        assert get_state().app
+    # explicit app
+    assert get_state(app2).app is app2
+    # explicit app inside other app context (unlikely)
+    with app.app_context():
+        assert get_state(app2).app is app2
+
+
+def test_get_state(mocker):
+    app = Flask('test')
+    initialize = mocker.patch.object(MultiAuth, 'initialize')
+    multiauth = MultiAuth(app)
+    with app.app_context():
+        # Get state without initialization
+        state = get_state(app, False)
+        assert state.multiauth is multiauth
+        assert state.app is app
+        assert not initialize.called
+        # Get state again - same state, initializing
+        state2 = get_state(app)
+        assert state2 is state
+        assert initialize.call_count == 1
+        state.initialized = True
+        # Get state once again - same state, but not initializing again
+        state3 = get_state(app)
+        assert state3 is state
+        assert initialize.call_count == 1
+
+
+class DummyBase(object):
+    _entry_point = 'dummy'
+
+
+class Dummy(DummyBase):
+    pass
+
+
+class FakeDummy(object):
+    pass
+
+
+class MockEntryPoint(EntryPoint):
+    def load(self, *args, **kwargs):
+        mapping = {
+            'dummy': Dummy,
+            'fake': FakeDummy,
+        }
+        return mapping[self.name]
+
+
+@pytest.fixture
+def mock_entry_point(monkeypatch):
+    def _mock_iter_entry_points(_, name):
+        return {
+            'dummy': [MockEntryPoint('dummy', 'who.cares')],
+            'fake': [MockEntryPoint('fake', 'who.cares')],
+            'multi': [MockEntryPoint('dummy', 'who.cares'), MockEntryPoint('fake', 'who.cares')],
+            'unknown': []
+        }[name]
+
+    monkeypatch.setattr('flask_multiauth.util.iter_entry_points', _mock_iter_entry_points)
+
+
+def test_resolve_provider_type_class():
+    assert resolve_provider_type(DummyBase, Dummy) is Dummy
+    with pytest.raises(TypeError):
+        resolve_provider_type(DummyBase, FakeDummy)
+
+
+@pytest.mark.usefixtures('mock_entry_point')
+def test_resolve_provider_type_invalid():
+    # unknown type
+    with pytest.raises(ValueError):
+        assert resolve_provider_type(DummyBase, 'unknown')
+    # non-unique type
+    with pytest.raises(RuntimeError):
+        assert resolve_provider_type(DummyBase, 'multi')
+    # invalid type
+    with pytest.raises(TypeError):
+        assert resolve_provider_type(DummyBase, 'fake')
+
+
+@pytest.mark.usefixtures('mock_entry_point')
+def test_resolve_provider_type():
+    assert resolve_provider_type(DummyBase, 'dummy') is Dummy
 
 
 def test_classproperty():

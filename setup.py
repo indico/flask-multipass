@@ -49,7 +49,7 @@ setup(
     install_requires=[
         'Flask>=0.10.1'  # TODO: check the oldest version we can work with
     ],
-    tests_require=['pytest', 'pytest-cov'],
+    tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
     cmdclass={'test': PyTest},
     classifiers=[
         'License :: OSI Approved :: BSD License',

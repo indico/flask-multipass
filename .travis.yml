@@ -8,7 +8,7 @@ env:
   - DEPS=devel
 install:
   - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/flask.git || :'
-  - pip install pytest pytest-cov pytest-pep8 coveralls
+  - pip install pytest pytest-cov pytest-mock pytest-pep8 coveralls
 script:
   - python setup.py develop
   - py.test --pep8
