@@ -77,11 +77,11 @@ class MultiAuth(object):
 
     @property
     def auth_providers(self):
-        """Returns a read-only dict ofwith the active auth providers"""
+        """Returns a read-only dict of the active auth providers"""
         return get_state().auth_providers
 
     def redirect_success(self):
-        """Redirects to whatevr page should be displayed after login"""
+        """Redirects to whatever page should be displayed after login"""
         return redirect(self._get_next_url())
 
     def process_login(self, provider=None):
@@ -144,7 +144,7 @@ class MultiAuth(object):
     def _set_next_url(self):
         """Saves the URL to redirect to after logging in."""
         next_url = request.args.get('next')
-        if next_url is None:
+        if not next_url:
             next_url = url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
         session['multiauth_next_url'] = next_url
 

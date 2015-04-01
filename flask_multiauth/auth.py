@@ -41,7 +41,7 @@ class AuthProvider(object):
         """
         return self.login_form is None
 
-    def process_local_login(self, data):
+    def process_local_login(self, data):  # pragma: no cover
         """Called after successful validation of the login form
 
         :param data: The form data (as returned by the `data` attribute
@@ -54,7 +54,7 @@ class AuthProvider(object):
         else:
             raise RuntimeError('This provider has no login form')
 
-    def initiate_external_login(self):
+    def initiate_external_login(self):  # pragma: no cover
         """Called when the provider is selected and has no login form
 
         :return: A Flask :class:`~flask.Response`, usually created by
