@@ -47,6 +47,12 @@ app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
     }
 }
 app.config['MULTIAUTH_USER_PROVIDERS'] = {
+    'test': {
+        'type': 'static',
+        'users': {
+            'Test': {'email': 'test@example.com'},
+        }
+    },
     'github': {
         'type': 'oauth',
         'oauth': github_oauth_config,
@@ -60,6 +66,7 @@ app.config['MULTIAUTH_USER_PROVIDERS'] = {
     }
 }
 app.config['MULTIAUTH_PROVIDER_MAP'] = {
+    'test': 'test',
     'github': [
         {
             'user_provider': 'github'

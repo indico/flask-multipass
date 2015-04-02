@@ -59,5 +59,6 @@ setup(
     ],
     entry_points={'flask_multiauth.auth_providers': {'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
                                                      'static = flask_multiauth.providers.static:StaticAuthProvider'},
-                  'flask_multiauth.user_providers': {'oauth = flask_multiauth.providers.oauth:OAuthUserProvider'}}
+                  'flask_multiauth.user_providers': {'oauth = flask_multiauth.providers.oauth:OAuthUserProvider',
+                                                     'static = flask_multiauth.providers.static:StaticUserProvider'}}
 )

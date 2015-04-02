@@ -11,8 +11,9 @@ from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo
-from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.data import AuthInfo, UserInfo
+from flask_multiauth.exceptions import AuthenticationFailed, UserRetrievalFailed
+from flask_multiauth.user import UserProvider
 
 
 class StaticLoginForm(Form):
@@ -43,3 +44,25 @@ class StaticAuthProvider(AuthProvider):
         if password != data['password']:
             raise AuthenticationFailed('Invalid password.')
         return AuthInfo(self, username=data['username'])
+
+
+class StaticUserProvider(UserProvider):
+    """Provides user information from a static list.
+
+    This provider should NEVER be use in any production system.
+    It serves mainly as a simply dummy/example for development.
+    """
+
+    #: The type to use in the user provider config.
+    type = 'static'
+
+    def __init__(self, *args, **kwargs):
+        super(StaticUserProvider, self).__init__(*args, **kwargs)
+        self.settings.setdefault('users', {})
+
+    def get_user_from_auth(self, auth_info):
+        identifier = auth_info.data['username']
+        user = self.settings['users'].get(identifier)
+        if user is None:
+            raise UserRetrievalFailed('Could not retrieve user data')
+        return UserInfo(self, identifier, **user)
