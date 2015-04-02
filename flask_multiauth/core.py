@@ -151,6 +151,7 @@ class MultiAuth(object):
         :param redirect_to_login: Returns a redirect response to the
                                   login page.
         """
+        session['multiauth_auth_failed'] = True
         flash(current_app.config['MULTIAUTH_FAILURE_MESSAGE'].format(error=text_type(exc)),
               current_app.config['MULTIAUTH_FAILURE_CATEGORY'])
         if redirect_to_login:
@@ -226,12 +227,14 @@ class MultiAuth(object):
         """Shows the login method (auth provider) selector"""
         providers = self.auth_providers
         next_url = request.args.get('next')
-        if len(providers) == 1:
+        auth_failed = session.pop('multiauth_auth_failed', False)
+        if not auth_failed and len(providers) == 1:
             provider = next(iter(providers.values()))
             return redirect(url_for(current_app.config['MULTIAUTH_LOGIN_ENDPOINT'], provider=provider.name,
                                     next=next_url))
         else:
-            return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url)
+            return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url,
+                                        auth_failed=auth_failed)
 
     def _login_external(self, provider):
         """Starts the external login process"""

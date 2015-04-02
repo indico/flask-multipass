@@ -7,11 +7,10 @@
 from __future__ import unicode_literals
 
 import pytest
-from flask import Flask, request
+from flask import Flask, request, session
 from mock import Mock
 
 from flask_multiauth import MultiAuth, AuthProvider, AuthenticationFailed
-
 
 
 def test_init_app_twice():
@@ -158,16 +157,19 @@ def test_user_handler():
 def test_handle_auth_error(mocker):
     flash = mocker.patch('flask_multiauth.core.flash')
     app = Flask('test')
+    app.config['SECRET_KEY'] = 'testing'
     multiauth = MultiAuth(app)
-    with app.app_context():
+    with app.test_request_context():
         multiauth.handle_auth_error(AuthenticationFailed())
         assert flash.called
+        assert session['multiauth_auth_failed']
 
 
 def test_handle_auth_error_with_redirect(mocker):
     flash = mocker.patch('flask_multiauth.core.flash')
     redirect = mocker.patch('flask_multiauth.core.redirect')
     app = Flask('test')
+    app.config['SECRET_KEY'] = 'testing'
     multiauth = MultiAuth(app)
     with app.test_request_context():
         multiauth.handle_auth_error(AuthenticationFailed(), redirect_to_login=True)
