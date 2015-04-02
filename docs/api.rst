@@ -34,7 +34,7 @@ Utils
 -----
 .. automodule:: flask_multiauth.util
    :members:
-   :exclude-members: expand_provider_links, get_state, classproperty
+   :exclude-members: expand_provider_links, get_state, classproperty, validate_provider_map
 
 
 Exceptions

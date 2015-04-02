@@ -12,9 +12,11 @@ import pytest
 from flask import Flask
 
 from flask_multiauth import MultiAuth
+from flask_multiauth._compat import iteritems
+from flask_multiauth.core import _MultiAuthState
 from flask_multiauth.exceptions import AuthenticationFailed
 from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, map_data, login_view,
-                                  get_canonical_provider_map)
+                                  get_canonical_provider_map, validate_provider_map)
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
@@ -159,6 +161,25 @@ def test_resolve_provider_type_invalid():
 @pytest.mark.usefixtures('mock_entry_point')
 def test_resolve_provider_type():
     assert resolve_provider_type(DummyBase, 'dummy') is Dummy
+
+
+@pytest.mark.parametrize(('valid', 'auth_providers', 'user_providers', 'provider_map'), (
+    (False, ['a'], [],    {}),
+    (False, ['a'], ['a'], {}),
+    (False, ['a'], ['b'], {}),
+    (False, ['a'], ['b'], {'a': 'c'}),
+    (True,  ['a'], ['b'], {'a': 'b'}),
+    (True,  [],    ['b'], {'a': 'b'}),
+))
+def test_validate_provider_map(valid, auth_providers, user_providers, provider_map):
+    state = _MultiAuthState(None, None)
+    state.auth_providers = {x: {} for x in auth_providers}
+    state.user_providers = {x: {} for x in user_providers}
+    state.provider_map = {a: [{'user_provider': u}] for a, u in iteritems(provider_map)}
+    if valid:
+        validate_provider_map(state)
+    else:
+        pytest.raises(ValueError, validate_provider_map, state)
 
 
 def test_classproperty():

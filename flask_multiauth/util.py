@@ -12,7 +12,7 @@ from pkg_resources import iter_entry_points
 
 from flask import current_app
 
-from flask_multiauth._compat import iteritems, string_types
+from flask_multiauth._compat import iteritems, string_types, viewkeys, itervalues
 from flask_multiauth.exceptions import MultiAuthException
 
 
@@ -96,6 +96,20 @@ def resolve_provider_type(base, type_):
     if not issubclass(cls, base):
         raise TypeError('Found a class {} which is not a subclass of {}'.format(cls, base))
     return cls
+
+
+def validate_provider_map(state):
+    """Validates the provider map
+
+    :param state: The :class:`._MultiAuthState` instance
+    """
+    invalid_keys = viewkeys(state.auth_providers) - viewkeys(state.provider_map)
+    if invalid_keys:
+        raise ValueError('Auth providers not linked to user providers: ' + ', '.join(invalid_keys))
+    targeted_providers = {p['user_provider'] for providers in itervalues(state.provider_map) for p in providers}
+    invalid_keys = targeted_providers - viewkeys(state.user_providers)
+    if invalid_keys:
+        raise ValueError('Broken user provider links: ' + ', '.join(invalid_keys))
 
 
 class classproperty(property):

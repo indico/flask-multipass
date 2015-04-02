@@ -14,7 +14,7 @@ from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.user import UserProvider
-from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map
+from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map
 
 
 class MultiAuth(object):
@@ -58,6 +58,7 @@ class MultiAuth(object):
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
             state.user_providers = ImmutableDict(self._create_providers('USER', UserProvider))
             state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIAUTH_PROVIDER_MAP']))
+            validate_provider_map(state)
 
     @property
     def auth_providers(self):
@@ -110,10 +111,7 @@ class MultiAuth(object):
                           data that can be used to uniquely identify
                           the user.
         """
-        try:
-            links = self.provider_map[auth_info.provider.name]
-        except KeyError:
-            raise Exception('No user providers configured for auth provider ' + auth_info.provider.name)
+        links = self.provider_map[auth_info.provider.name]
         users = []
         for link in links:
             provider = self.user_providers[link['user_provider']]

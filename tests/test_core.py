@@ -66,10 +66,11 @@ def test_initialize_providers():
         'test': {'type': 'foo', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
-    multiauth = MultiAuth(app)
+    multiauth = MultiAuth()
     with app.app_context():
-        assert multiauth.auth_providers['test'].settings == {'foo': 'bar'}
-        assert multiauth.auth_providers['test2'].settings == {'hello': 'world'}
+        auth_providers = multiauth._create_providers('AUTH', AuthProvider)
+        assert auth_providers['test'].settings == {'foo': 'bar'}
+        assert auth_providers['test2'].settings == {'hello': 'world'}
 
 
 @pytest.mark.usefixtures('mock_auth_providers')
