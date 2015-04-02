@@ -44,17 +44,6 @@ def test_multiple_apps():
         assert app.extensions['multiauth'].multiauth is multiauth
 
 
-def test_initialize_once(mocker):
-    create_login_rule = mocker.patch.object(MultiAuth, '_create_login_rule')
-    app = Flask('test')
-    multiauth = MultiAuth(app)
-    assert not create_login_rule.called
-    multiauth.initialize(app)
-    assert create_login_rule.call_count == 1
-    multiauth.initialize(app)
-    assert create_login_rule.call_count == 1
-
-
 @pytest.fixture
 def mock_auth_providers(monkeypatch):
     class FooProvider(AuthProvider):
@@ -72,13 +61,12 @@ def mock_auth_providers(monkeypatch):
 @pytest.mark.usefixtures('mock_auth_providers')
 def test_initialize_providers():
     app = Flask('test')
-    multiauth = MultiAuth(app)
     app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
         'test': {'type': 'foo', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
+    multiauth = MultiAuth(app)
     with app.app_context():
-        multiauth.initialize(app)
         assert multiauth.auth_providers['test'].settings == {'foo': 'bar'}
         assert multiauth.auth_providers['test2'].settings == {'hello': 'world'}
 
@@ -86,21 +74,18 @@ def test_initialize_providers():
 @pytest.mark.usefixtures('mock_auth_providers')
 def test_initialize_providers_unique():
     app = Flask('test')
-    multiauth = MultiAuth(app)
     app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
         'test': {'type': 'unique', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
-    with app.app_context():
-        with pytest.raises(RuntimeError):
-            multiauth.initialize(app)
+    with pytest.raises(RuntimeError):
+        MultiAuth(app)
 
 
 def test_create_login_rule(mocker):
     process_login = mocker.patch.object(MultiAuth, 'process_login')
     app = Flask('test')
-    multiauth = MultiAuth(app)
-    multiauth.initialize(app)
+    MultiAuth(app)
     with app.test_client() as c:
         for url in app.config['MULTIAUTH_LOGIN_URLS']:
             c.get(url)
@@ -110,12 +95,10 @@ def test_create_login_rule(mocker):
 def test_create_login_rule_disabled(mocker):
     process_login = mocker.patch.object(MultiAuth, 'process_login')
     app = Flask('test')
-    multiauth = MultiAuth(app)
-    urls = app.config['MULTIAUTH_LOGIN_URLS']  # default urls
     app.config['MULTIAUTH_LOGIN_URLS'] = None
-    multiauth.initialize(app)
+    MultiAuth(app)
     with app.test_client() as c:
-        for url in urls:
+        for url in ('/login/', '/login/<provider>'):
             assert c.get(url).status_code == 404
     assert not process_login.called
 
@@ -126,7 +109,6 @@ def test_render_template(mocker):
     app.config['MULTIAUTH_FOO_TEMPLATE'] = None
     app.config['MULTIAUTH_BAR_TEMPLATE'] = 'bar.html'
     multiauth = MultiAuth(app)
-    multiauth.initialize(app)
     with app.app_context():
         with pytest.raises(RuntimeError):
             multiauth.render_template('FOO', foo='bar')
@@ -140,7 +122,6 @@ def test_next_url():
     app.config['SECRET_KEY'] = 'testing'
     app.config['MULTIAUTH_SUCCESS_ENDPOINT'] = 'success'
     multiauth = MultiAuth(app)
-    multiauth.initialize(app)
     with app.test_request_context():
         # default url - not in session
         assert multiauth._get_next_url() == '/success'

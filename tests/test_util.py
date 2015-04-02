@@ -43,9 +43,7 @@ def test_get_state_explicit():
     app2 = Flask('test2')
     multiauth = MultiAuth()
     multiauth.init_app(app)
-    multiauth.initialize(app)
     multiauth.init_app(app2)
-    multiauth.initialize(app2)
     # outside app ctx
     with pytest.raises(RuntimeError):
         assert get_state().app
@@ -59,7 +57,6 @@ def test_get_state_explicit():
 def test_get_state():
     app = Flask('test')
     multiauth = MultiAuth(app)
-    multiauth.initialize(app)
     with app.app_context():
         state = get_state(app)
         assert state.multiauth is multiauth
@@ -96,8 +93,7 @@ def test_login_view(mocker):
     def fail():
         raise e
 
-    multiauth = MultiAuth(app)
-    multiauth.initialize(app)
+    MultiAuth(app)
     with app.test_client() as c:
         c.get('/ok')
         assert not handle_auth_error.called

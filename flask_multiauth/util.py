@@ -27,14 +27,10 @@ def get_canonical_provider_map(provider_map):
     return canonical
 
 
-def get_state(app=None, allow_uninitialized=False):
+def get_state(app=None):
     """Gets the application-specific multiauth data.
 
     :param app: The Flask application. Defaults to the current app.
-    :param allow_uninitialized: If an uninitialized state is allowed.
-                                This is used internally so
-                                :meth:`.MultiAuth.initialize` can make
-                                use of this function.
     :rtype: flask_multiauth.core._MultiAuthState
     """
     if app is None:
@@ -42,12 +38,7 @@ def get_state(app=None, allow_uninitialized=False):
     assert 'multiauth' in app.extensions, \
         'The multiauth extension was not registered to the current application. ' \
         'Please make sure to call init_app() first.'
-    state = app.extensions['multiauth']
-    if not allow_uninitialized:
-        assert state.initialized, \
-            'The multiauth extension was not initialized for the current application. ' \
-            'Please make sure to call initialize() first.'
-    return state
+    return app.extensions['multiauth']
 
 
 def login_view(func):

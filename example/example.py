@@ -15,7 +15,7 @@ from flask_multiauth import MultiAuth
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 'fma-example'
-multiauth = MultiAuth(app)
+multiauth = MultiAuth()
 
 github_oauth_config = {
     'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
@@ -79,5 +79,5 @@ def index():
 
 
 if __name__ == '__main__':
-    multiauth.initialize(app)
+    multiauth.init_app(app)
     app.run('0.0.0.0', 10500, use_evalex=False)

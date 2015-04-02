@@ -40,7 +40,7 @@ class MultiAuth(object):
         """
         if 'multiauth' in app.extensions:
             raise RuntimeError('Flask application already initialized')
-        app.extensions['multiauth'] = _MultiAuthState(self, app)
+        state = app.extensions['multiauth'] = _MultiAuthState(self, app)
         # TODO: write docs for the config (see flask-cache for a pretty example)
         app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
         app.config.setdefault('MULTIAUTH_USER_PROVIDERS', {})
@@ -53,24 +53,11 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
         app.config.setdefault('MULTIAUTH_ALL_MATCHING_USERS', False)
-
-    def initialize(self, app):
-        """Initializes the providers for the app.
-
-        This method must be called once when all multiauth-related
-        config options are set to their final values.
-
-        :param app: The flask application.
-        """
-        state = get_state(app, True)
-        if state.initialized:
-            return
-        with state.app.app_context():
+        with app.app_context():
             self._create_login_rule()
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
             state.user_providers = ImmutableDict(self._create_providers('USER', UserProvider))
             state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIAUTH_PROVIDER_MAP']))
-        state.initialized = True
 
     @property
     def auth_providers(self):
@@ -271,7 +258,6 @@ class _MultiAuthState(object):
     def __init__(self, multiauth, app):
         self.multiauth = multiauth
         self.app = app
-        self.initialized = False
         self.auth_providers = {}
         self.user_providers = {}
         self.provider_map = {}
