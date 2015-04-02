@@ -13,7 +13,7 @@ from pkg_resources import iter_entry_points
 from flask import current_app
 
 from flask_multiauth._compat import iteritems, string_types
-from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.exceptions import MultiAuthException
 
 
 def get_canonical_provider_map(provider_map):
@@ -44,14 +44,14 @@ def get_state(app=None):
 def login_view(func):
     """Decorates a Flask view function as an authentication view.
 
-    This catches auth-related exceptions and flashes a message and
+    This catches multiauth-related exceptions and flashes a message and
     redirects back to the login page.
     """
     @wraps(func)
     def decorator(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except AuthenticationFailed as e:
+        except MultiAuthException as e:
             return get_state().multiauth.handle_auth_error(e, True)
 
     return decorator

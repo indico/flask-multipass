@@ -11,7 +11,7 @@ from flask import current_app, url_for
 
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, UserInfo
-from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.exceptions import AuthenticationFailed, UserRetrievalFailed
 from flask_multiauth.user import UserProvider
 from flask_multiauth.util import classproperty, login_view, map_data
 
@@ -102,7 +102,7 @@ class OAuthUserProvider(UserProvider):
         token = auth_info.data['token'], None
         resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=token)
         if resp.status != 200:
-            raise AuthenticationFailed('Could not retrieve user data')
+            raise UserRetrievalFailed('Could not retrieve user data')
         identifier = resp.data[self.settings['identifier_field']]
         data = map_data(resp.data, self.settings['mapping'])
         return UserInfo(self, identifier, **data)

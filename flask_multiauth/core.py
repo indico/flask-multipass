@@ -12,7 +12,7 @@ from werkzeug.exceptions import NotFound
 
 from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.user import UserProvider
 from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map
 
@@ -249,10 +249,10 @@ class MultiAuth(object):
         if form.validate_on_submit():
             try:
                 auth_info = provider.process_local_login(form.data)
-            except AuthenticationFailed as e:
+                self.handle_auth_info(auth_info)
+            except MultiAuthException as e:
                 self.handle_auth_error(e)
             else:
-                self.handle_auth_info(auth_info)
                 return self.redirect_success()
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
