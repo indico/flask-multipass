@@ -8,25 +8,12 @@ from __future__ import unicode_literals
 
 import pytest
 
-from flask_multiauth import AuthProvider
-
-
-class LocalProvider(AuthProvider):
-    login_form = object()
-
-
-class RemoteProvider(AuthProvider):
-    pass
-
-
-def test_is_external():
-    assert not LocalProvider(None, None, {}).is_external
-    assert RemoteProvider(None, None, {}).is_external
+from flask_multiauth import UserProvider
 
 
 def test_settings_copied():
     settings = {'foo': 'bar'}
-    provider = LocalProvider(None, None, settings)
+    provider = UserProvider(None, None, settings)
     provider.settings['foo'] = 'foobar'
     assert settings['foo'] == 'bar'
 
@@ -36,5 +23,5 @@ def test_settings_copied():
     ({'title': 'whatever'}, 'whatever'),
 ))
 def test_settings_title(settings, title):
-    provider = LocalProvider(None, 'foo', settings)
+    provider = UserProvider(None, 'foo', settings)
     assert provider.title == title
