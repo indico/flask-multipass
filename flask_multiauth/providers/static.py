@@ -64,5 +64,5 @@ class StaticUserProvider(UserProvider):
         identifier = auth_info.data['username']
         user = self.settings['users'].get(identifier)
         if user is None:
-            raise UserRetrievalFailed('Could not retrieve user data')
+            return None
         return UserInfo(self, identifier, **user)

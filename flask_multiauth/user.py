@@ -29,5 +29,15 @@ class UserProvider(object):
         self.settings = settings.copy()
         self.title = self.settings.pop('title', self.name)
 
+    def get_user_from_auth(self, auth_info):  # pragma: no cover
+        """Retrieves user information after authentication
+
+        :param auth_info: An :class:`.AuthInfo` instance from an auth
+                          provider
+        :return: A :class:`.UserInfo` instance containing user
+                 information or ``None`` if no user was found
+        """
+        raise NotImplementedError
+
     def __repr__(self):
         return '<{}({}, {})>'.format(type(self).__name__, self.type, self.name)

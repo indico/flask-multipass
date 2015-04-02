@@ -91,6 +91,7 @@ class OAuthUserProvider(UserProvider):
     def __init__(self, *args, **kwargs):
         super(OAuthUserProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('method', 'GET')
+        self.settings.setdefault('valid_statuses', {200, 404})
         self.settings.setdefault('endpoint', None)
         self.settings.setdefault('oauth', {})
         self.settings.setdefault('identifier_field', None)
@@ -101,8 +102,10 @@ class OAuthUserProvider(UserProvider):
     def get_user_from_auth(self, auth_info):
         token = auth_info.data['token'], None
         resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=token)
-        if resp.status != 200:
+        if resp.status not in self.settings['valid_statuses']:
             raise UserRetrievalFailed('Could not retrieve user data')
+        elif resp.status == 404:
+            return None
         identifier = resp.data[self.settings['identifier_field']]
         data = map_data(resp.data, self.settings['mapping'])
         return UserInfo(self, identifier, **data)

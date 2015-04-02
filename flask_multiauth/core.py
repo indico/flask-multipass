@@ -12,7 +12,7 @@ from werkzeug.exceptions import NotFound
 
 from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.exceptions import MultiAuthException
+from flask_multiauth.exceptions import MultiAuthException, UserRetrievalFailed
 from flask_multiauth.user import UserProvider
 from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map
 
@@ -53,6 +53,7 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
         app.config.setdefault('MULTIAUTH_ALL_MATCHING_USERS', False)
+        app.config.setdefault('MULTIAUTH_REQUIRE_USER', True)
         with app.app_context():
             self._create_login_rule()
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
@@ -107,6 +108,12 @@ class MultiAuth(object):
     def handle_auth_info(self, auth_info):
         """Called after a successful authentication
 
+        This method calls :meth:`login_finished` with the found user.
+        If ``MULTIAUTH_ALL_MATCHING_USERS`` is set, it will pass a list
+        of users.  If ``MULTIAUTH_REQUIRE_USER`` is set,
+        :exc:`.UserRetrievalFailed` will be raised if no users were
+        found, otherwise ``None`` or and empty list will be passed.
+
         :param auth_info: An :class:`.AuthInfo` instance containing
                           data that can be used to uniquely identify
                           the user.
@@ -117,9 +124,13 @@ class MultiAuth(object):
             provider = self.user_providers[link['user_provider']]
             mapping = link.get('mapping', {})
             user_info = provider.get_user_from_auth(auth_info.map(mapping))
+            if user_info is None:
+                continue
             users.append(user_info)
             if not current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
                 break
+        if not users and current_app.config['MULTIAUTH_REQUIRE_USER']:
+            raise UserRetrievalFailed("No user found")
         if current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
             self.login_finished(users)
         else:
@@ -131,11 +142,7 @@ class MultiAuth(object):
         This method invokes the function registered via
         :obj:`user_handler` with the same arguments.
 
-        :param user: If ``MULTIAUTH_ALL_MATCHING_USERS`` is False, this
-                     is a :class:`.UserInfo` or ``None`` if not user
-                     was found.  If the setting is True, it is always a
-                     list of the matching users (which is empty if no
-                     users was found)
+        :param user: A :class:`.UserInfo` instance or list of them
         """
         assert self.user_callback is not None, \
             'No user callback has been registered. Register one using ' \
