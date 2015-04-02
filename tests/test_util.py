@@ -12,7 +12,8 @@ import pytest
 from flask import Flask
 
 from flask_multiauth import MultiAuth
-from flask_multiauth.util import classproperty, get_state, resolve_provider_type
+from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.util import classproperty, get_state, resolve_provider_type, map_data, login_view
 
 
 def test_get_state_app_not_initialized():
@@ -48,6 +49,46 @@ def test_get_state():
         assert state.multiauth is multiauth
         assert state.app is app
         assert get_state(app) is state
+
+
+@pytest.mark.parametrize(('data', 'mapping', 'result'), (
+    ({'foo': 'bar'}, {}, {}),
+    ({'foo': 'bar', 'other': 'value'}, {'test': 'foo'}, {'test': 'bar'}),
+    ({'foo': 'bar', 'other': 'value'}, {'test': 'foo', 'x': 'y'}, {'test': 'bar', 'x': None}),
+))
+def test_map_data(data, mapping, result):
+    assert map_data(data, mapping) == result
+
+
+def test_login_view(mocker):
+    handle_auth_error = mocker.patch.object(MultiAuth, 'handle_auth_error')
+    app = Flask('test')
+    e = AuthenticationFailed()
+
+    @app.route('/ok')
+    @login_view
+    def ok():
+        return ''
+
+    @app.route('/err')
+    @login_view
+    def err():
+        raise Exception()
+
+    @app.route('/fail')
+    @login_view
+    def fail():
+        raise e
+
+    multiauth = MultiAuth(app)
+    multiauth.initialize(app)
+    with app.test_client() as c:
+        c.get('/ok')
+        assert not handle_auth_error.called
+        c.get('/err')
+        assert not handle_auth_error.called
+        c.get('/fail')
+        handle_auth_error.assert_called_with(e, True)
 
 
 class DummyBase(object):

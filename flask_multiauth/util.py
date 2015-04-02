@@ -6,10 +6,25 @@
 
 from __future__ import unicode_literals
 
+from functools import wraps
 from inspect import isclass
 from pkg_resources import iter_entry_points
 
 from flask import current_app
+
+from flask_multiauth._compat import iteritems, string_types
+from flask_multiauth.exceptions import AuthenticationFailed
+
+
+def get_canonical_provider_map(provider_map):
+    """Converts the configured provider map to a canonical form"""
+    canonical = {}
+    for auth_provider_name, user_providers in iteritems(provider_map):
+        if not isinstance(user_providers, (list, tuple, set)):
+            user_providers = [user_providers]
+        user_providers = tuple({'user_provider': p} if isinstance(p, string_types) else p for p in user_providers)
+        canonical[auth_provider_name] = user_providers
+    return canonical
 
 
 def get_state(app=None, allow_uninitialized=False):
@@ -33,6 +48,37 @@ def get_state(app=None, allow_uninitialized=False):
             'The multiauth extension was not initialized for the current application. ' \
             'Please make sure to call initialize() first.'
     return state
+
+
+def login_view(func):
+    """Decorates a Flask view function as an authentication view.
+
+    This catches auth-related exceptions and flashes a message and
+    redirects back to the login page.
+    """
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except AuthenticationFailed as e:
+            return get_state().multiauth.handle_auth_error(e, True)
+
+    return decorator
+
+
+def map_data(data, mapping):
+    """Creates a dict with a fixed set of keys based on a mapping.
+
+    :param data: A dict containing data.
+    :param mapping: A dict containing the mapping between the `data`
+                    dict and the result dict. Each key in the dict will
+                    be used as a key in the returned dict and each
+                    value will be used as the key to get the value from
+                    `data`.
+    :return: A dict that has the same keys as `mapping` and the values
+             from `data`.
+    """
+    return {target_key: data.get(source_key) for target_key, source_key in iteritems(mapping)}
 
 
 def resolve_provider_type(base, type_):

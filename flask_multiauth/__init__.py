@@ -8,6 +8,7 @@ from .core import MultiAuth
 from .auth import AuthProvider
 from .data import AuthInfo
 from .exceptions import AuthenticationFailed
+from .user import UserProvider
 
 __version__ = '0.0.dev0'
-__all__ = ('MultiAuth', 'AuthProvider', 'AuthInfo', 'AuthenticationFailed')
+__all__ = ('MultiAuth', 'AuthProvider', 'UserProvider', 'AuthInfo', 'AuthenticationFailed')

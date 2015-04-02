@@ -13,7 +13,8 @@ from werkzeug.exceptions import NotFound
 from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.exceptions import AuthenticationFailed
-from flask_multiauth.util import get_state, resolve_provider_type
+from flask_multiauth.user import UserProvider
+from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map
 
 
 class MultiAuth(object):
@@ -24,6 +25,7 @@ class MultiAuth(object):
     """
 
     def __init__(self, app=None):
+        self.user_callback = None
         if app is not None:
             self.init_app(app)
 
@@ -41,6 +43,8 @@ class MultiAuth(object):
         app.extensions['multiauth'] = _MultiAuthState(self, app)
         # TODO: write docs for the config (see flask-cache for a pretty example)
         app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
+        app.config.setdefault('MULTIAUTH_USER_PROVIDERS', {})
+        app.config.setdefault('MULTIAUTH_PROVIDER_MAP', {})
         app.config.setdefault('MULTIAUTH_LOGIN_SELECTOR_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_FORM_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_ENDPOINT', 'login')
@@ -48,6 +52,7 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_SUCCESS_ENDPOINT', 'index')
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
+        app.config.setdefault('MULTIAUTH_ALL_MATCHING_USERS', False)
 
     def initialize(self, app):
         """Initializes the providers for the app.
@@ -62,23 +67,25 @@ class MultiAuth(object):
             return
         with state.app.app_context():
             self._create_login_rule()
-            # Instantiate all the auth providers
-            auth_providers = {}
-            auth_provider_types = set()
-            for name, settings in iteritems(current_app.config['MULTIAUTH_AUTH_PROVIDERS']):
-                settings = settings.copy()
-                cls = resolve_provider_type(AuthProvider, settings.pop('type'))
-                if not cls.multi_instance and cls.type in auth_provider_types:
-                    raise RuntimeError('Auth provider does not support multiple instances: ' + cls.type)
-                auth_providers[name] = cls(self, name, settings)
-                auth_provider_types.add(cls.type)
-            state.auth_providers = ImmutableDict(auth_providers)
+            state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
+            state.user_providers = ImmutableDict(self._create_providers('USER', UserProvider))
+            state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIAUTH_PROVIDER_MAP']))
         state.initialized = True
 
     @property
     def auth_providers(self):
         """Returns a read-only dict of the active auth providers"""
         return get_state().auth_providers
+
+    @property
+    def user_providers(self):
+        """Returns a read-only dict of the active user providers"""
+        return get_state().user_providers
+
+    @property
+    def provider_map(self):
+        """Returns a read-only mapping between auth and user providers."""
+        return get_state().provider_map
 
     def redirect_success(self):
         """Redirects to whatever page should be displayed after login"""
@@ -116,8 +123,51 @@ class MultiAuth(object):
                           data that can be used to uniquely identify
                           the user.
         """
-        # TODO: pass auth into to linked user providers
-        flash('Received AuthInfo: {}'.format(auth_info), 'success')
+        try:
+            links = self.provider_map[auth_info.provider.name]
+        except KeyError:
+            raise Exception('No user providers configured for auth provider ' + auth_info.provider.name)
+        users = []
+        for link in links:
+            provider = self.user_providers[link['user_provider']]
+            mapping = link.get('mapping', {})
+            user_info = provider.get_user_from_auth(auth_info.map(mapping))
+            users.append(user_info)
+            if not current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
+                break
+        if current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
+            self.login_finished(users)
+        else:
+            self.login_finished(users[0] if users else None)
+
+    def login_finished(self, user):
+        """Called after the login process finished.
+
+        This method invokes the function registered via
+        :obj:`user_handler` with the same arguments.
+
+        :param user: If ``MULTIAUTH_ALL_MATCHING_USERS`` is False, this
+                     is a :class:`.UserInfo` or ``None`` if not user
+                     was found.  If the setting is True, it is always a
+                     list of the matching users (which is empty if no
+                     users was found)
+        """
+        assert self.user_callback is not None, \
+            'No user callback has been registered. Register one using ' \
+            'Register one using the MultiAuth.user_handler decorator.'
+        self.user_callback(user)
+
+    def handle_auth_error(self, exc, redirect_to_login=False):
+        """Handles an authentication failure
+
+        :param exc: The exception indicating the error.
+        :param redirect_to_login: Returns a redirect response to the
+                                  login page.
+        """
+        flash(current_app.config['MULTIAUTH_FAILURE_MESSAGE'].format(error=text_type(exc)),
+              current_app.config['MULTIAUTH_FAILURE_CATEGORY'])
+        if redirect_to_login:
+            return redirect(url_for(current_app.config['MULTIAUTH_LOGIN_ENDPOINT']))
 
     def render_template(self, template_key, **kwargs):
         """Renders a template configured in the app config
@@ -132,11 +182,37 @@ class MultiAuth(object):
             raise RuntimeError('Config option missing: ' + key)
         return render_template(template, **kwargs)
 
+    def user_handler(self, callback):
+        """Registers the callback function that receives user information after login
+
+        See :meth:`login_finished` for a description of the parameters.
+        """
+        self.user_callback = callback
+        return callback
+
+    def _create_providers(self, key, base):
+        """Instantiates all providers
+
+        :param key: The key to insert into the config option name
+                    ``MULTIAUTH_*_PROVIDERS``
+        :param base: The base class of the provider type.
+        """
+        providers = {}
+        provider_types = set()
+        for name, settings in iteritems(current_app.config['MULTIAUTH_{}_PROVIDERS'.format(key)]):
+            settings = settings.copy()
+            cls = resolve_provider_type(base, settings.pop('type'))
+            if not cls.multi_instance and cls.type in provider_types:
+                raise RuntimeError('Provider does not support multiple instances: ' + cls.type)
+            providers[name] = cls(self, name, settings)
+            provider_types.add(cls.type)
+        return providers
+
     def _create_login_rule(self):
         """Creates the login URL rule if necessary"""
         endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
         rules = current_app.config['MULTIAUTH_LOGIN_URLS']
-        if not endpoint or not rules:
+        if rules is None:
             return
         for rule in rules:
             current_app.add_url_rule(rule, endpoint, self.process_login, methods=('GET', 'POST'))
@@ -184,8 +260,7 @@ class MultiAuth(object):
             try:
                 auth_info = provider.process_local_login(form.data)
             except AuthenticationFailed as e:
-                flash(current_app.config['MULTIAUTH_FAILURE_MESSAGE'].format(error=text_type(e)),
-                      current_app.config['MULTIAUTH_FAILURE_CATEGORY'])
+                self.handle_auth_error(e)
             else:
                 self.handle_auth_info(auth_info)
                 return self.redirect_success()
@@ -198,6 +273,8 @@ class _MultiAuthState(object):
         self.app = app
         self.initialized = False
         self.auth_providers = {}
+        self.user_providers = {}
+        self.provider_map = {}
 
     def __repr__(self):
         return '<MultiAuthState({}, {})>'.format(self.multiauth, self.app)

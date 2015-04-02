@@ -10,8 +10,10 @@ import flask_oauthlib.client
 from flask import current_app, url_for
 
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo
-from flask_multiauth.util import classproperty
+from flask_multiauth.data import AuthInfo, UserInfo
+from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.user import UserProvider
+from flask_multiauth.util import classproperty, login_view, map_data
 
 
 _oauth_settings = ('base_url', 'request_token_url', 'access_token_url', 'authorize_url',
@@ -44,7 +46,7 @@ class OAuth(flask_oauthlib.client.OAuth):
 
 
 class OAuthAuthProvider(AuthProvider):
-    """Provides authentication using OAuth2"""
+    """Provides authentication using OAuth"""
 
     #: The type to use in the auth provider config.
     type = 'oauth'
@@ -67,7 +69,40 @@ class OAuthAuthProvider(AuthProvider):
     def _make_auth_info(self, resp):
         return AuthInfo(self, token=resp[self.settings['token_field']])
 
+    @login_view
     def _authorize_callback(self):
         resp = self.oauth_app.authorized_response()
+        if self.settings['token_field'] not in resp:
+            error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
+            raise AuthenticationFailed(error)
         self.multiauth.handle_auth_info(self._make_auth_info(resp))
         return self.multiauth.redirect_success()
+
+
+class OAuthUserProvider(UserProvider):
+    """Provides user information using OAuth.
+
+    The remote service needs to provide user information as JSON.
+    """
+
+    #: The type to use in the user provider config.
+    type = 'oauth'
+
+    def __init__(self, *args, **kwargs):
+        super(OAuthUserProvider, self).__init__(*args, **kwargs)
+        self.settings.setdefault('method', 'GET')
+        self.settings.setdefault('endpoint', None)
+        self.settings.setdefault('oauth', {})
+        self.settings.setdefault('identifier_field', None)
+        self.settings.setdefault('mapping', {})
+        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
+                                                   **self.settings['oauth'])
+
+    def get_user_from_auth(self, auth_info):
+        token = auth_info.data['token'], None
+        resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=token)
+        if resp.status != 200:
+            raise AuthenticationFailed('Could not retrieve user data')
+        identifier = resp.data[self.settings['identifier_field']]
+        data = map_data(resp.data, self.settings['mapping'])
+        return UserInfo(self, identifier, **data)

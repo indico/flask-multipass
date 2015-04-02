@@ -8,11 +8,13 @@ import sys
 
 if sys.version_info[0] > 2:
     text_type = str
+    string_types = str,
 
     def iteritems(arg, **kwargs):
         return iter(arg.items(**kwargs))
 else:
     text_type = unicode
+    string_types = basestring,
 
     def iteritems(arg, **kwargs):
         return iter(arg.iteritems(**kwargs))

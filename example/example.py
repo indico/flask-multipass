@@ -8,9 +8,8 @@ from __future__ import unicode_literals
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, flash
 from flask_multiauth import MultiAuth
-from flask_multiauth.providers.oauth import OAuthAuthProvider
 
 
 app = Flask(__name__)
@@ -18,20 +17,15 @@ app.debug = True
 app.secret_key = 'fma-example'
 multiauth = MultiAuth(app)
 
-github_config = {
-    'type': OAuthAuthProvider,
-    'title': 'GitHub',
-    'oauth': {
-        'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
-        'consumer_secret': os.environ['MULTIAUTH_GITHUB_CLIENT_SECRET'],
-        'request_token_params': {'scope': 'user:email'},
-        'base_url': 'https://api.github.com/',
-        'request_token_url': None,
-        'access_token_method': 'POST',
-        'access_token_url': 'https://github.com/login/oauth/access_token',
-        'authorize_url': 'https://github.com/login/oauth/authorize'
-    },
-    'token_field': 'access_token'
+github_oauth_config = {
+    'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
+    'consumer_secret': os.environ['MULTIAUTH_GITHUB_CLIENT_SECRET'],
+    'request_token_params': {'scope': 'user:email'},
+    'base_url': 'https://api.github.com',
+    'request_token_url': None,
+    'access_token_method': 'POST',
+    'access_token_url': 'https://github.com/login/oauth/access_token',
+    'authorize_url': 'https://github.com/login/oauth/authorize'
 }
 
 app.config['WTF_CSRF_ENABLED'] = False
@@ -46,11 +40,37 @@ app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
             'Foo': 'bar'
         }
     },
-    'github': github_config
+    'github': {
+        'type': 'oauth',
+        'title': 'GitHub',
+        'oauth': github_oauth_config
+    }
+}
+app.config['MULTIAUTH_USER_PROVIDERS'] = {
+    'github': {
+        'type': 'oauth',
+        'oauth': github_oauth_config,
+        'endpoint': '/user',
+        'identifier_field': 'id',
+        'mapping': {
+            'email': 'email',
+            'name': 'name',
+            'affiliation': 'company'
+        }
+    }
+}
+app.config['MULTIAUTH_PROVIDER_MAP'] = {
+    'github': [
+        {
+            'user_provider': 'github'
+        }
+    ]
 }
 
 
-multiauth.initialize(app)
+@multiauth.user_handler
+def user_handler(user):
+    flash('Received UserInfo: {}'.format(user), 'success')
 
 
 @app.route('/')
@@ -59,4 +79,5 @@ def index():
 
 
 if __name__ == '__main__':
+    multiauth.initialize(app)
     app.run('0.0.0.0', 10500, use_evalex=False)

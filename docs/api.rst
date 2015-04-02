@@ -18,6 +18,12 @@ Authentication Providers
    :members:
 
 
+User Providers
+--------------
+.. automodule:: flask_multiauth.user
+   :members:
+
+
 Data Structures
 ---------------
 .. automodule:: flask_multiauth.data
@@ -28,7 +34,7 @@ Utils
 -----
 .. automodule:: flask_multiauth.util
    :members:
-   :exclude-members: get_state, classproperty
+   :exclude-members: expand_provider_links, get_state, classproperty
 
 
 Exceptions
