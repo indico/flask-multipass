@@ -58,11 +58,7 @@ class UserInfo(object):
         self.provider = provider
         self.identifier = identifier
         self.data = data
-        if not identifier:
-            raise ValueError('identifier cannot be empty')
-        if not data:
-            raise ValueError('data cannot be empty')
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items())
-        return '<UserInfo({}, {}, {})>'.format(self.provider, self.identifier, data)
+        return '<UserInfo({}, {}, {})>'.format(self.provider, self.identifier, data or None)
