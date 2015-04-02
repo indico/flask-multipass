@@ -13,7 +13,23 @@ from flask import Flask
 
 from flask_multiauth import MultiAuth
 from flask_multiauth.exceptions import AuthenticationFailed
-from flask_multiauth.util import classproperty, get_state, resolve_provider_type, map_data, login_view
+from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, map_data, login_view,
+                                  get_canonical_provider_map)
+
+
+@pytest.mark.parametrize(('config_map', 'canonical_map'), (
+    ({'foo': 'bar'},                             {'foo': ({'user_provider': 'bar'},)}),
+    ({'foo': ['bar']},                           {'foo': ({'user_provider': 'bar'},)}),
+    ({'foo': {'bar'}},                           {'foo': ({'user_provider': 'bar'},)}),
+    ({'foo': {'user_provider': 'bar'}},          {'foo': ({'user_provider': 'bar'},)}),
+    ({'foo': [{'user_provider': 'bar'}]},        {'foo': ({'user_provider': 'bar'},)}),
+    ({'foo': [{'user_provider': 'bar'}, 'moo']}, {'foo': ({'user_provider': 'bar'},
+                                                          {'user_provider': 'moo'})}),
+    ({'foo': 'bar', 'meow': 'moo'},              {'foo': ({'user_provider': 'bar'},),
+                                                  'meow': ({'user_provider': 'moo'},)}),
+))
+def test_get_canonical_provider_map(config_map, canonical_map):
+    assert get_canonical_provider_map(config_map) == canonical_map
 
 
 def test_get_state_app_not_initialized():
