@@ -46,17 +46,25 @@ class UserInfo(object):
     """Stores user information for the application.
 
     :param provider: The user provider instance providing the data.
-    :param identifier: A unique identifier that can later be used to
-                       retrieve user data for the same user. This can
-                       be a simple string or any other data structure
-                       that is JSON-serializable.
+    :param identifier: A unique identifier string that can later be
+                       used to retrieve user data for the same user.
+    :param refresh_data: A dict containing additional data the user
+                         provider needs to refresh the user information
+                         for the same user, without him authenticating
+                         again. This could for example be a long-lived
+                         access token from the auth provider.
     :param data: Any data the user provider wants to pass on the
                  application.
     """
 
-    def __init__(self, provider, identifier, **data):
+    def __init__(self, provider, identifier, refresh_data=None, **data):
         self.provider = provider
         self.identifier = identifier
+        if not provider.supports_refresh:
+            assert refresh_data is None
+            self.refresh_data = None
+        else:
+            self.refresh_data = dict(refresh_data or {}, _provider=provider.name)
         self.data = data
 
     def __repr__(self):

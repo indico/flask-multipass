@@ -22,6 +22,10 @@ User Providers
 --------------
 .. automodule:: flask_multiauth.user
    :members:
+.. autoclass:: flask_multiauth.providers.oauth.OAuthUserProvider
+   :members:
+.. autoclass:: flask_multiauth.providers.static.StaticUserProvider
+   :members:
 
 
 Data Structures

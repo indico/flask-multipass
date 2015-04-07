@@ -12,7 +12,7 @@ from wtforms.validators import DataRequired
 
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, UserInfo
-from flask_multiauth.exceptions import AuthenticationFailed, UserRetrievalFailed
+from flask_multiauth.exceptions import AuthenticationFailed
 from flask_multiauth.user import UserProvider
 
 
@@ -55,6 +55,8 @@ class StaticUserProvider(UserProvider):
 
     #: The type to use in the user provider config.
     type = 'static'
+    #: If the provider supports refreshing user information
+    supports_refresh = True
 
     def __init__(self, *args, **kwargs):
         super(StaticUserProvider, self).__init__(*args, **kwargs)
@@ -62,6 +64,12 @@ class StaticUserProvider(UserProvider):
 
     def get_user_from_auth(self, auth_info):
         identifier = auth_info.data['username']
+        user = self.settings['users'].get(identifier)
+        if user is None:
+            return None
+        return UserInfo(self, identifier, **user)
+
+    def refresh_user(self, identifier, refresh_data):
         user = self.settings['users'].get(identifier)
         if user is None:
             return None

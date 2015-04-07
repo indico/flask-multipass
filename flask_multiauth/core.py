@@ -183,6 +183,24 @@ class MultiAuth(object):
         self.user_callback = callback
         return callback
 
+    def refresh_user(self, identifier, refresh_data):
+        """Retrieves user information for an existing user
+
+        :param identifier: The `identifier` from :class:`.UserInfo`
+        :param refresh_data: The `refresh_data` dict from
+                             :class:`.UserInfo`
+        :return: A :class:`.UserInfo` instance or ``None`` if the user
+                 does not exist anymore.
+        """
+        if refresh_data is None:
+            raise ValueError('This user cannot be refreshed')
+        provider_name = refresh_data['_provider']
+        try:
+            provider = self.user_providers[provider_name]
+        except KeyError:
+            raise UserRetrievalFailed('Provider does not exist: ' + provider_name)
+        return provider.refresh_user(identifier, refresh_data)
+
     def _create_providers(self, key, base):
         """Instantiates all providers
 

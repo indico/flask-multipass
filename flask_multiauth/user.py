@@ -22,6 +22,8 @@ class UserProvider(object):
     type = None
     #: If there may be multiple instances of this user provider
     multi_instance = True
+    #: If the provider supports refreshing user information
+    supports_refresh = False
 
     def __init__(self, multiauth, name, settings):
         self.multiauth = multiauth
@@ -38,6 +40,21 @@ class UserProvider(object):
                  information or ``None`` if no user was found
         """
         raise NotImplementedError
+
+    def refresh_user(self, identifier, refresh_data):  # pragma: no cover
+        """Retrieves user information for an existing user
+
+        This method returns user information for a user who has been
+        retrieved before based on the provider-specific refresh data.
+
+        :param identifier: The `identifier` from :class:`.UserInfo`
+        :param refresh_data: The `refresh_data` dict from
+                             :class:`.UserInfo`
+        """
+        if self.supports_refresh:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not support refreshing')
 
     def __repr__(self):
         return '<{}({}, {})>'.format(type(self).__name__, self.type, self.name)

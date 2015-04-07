@@ -87,6 +87,8 @@ class OAuthUserProvider(UserProvider):
 
     #: The type to use in the user provider config.
     type = 'oauth'
+    #: If the provider supports refreshing user information
+    supports_refresh = True
 
     def __init__(self, *args, **kwargs):
         super(OAuthUserProvider, self).__init__(*args, **kwargs)
@@ -99,13 +101,19 @@ class OAuthUserProvider(UserProvider):
         self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
                                                    **self.settings['oauth'])
 
-    def get_user_from_auth(self, auth_info):
-        token = auth_info.data['token'], None
-        resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=token)
+    def _get_user(self, token):
+        resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=(token, None))
         if resp.status not in self.settings['valid_statuses']:
             raise UserRetrievalFailed('Could not retrieve user data')
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
         data = map_data(resp.data, self.settings['mapping'])
-        return UserInfo(self, identifier, **data)
+        refresh_data = {'oauth_token': token}
+        return UserInfo(self, identifier, refresh_data, **data)
+
+    def get_user_from_auth(self, auth_info):
+        return self._get_user(auth_info.data['token'])
+
+    def refresh_user(self, identifier, refresh_data):
+        return self._get_user(refresh_data['oauth_token'])
