@@ -1,4 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
     <a href="{{ url_for('login') }}">Log in</a>
+    {% if session.logged_in %}
+        <br>
+        Logged in as <strong>{{ session.user_email }}</strong>
+        {% if session.user_refresh_data %}
+        <br>
+        <a href="{{ url_for('refresh') }}">Refresh</a>
+        {% endif %}
+        <br>
+        <a href="{{ url_for('logout') }}">Log out</a>
+    {% endif %}
 {% endblock %}

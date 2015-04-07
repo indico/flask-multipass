@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-from flask import Flask, render_template, flash
+from flask import Flask, render_template, flash, session, url_for, redirect
 from flask_multiauth import MultiAuth
 
 
@@ -75,14 +75,37 @@ app.config['MULTIAUTH_PROVIDER_MAP'] = {
 }
 
 
+def save_user_in_session(user):
+    session['user_identifier'] = user.identifier
+    session['user_refresh_data'] = user.refresh_data
+    session['user_email'] = user.data['email']
+
+
 @multiauth.user_handler
 def user_handler(user):
+    session['logged_in'] = True
+    save_user_in_session(user)
     flash('Received UserInfo: {}'.format(user), 'success')
 
 
 @app.route('/')
 def index():
     return render_template('index.html', multiauth=multiauth)
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out', 'success')
+    return redirect(url_for('index'))
+
+
+@app.route('/refresh')
+def refresh():
+    user = multiauth.refresh_user(session['user_identifier'], session['user_refresh_data'])
+    save_user_in_session(user)
+    flash('Refreshed UserInfo: {}'.format(user), 'success')
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
