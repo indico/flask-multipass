@@ -38,7 +38,7 @@ class AuthInfo(object):
         return AuthInfo(self.provider, **convert_data(self.data, mapping))
 
     def __repr__(self):
-        data = ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items())
+        data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
         return '<AuthInfo({}, {})>'.format(self.provider, data)
 
 
@@ -69,5 +69,5 @@ class UserInfo(object):
         self.data = convert_data(data, mapping or {}, self.provider.settings['user_info_keys'])
 
     def __repr__(self):
-        data = ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items())
+        data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
         return '<UserInfo({}, {}, {})>'.format(self.provider, self.identifier, data or None)
