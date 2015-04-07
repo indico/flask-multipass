@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 
 from flask import current_app
 
+from flask_multiauth._compat import iteritems
+
 
 class UserProvider(object):
     """Provides the base for a user provider.
@@ -26,13 +28,20 @@ class UserProvider(object):
     multi_instance = True
     #: If the provider supports refreshing user information
     supports_refresh = False
+    #: If the provider supports searching users
+    supports_search = False
 
     def __init__(self, multiauth, name, settings):
         self.multiauth = multiauth
         self.name = name
         self.settings = settings.copy()
         self.settings.setdefault('user_info_keys', current_app.config['MULTIAUTH_USER_INFO_KEYS'])
+        self.settings.setdefault('mapping', {})
         self.title = self.settings.pop('title', self.name)
+        search_enabled = self.settings.pop('search_enabled', self.supports_search)
+        if search_enabled and not self.supports_search:
+            raise ValueError('Provider does not support searching: ' + self.type)
+        self.supports_search = search_enabled
 
     def get_user_from_auth(self, auth_info):  # pragma: no cover
         """Retrieves user information after authentication
@@ -58,6 +67,28 @@ class UserProvider(object):
             raise NotImplementedError
         else:
             raise RuntimeError('This provider does not support refreshing')
+
+    def search_users(self, criteria, exact=False):  # pragma: no cover
+        """Searches users matching certain criteria
+
+        :param criteria: A dict containing the criteria to search for.
+        :param exact: If criteria need to match exactly, i.e. no
+                      substring matches are performed.
+        :return: An iterable of matching users.
+        """
+        if self.supports_search:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not support searching')
+
+    def map_search_criteria(self, criteria):
+        """Maps the search criteria from application keys to provider keys
+
+        :param criteria: A dict containing search criteria
+        :return: A dict containing search criteria with mapped keys
+        """
+        mapping = self.settings['mapping']
+        return {mapping.get(key, key): value for key, value in iteritems(criteria)}
 
     def __repr__(self):
         return '<{}({}, {})>'.format(type(self).__name__, self.type, self.name)

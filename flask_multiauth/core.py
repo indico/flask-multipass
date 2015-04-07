@@ -10,7 +10,7 @@ from flask import current_app, render_template, request, url_for, session, redir
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
 
-from flask_multiauth._compat import iteritems, text_type
+from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.exceptions import MultiAuthException, UserRetrievalFailed
 from flask_multiauth.user import UserProvider
@@ -201,6 +201,24 @@ class MultiAuth(object):
         except KeyError:
             raise UserRetrievalFailed('Provider does not exist: ' + provider_name)
         return provider.refresh_user(identifier, refresh_data)
+
+    def search_users(self, providers=None, exact=False, **criteria):
+        """Searches users matching certain criteria
+
+        :param providers: A list of providers to search in. If not
+                          specified, all providers are searched.
+        :param exact: If criteria need to match exactly, i.e. no
+                      substring matches are performed.
+        :param criteria: The criteria to search for.
+        :return: An iterable of matching users.
+        """
+        for provider in itervalues(self.user_providers):
+            if providers is not None and provider.name not in providers:
+                continue
+            if not provider.supports_search:
+                continue
+            for user in provider.search_users(provider.map_search_criteria(criteria), exact=exact):
+                yield user
 
     def _create_providers(self, key, base):
         """Instantiates all providers

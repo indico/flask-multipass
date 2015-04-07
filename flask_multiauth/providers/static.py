@@ -6,10 +6,13 @@
 
 from __future__ import unicode_literals
 
+import operator
+
 from flask_wtf import Form
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
+from flask_multiauth._compat import iteritems
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, UserInfo
 from flask_multiauth.exceptions import AuthenticationFailed
@@ -57,6 +60,8 @@ class StaticUserProvider(UserProvider):
     type = 'static'
     #: If the provider supports refreshing user information
     supports_refresh = True
+    #: If the provider supports searching users
+    supports_search = True
 
     def __init__(self, *args, **kwargs):
         super(StaticUserProvider, self).__init__(*args, **kwargs)
@@ -74,3 +79,12 @@ class StaticUserProvider(UserProvider):
         if user is None:
             return None
         return UserInfo(self, identifier, **user)
+
+    def search_users(self, criteria, exact=False):
+        compare = operator.eq if exact else operator.contains
+        for identifier, user in iteritems(self.settings['users']):
+            for key, value in iteritems(criteria):
+                if not compare(user[key], value):
+                    break
+            else:
+                yield UserInfo(self, identifier, **user)

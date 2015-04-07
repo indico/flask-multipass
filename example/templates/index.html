@@ -11,4 +11,22 @@
         <br>
         <a href="{{ url_for('logout') }}">Log out</a>
     {% endif %}
+    <hr>
+    <form>
+        <input type="hidden" name="search" value="1">
+        <input type="text" name="email" value="{{ request.args.email }}" placeholder="Email">
+        <input type="text" name="name" value="{{ request.args.name }}" placeholder="Name">
+        <input type="checkbox" name="exact" id="exact" value="1" {%- if request.args.exact %} checked{% endif %}>
+        <label for="exact">Exact</label>
+        <input type="submit" value="Search">
+        <br>
+        {% if results is not none %}
+            Results:
+            <ul>
+                {% for result in results %}
+                    <li>{{ result }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </form>
 {% endblock %}

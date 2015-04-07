@@ -32,3 +32,17 @@ def test_settings_title(settings, title):
     with app.app_context():
         provider = UserProvider(None, 'foo', settings)
         assert provider.title == title
+
+
+@pytest.mark.parametrize(('criteria', 'mapping', 'result'), (
+    ({'foo': 'bar'}, {},                           {'foo': 'bar'}),
+    ({'foo': 'bar'}, {'foo': 'moo'},               {'moo': 'bar'}),
+    ({'foo': 'bar'}, {'foo': 'moo', 'bar': 'moo'}, {'moo': 'bar'}),
+))
+def test_map_search_criteria(criteria, mapping, result):
+    app = Flask('test')
+    MultiAuth(app)
+    with app.app_context():
+        settings = {'mapping': mapping}
+        provider = UserProvider(None, 'foo', settings)
+        assert provider.map_search_criteria(criteria) == result

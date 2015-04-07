@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-from flask import Flask, render_template, flash, session, url_for, redirect
+from flask import Flask, render_template, flash, session, url_for, redirect, request
 from flask_multiauth import MultiAuth
 
 
@@ -51,7 +51,8 @@ app.config['MULTIAUTH_USER_PROVIDERS'] = {
     'test': {
         'type': 'static',
         'users': {
-            'Test': {'email': 'test@example.com'},
+            'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
+            'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
         }
     },
     'github': {
@@ -89,7 +90,16 @@ def user_handler(user):
 
 @app.route('/')
 def index():
-    return render_template('index.html', multiauth=multiauth)
+    results = None
+    if 'search' in request.args:
+        exact = 'exact' in request.args
+        criteria = {}
+        if request.args['email']:
+            criteria['email'] = request.args['email']
+        if request.args['name']:
+            criteria['name'] = request.args['name']
+        results = list(multiauth.search_users(exact=exact, **criteria))
+    return render_template('index.html', results=results)
 
 
 @app.route('/logout')

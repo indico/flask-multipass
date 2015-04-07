@@ -97,7 +97,6 @@ class OAuthUserProvider(UserProvider):
         self.settings.setdefault('endpoint', None)
         self.settings.setdefault('oauth', {})
         self.settings.setdefault('identifier_field', None)
-        self.settings.setdefault('mapping', {})
         self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
                                                    **self.settings['oauth'])
 
