@@ -16,6 +16,7 @@ from flask_multiauth._compat import iteritems
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, UserInfo
 from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.group import Group
 from flask_multiauth.user import UserProvider
 
 
@@ -62,23 +63,26 @@ class StaticUserProvider(UserProvider):
     supports_refresh = True
     #: If the provider supports searching users
     supports_search = True
+    #: If the provider also provides groups and membership information
+    has_groups = True
 
     def __init__(self, *args, **kwargs):
         super(StaticUserProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('users', {})
+        self.settings.setdefault('groups', {})
+
+    def _get_user(self, identifier):
+        user = self.settings['users'].get(identifier)
+        if user is None:
+            return None
+        return UserInfo(self, identifier, **user)
 
     def get_user_from_auth(self, auth_info):
         identifier = auth_info.data['username']
-        user = self.settings['users'].get(identifier)
-        if user is None:
-            return None
-        return UserInfo(self, identifier, **user)
+        return self._get_user(identifier)
 
     def refresh_user(self, identifier, refresh_data):
-        user = self.settings['users'].get(identifier)
-        if user is None:
-            return None
-        return UserInfo(self, identifier, **user)
+        return self._get_user(identifier)
 
     def search_users(self, criteria, exact=False):
         compare = operator.eq if exact else operator.contains
@@ -88,3 +92,28 @@ class StaticUserProvider(UserProvider):
                     break
             else:
                 yield UserInfo(self, identifier, **user)
+
+    def get_group(self, name):
+        if name not in self.settings['groups']:
+            return None
+        return StaticGroup(self, name)
+
+    def search_groups(self, name, exact=False):
+        compare = operator.eq if exact else operator.contains
+        for group_name in self.settings['groups']:
+            if compare(group_name, name):
+                yield StaticGroup(self, group_name)
+
+
+class StaticGroup(Group):
+    """A group from the static user provider"""
+
+    supports_user_list = True
+
+    def get_users(self):
+        members = self.provider.settings['groups'][self.name]
+        for username in members:
+            yield self.provider._get_user(username)
+
+    def has_user(self, user_info):
+        return user_info.identifier in self.provider.settings['groups'][self.name]

@@ -34,6 +34,12 @@ Data Structures
    :members:
 
 
+Groups
+------
+.. automodule:: flask_multiauth.group
+   :members:
+
+
 Utils
 -----
 .. automodule:: flask_multiauth.util

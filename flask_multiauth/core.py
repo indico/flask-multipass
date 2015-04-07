@@ -12,7 +12,7 @@ from werkzeug.exceptions import NotFound
 
 from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.exceptions import MultiAuthException, UserRetrievalFailed
+from flask_multiauth.exceptions import MultiAuthException, UserRetrievalFailed, GroupRetrievalFailed
 from flask_multiauth.user import UserProvider
 from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map
 
@@ -219,6 +219,37 @@ class MultiAuth(object):
                 continue
             for user in provider.search_users(provider.map_search_criteria(criteria), exact=exact):
                 yield user
+
+    def get_group(self, provider, name):
+        """Returns a specific group
+
+        :param provider: The name of the provider containing the group.
+        :param name: The name of the group.
+        :return: An instance of a :class:`.Group` subclass.
+        """
+        try:
+            provider = self.user_providers[provider]
+        except KeyError:
+            raise GroupRetrievalFailed('Provider does not exist: ' + provider)
+        return provider.get_group(name)
+
+    def search_groups(self, name, providers=None, exact=False):
+        """Searches groups by name
+
+        :param name: The name to search for.
+        :param providers: A list of providers to search in. If not
+                          specified, all providers are searched.
+        :param exact: If criteria need to match exactly, i.e. no
+                      substring matches are performed.
+        :return: An iterable of matching groups.
+        """
+        for provider in itervalues(self.user_providers):
+            if providers is not None and provider.name not in providers:
+                continue
+            if not provider.has_groups:
+                continue
+            for group in provider.search_groups(name, exact=exact):
+                yield group
 
     def _create_providers(self, key, base):
         """Instantiates all providers

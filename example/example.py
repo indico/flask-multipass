@@ -53,6 +53,10 @@ app.config['MULTIAUTH_USER_PROVIDERS'] = {
         'users': {
             'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
             'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
+        },
+        'groups': {
+            'Admins': ['Test'],
+            'Everybody': ['Test', 'Somebody'],
         }
     },
     'github': {
@@ -91,7 +95,7 @@ def user_handler(user):
 @app.route('/')
 def index():
     results = None
-    if 'search' in request.args:
+    if request.args.get('search') == 'users':
         exact = 'exact' in request.args
         criteria = {}
         if request.args['email']:
@@ -99,6 +103,9 @@ def index():
         if request.args['name']:
             criteria['name'] = request.args['name']
         results = list(multiauth.search_users(exact=exact, **criteria))
+    elif request.args.get('search') == 'groups':
+        exact = 'exact' in request.args
+        results = list(multiauth.search_groups(exact=exact, name=request.args['name']))
     return render_template('index.html', results=results)
 
 

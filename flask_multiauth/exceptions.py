@@ -21,3 +21,7 @@ class AuthenticationFailed(MultiAuthException):
 
 class UserRetrievalFailed(MultiAuthException):
     """Indicates a failure while retrieving user information"""
+
+
+class GroupRetrievalFailed(MultiAuthException):
+    """Indicates a failure while retrieving group information"""
