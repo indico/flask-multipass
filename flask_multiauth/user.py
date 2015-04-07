@@ -6,6 +6,8 @@
 
 from __future__ import unicode_literals
 
+from flask import current_app
+
 
 class UserProvider(object):
     """Provides the base for a user provider.
@@ -29,6 +31,7 @@ class UserProvider(object):
         self.multiauth = multiauth
         self.name = name
         self.settings = settings.copy()
+        self.settings.setdefault('user_info_keys', current_app.config['MULTIAUTH_USER_INFO_KEYS'])
         self.title = self.settings.pop('title', self.name)
 
     def get_user_from_auth(self, auth_info):  # pragma: no cover

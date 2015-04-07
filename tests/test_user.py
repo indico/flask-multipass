@@ -7,15 +7,19 @@
 from __future__ import unicode_literals
 
 import pytest
+from flask import Flask
 
-from flask_multiauth import UserProvider
+from flask_multiauth import UserProvider, MultiAuth
 
 
 def test_settings_copied():
-    settings = {'foo': 'bar'}
-    provider = UserProvider(None, None, settings)
-    provider.settings['foo'] = 'foobar'
-    assert settings['foo'] == 'bar'
+    app = Flask('test')
+    MultiAuth(app)
+    with app.app_context():
+        settings = {'foo': 'bar'}
+        provider = UserProvider(None, None, settings)
+        provider.settings['foo'] = 'foobar'
+        assert settings['foo'] == 'bar'
 
 
 @pytest.mark.parametrize(('settings', 'title'), (
@@ -23,5 +27,8 @@ def test_settings_copied():
     ({'title': 'whatever'}, 'whatever'),
 ))
 def test_settings_title(settings, title):
-    provider = UserProvider(None, 'foo', settings)
-    assert provider.title == title
+    app = Flask('test')
+    MultiAuth(app)
+    with app.app_context():
+        provider = UserProvider(None, 'foo', settings)
+        assert provider.title == title

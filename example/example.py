@@ -31,6 +31,7 @@ github_oauth_config = {
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['MULTIAUTH_LOGIN_FORM_TEMPLATE'] = 'login_form.html'
 app.config['MULTIAUTH_LOGIN_SELECTOR_TEMPLATE'] = 'login_selector.html'
+app.config['MULTIAUTH_USER_INFO_KEYS'] = ['email', 'name', 'affiliation']
 app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
     'test': {
         'type': 'static',
@@ -59,8 +60,6 @@ app.config['MULTIAUTH_USER_PROVIDERS'] = {
         'endpoint': '/user',
         'identifier_field': 'id',
         'mapping': {
-            'email': 'email',
-            'name': 'name',
             'affiliation': 'company'
         }
     }

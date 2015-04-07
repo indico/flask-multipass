@@ -57,8 +57,14 @@ def login_view(func):
     return decorator
 
 
-def map_data(data, mapping):
-    """Creates a dict with a fixed set of keys based on a mapping.
+def convert_data(data, mapping, keys=None):
+    """Converts a data dict based on a mapping and a key list.
+
+    The result will have all the keys listed in `keys` with values
+    coming either from `data` (using the key mapping defined in
+    `mapping`) or ``None`` in case the key is not present. If `keys`
+    is ``None``, all keys from `data` will be used unless they are
+    mapped to a different key in `mapping`.
 
     :param data: A dict containing data.
     :param mapping: A dict containing the mapping between the `data`
@@ -66,10 +72,19 @@ def map_data(data, mapping):
                     be used as a key in the returned dict and each
                     value will be used as the key to get the value from
                     `data`.
-    :return: A dict that has the same keys as `mapping` and the values
-             from `data`.
+    :param keys: A list containing the keys that should be preserved in
+                 the returned dict. If it's ``None``, all items are
+                 returned.
+    :return: A dict based on `data`, `mapping` and `keys`.
     """
-    return {target_key: data.get(source_key) for target_key, source_key in iteritems(mapping)}
+    mapped_keys = set(mapping.values())
+    result = {key: value for key, value in iteritems(data) if key not in mapped_keys}
+    result.update((target_key, data.get(source_key)) for target_key, source_key in iteritems(mapping))
+    if keys is not None:
+        keys = set(keys)
+        result = {key: value for key, value in iteritems(result) if key in keys}
+        result.update({key: None for key in keys - set(result)})
+    return result
 
 
 def resolve_provider_type(base, type_):

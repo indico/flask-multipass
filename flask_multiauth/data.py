@@ -6,7 +6,7 @@
 
 from __future__ import unicode_literals
 
-from flask_multiauth._compat import iteritems
+from flask_multiauth.util import convert_data
 
 
 class AuthInfo(object):
@@ -32,10 +32,10 @@ class AuthInfo(object):
                         the keys that are expected by the user provider.
                         Any key that is not in `mapping` is kept as-is.
         """
-        mapped_keys = set(mapping.values())
-        data = {key: value for key, value in iteritems(self.data) if key not in mapped_keys}
-        data.update((target_key, self.data[source_key]) for target_key, source_key in iteritems(mapping))
-        return AuthInfo(self.provider, **data)
+        missing_keys = set(mapping.values()) - set(self.data)
+        if missing_keys:
+            raise KeyError(next(iter(missing_keys)))
+        return AuthInfo(self.provider, **convert_data(self.data, mapping))
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items())
@@ -65,7 +65,8 @@ class UserInfo(object):
             self.refresh_data = None
         else:
             self.refresh_data = dict(refresh_data or {}, _provider=provider.name)
-        self.data = data
+        mapping = provider.settings.get('mapping', None)
+        self.data = convert_data(data, mapping or {}, self.provider.settings['user_info_keys'])
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items())

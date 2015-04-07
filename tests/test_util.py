@@ -15,7 +15,7 @@ from flask_multiauth import MultiAuth
 from flask_multiauth._compat import iteritems
 from flask_multiauth.core import _MultiAuthState
 from flask_multiauth.exceptions import AuthenticationFailed
-from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, map_data, login_view,
+from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, convert_data, login_view,
                                   get_canonical_provider_map, validate_provider_map)
 
 
@@ -66,13 +66,15 @@ def test_get_state():
         assert get_state(app) is state
 
 
-@pytest.mark.parametrize(('data', 'mapping', 'result'), (
-    ({'foo': 'bar'}, {}, {}),
-    ({'foo': 'bar', 'other': 'value'}, {'test': 'foo'}, {'test': 'bar'}),
-    ({'foo': 'bar', 'other': 'value'}, {'test': 'foo', 'x': 'y'}, {'test': 'bar', 'x': None}),
+@pytest.mark.parametrize(('data', 'mapping', 'keys', 'result'), (
+    ({'foo': 'bar'},               {},                        None,          {'foo': 'bar'}),
+    ({'foo': 'bar', 'a': 'value'}, {'test': 'foo'},           None,          {'test': 'bar', 'a': 'value'}),
+    ({'foo': 'bar', 'a': 'value'}, {'test': 'foo', 'x': 'y'}, None,          {'test': 'bar', 'x': None, 'a': 'value'}),
+    ({'foo': 'bar'},               {},                        [],            {}),
+    ({'foo': 'bar', 'a': 'value'}, {'test': 'foo', 'x': 'y'}, {'test', 'x'}, {'test': 'bar', 'x': None}),
 ))
-def test_map_data(data, mapping, result):
-    assert map_data(data, mapping) == result
+def test_map_data(data, mapping, keys, result):
+    assert convert_data(data, mapping, keys) == result
 
 
 def test_login_view(mocker):

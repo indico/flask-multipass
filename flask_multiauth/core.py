@@ -45,6 +45,7 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
         app.config.setdefault('MULTIAUTH_USER_PROVIDERS', {})
         app.config.setdefault('MULTIAUTH_PROVIDER_MAP', {})
+        app.config.setdefault('MULTIAUTH_USER_INFO_KEYS', None)
         app.config.setdefault('MULTIAUTH_LOGIN_SELECTOR_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_FORM_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_ENDPOINT', 'login')

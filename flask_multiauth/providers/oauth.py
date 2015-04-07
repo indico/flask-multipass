@@ -13,7 +13,7 @@ from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, UserInfo
 from flask_multiauth.exceptions import AuthenticationFailed, UserRetrievalFailed
 from flask_multiauth.user import UserProvider
-from flask_multiauth.util import classproperty, login_view, map_data
+from flask_multiauth.util import classproperty, login_view
 
 
 _oauth_settings = ('base_url', 'request_token_url', 'access_token_url', 'authorize_url',
@@ -108,9 +108,8 @@ class OAuthUserProvider(UserProvider):
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
-        data = map_data(resp.data, self.settings['mapping'])
         refresh_data = {'oauth_token': token}
-        return UserInfo(self, identifier, refresh_data, **data)
+        return UserInfo(self, identifier, refresh_data, **resp.data)
 
     def get_user_from_auth(self, auth_info):
         return self._get_user(auth_info.data['token'])
