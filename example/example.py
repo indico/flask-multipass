@@ -10,8 +10,10 @@ import json
 import os
 
 from flask import Flask, render_template, flash, session, url_for, redirect, request, g
-from flask_multiauth import MultiAuth
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_multiauth import MultiAuth
+from flask_multiauth.providers.sqlalchemy import SQLAlchemyAuthProviderBase, SQLAlchemyUserProviderBase
 
 
 app = Flask(__name__)
@@ -19,6 +21,44 @@ app.debug = True
 app.secret_key = 'fma-example'
 db = SQLAlchemy()
 multiauth = MultiAuth()
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    email = db.Column(db.String)
+    affiliation = db.Column(db.String)
+
+
+class Identity(db.Model):
+    __tablename__ = 'identities'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    provider = db.Column(db.String)
+    identifier = db.Column(db.String)
+    multiauth_data = db.Column(db.Text)
+    password = db.Column(db.String)
+    user = db.relationship(User, backref='identities')
+
+
+class LocalAuthProvider(SQLAlchemyAuthProviderBase):
+    type = 'local'
+    identity_model = Identity
+    provider_column = Identity.provider
+    identifier_column = Identity.identifier
+
+    def check_password(self, identity, password):
+        return identity.password == password
+
+
+class LocalUserProvider(SQLAlchemyUserProviderBase):
+    type = 'local'
+    user_model = User
+    identity_user_relationship = Identity.user
+
 
 github_oauth_config = {
     'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
@@ -49,6 +89,10 @@ app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
         'type': 'oauth',
         'title': 'GitHub',
         'oauth': github_oauth_config
+    },
+    'local': {
+        'type': LocalAuthProvider,
+        'title': 'Local Accounts'
     }
 }
 app.config['MULTIAUTH_USER_PROVIDERS'] = {
@@ -71,9 +115,13 @@ app.config['MULTIAUTH_USER_PROVIDERS'] = {
         'mapping': {
             'affiliation': 'company'
         }
+    },
+    'local': {
+        'type': LocalUserProvider,
     }
 }
 app.config['MULTIAUTH_PROVIDER_MAP'] = {
+    'local': 'local',
     'test': 'test',
     'github': [
         {
@@ -81,26 +129,6 @@ app.config['MULTIAUTH_PROVIDER_MAP'] = {
         }
     ]
 }
-
-
-class User(db.Model):
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    email = db.Column(db.String)
-    affiliation = db.Column(db.String)
-
-
-class Identity(db.Model):
-    __tablename__ = 'identities'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    provider = db.Column(db.String)
-    identifier = db.Column(db.String)
-    multiauth_data = db.Column(db.Text)
-    user = db.relationship(User, backref='identities')
 
 
 @multiauth.user_handler
@@ -167,7 +195,7 @@ def refresh():
         flash('Not logged in', 'error')
         return redirect(url_for('index'))
     for identity in g.user.identities:
-        if identity.multiauth_data is None:
+        if json.loads(identity.multiauth_data) is None:
             continue
         user_info = multiauth.refresh_user(identity.identifier, json.loads(identity.multiauth_data))
         identity.multiauth_data = json.dumps(user_info.multiauth_data)
@@ -176,9 +204,19 @@ def refresh():
     return redirect(url_for('index'))
 
 
-if __name__ == '__main__':
+def main():
     multiauth.init_app(app)
     db.init_app(app)
     with app.app_context():
         db.create_all()
+        if not User.query.filter_by(name='Local Guinea Pig').count():
+            user = User(name='Local Guinea Pig', email='test@example.com', affiliation='Local')
+            identity = Identity(provider='local', identifier='Test', multiauth_data='null', password='123')
+            user.identities.append(identity)
+            db.session.add(user)
+            db.session.commit()
     app.run('0.0.0.0', 10500, use_evalex=False)
+
+
+if __name__ == '__main__':
+    main()
