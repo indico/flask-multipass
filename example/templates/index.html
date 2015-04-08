@@ -1,18 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
     <a href="{{ url_for('login') }}">Log in</a>
-    {% if session.logged_in %}
-        <br>
-        Logged in as <strong>{{ session.user_email }}</strong>
-        {% if session.user_refresh_data %}
+    {% if g.user %}
         <br>
         <a href="{{ url_for('refresh') }}">Refresh</a>
-        {% endif %}
         <br>
         <a href="{{ url_for('logout') }}">Log out</a>
+        <br>
+        Logged in as <strong>{{ g.user.name }}</strong>
+    {% endif %}
+    {% if g.user %}
+        <hr>
+        <h3>User identities</h3>
+        <ul>
+            {% for identity in g.user.identities %}
+                <li>
+                    {{ identity.provider }}: {{ identity.identifier }}
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
     <hr>
-    Search users:
+    <h3>Search users</h3>
     <form>
         <input type="hidden" name="search" value="users">
         <input type="text" name="email" value="{{ request.args.email }}" placeholder="Email">
@@ -22,7 +31,7 @@
         <input type="submit" value="Search">
         <br>
         {% if request.args.search == 'users' %}
-            Results:
+            <h4>Results</h4>
             <ul>
                 {% for result in results|sort(attribute='identifier') %}
                     <li>{{ result }}</li>
@@ -31,7 +40,7 @@
         {% endif %}
     </form>
     <hr>
-    Search groups
+    <h3>Search groups</h3>
     <form>
         <input type="hidden" name="search" value="groups">
         <input type="text" name="name" value="{{ request.args.name }}" placeholder="Name">
@@ -40,7 +49,7 @@
         <input type="submit" value="Search">
         <br>
         {% if request.args.search == 'groups' %}
-            Results:
+            <h4>Results</h4>
             <ul>
                 {% for result in results|sort(attribute='name') %}
                     <li><a href="{{ url_for('group', provider=result.provider.name, name=result.name) }}">{{ result }}</a></li>

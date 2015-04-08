@@ -200,6 +200,8 @@ class MultiAuth(object):
             provider = self.user_providers[provider_name]
         except KeyError:
             raise UserRetrievalFailed('Provider does not exist: ' + provider_name)
+        if not provider.supports_refresh:
+            raise UserRetrievalFailed('Provider does not support refreshing: ' + provider_name)
         return provider.refresh_user(identifier, refresh_data)
 
     def search_users(self, providers=None, exact=False, **criteria):

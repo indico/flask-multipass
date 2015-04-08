@@ -13,7 +13,9 @@
         Not available
     {% endif %}
     <br>
-    {% if session.logged_in and session.user_provider == group.provider.name %}
-        You are a group member: {% if session.user_identifier in group %}YES{% else %}NO{% endif %}
+    {% if g.user %}
+        {% for identity in g.user.identities if identity.provider == group.provider.name %}
+            You are a group member: {% if identity.identifier in group %}YES{% else %}NO{% endif %}
+        {% endfor %}
     {% endif %}
 {% endblock %}

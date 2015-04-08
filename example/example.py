@@ -6,15 +6,18 @@
 
 from __future__ import unicode_literals
 
+import json
 import os
 
-from flask import Flask, render_template, flash, session, url_for, redirect, request
+from flask import Flask, render_template, flash, session, url_for, redirect, request, g
 from flask_multiauth import MultiAuth
+from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 'fma-example'
+db = SQLAlchemy()
 multiauth = MultiAuth()
 
 github_oauth_config = {
@@ -28,6 +31,7 @@ github_oauth_config = {
     'authorize_url': 'https://github.com/login/oauth/authorize'
 }
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/multiauth.db'
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['MULTIAUTH_LOGIN_FORM_TEMPLATE'] = 'login_form.html'
 app.config['MULTIAUTH_LOGIN_SELECTOR_TEMPLATE'] = 'login_selector.html'
@@ -79,18 +83,49 @@ app.config['MULTIAUTH_PROVIDER_MAP'] = {
 }
 
 
-def save_user_in_session(user):
-    session['user_provider'] = user.provider.name
-    session['user_identifier'] = user.identifier
-    session['user_refresh_data'] = user.refresh_data
-    session['user_email'] = user.data['email']
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    email = db.Column(db.String)
+    affiliation = db.Column(db.String)
+
+
+class Identity(db.Model):
+    __tablename__ = 'identities'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    provider = db.Column(db.String)
+    identifier = db.Column(db.String)
+    refresh_data = db.Column(db.Text)
+    user = db.relationship(User, backref='identities')
 
 
 @multiauth.user_handler
-def user_handler(user):
-    session['logged_in'] = True
-    save_user_in_session(user)
-    flash('Received UserInfo: {}'.format(user), 'success')
+def user_handler(user_info):
+    identity = Identity.query.filter_by(provider=user_info.provider.name, identifier=user_info.identifier).first()
+    if not identity:
+        user = User.query.filter_by(email=user_info.data['email']).first()
+        if not user:
+            user = User(**user_info.data)
+            db.session.add(user)
+        identity = Identity(provider=user_info.provider.name, identifier=user_info.identifier)
+        user.identities.append(identity)
+    else:
+        user = identity.user
+    identity.refresh_data = json.dumps(user_info.refresh_data)
+    db.session.commit()
+    session['user_id'] = user.id
+    flash('Received UserInfo: {}'.format(user_info), 'success')
+
+
+@app.before_request
+def load_user_from_session():
+    g.user = None
+    if 'user_id' in session:
+        g.user = User.query.get(session['user_id'])
 
 
 @app.route('/')
@@ -128,12 +163,22 @@ def logout():
 
 @app.route('/refresh')
 def refresh():
-    user = multiauth.refresh_user(session['user_identifier'], session['user_refresh_data'])
-    save_user_in_session(user)
-    flash('Refreshed UserInfo: {}'.format(user), 'success')
+    if not g.user:
+        flash('Not logged in', 'error')
+        return redirect(url_for('index'))
+    for identity in g.user.identities:
+        if identity.refresh_data is None:
+            continue
+        user_info = multiauth.refresh_user(identity.identifier, json.loads(identity.refresh_data))
+        identity.refresh_data = json.dumps(user_info.refresh_data)
+        flash('Refreshed UserInfo: {}'.format(user_info), 'success')
+    db.session.commit()
     return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
     multiauth.init_app(app)
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
     app.run('0.0.0.0', 10500, use_evalex=False)
