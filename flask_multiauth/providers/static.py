@@ -64,7 +64,7 @@ class StaticUserProvider(UserProvider):
     #: If the provider supports searching users
     supports_search = True
     #: If the provider also provides groups and membership information
-    has_groups = True
+    supports_groups = True
 
     def __init__(self, *args, **kwargs):
         super(StaticUserProvider, self).__init__(*args, **kwargs)

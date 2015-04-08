@@ -35,7 +35,7 @@ class UserProvider(object):
     #: If the provider supports searching users
     supports_search = False
     #: If the provider also provides groups and membership information
-    has_groups = False
+    supports_groups = False
 
     def __init__(self, multiauth, name, settings):
         self.multiauth = multiauth

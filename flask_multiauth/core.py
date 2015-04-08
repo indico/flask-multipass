@@ -248,7 +248,7 @@ class MultiAuth(object):
         for provider in itervalues(self.user_providers):
             if providers is not None and provider.name not in providers:
                 continue
-            if not provider.has_groups:
+            if not provider.supports_groups:
                 continue
             for group in provider.search_groups(name, exact=exact):
                 yield group
