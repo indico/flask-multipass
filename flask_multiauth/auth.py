@@ -21,9 +21,9 @@ class AuthProvider(object):
     """
 
     __support_attrs__ = {
-        SupportsMeta.callable(lambda dct: dct.get('login_form') is not None,
+        SupportsMeta.callable(lambda cls: cls.login_form is not None,
                               'login_form is set'): 'process_local_login',
-        SupportsMeta.callable(lambda dct: dct.get('login_form') is None,
+        SupportsMeta.callable(lambda cls: cls.login_form is None,
                               'login_form is not set'): 'initiate_external_login'
     }
     #: The entry point to lookup providers (do not override this!)

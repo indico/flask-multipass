@@ -230,7 +230,7 @@ def supports_base(request):
     @add_metaclass(SupportsMeta)
     class Base(object):
         if request.param:
-            __support_attrs__ = {SupportsMeta.callable(lambda dct: dct.get('has_foo'), 'blah'): 'foo'}
+            __support_attrs__ = {SupportsMeta.callable(lambda cls: cls.has_foo, 'blah'): 'foo'}
         else:
             __support_attrs__ = {'has_foo': 'foo'}
         has_foo = False
@@ -265,6 +265,21 @@ def test_supports_meta_fail(supports_base):
         class Test(supports_base):
             def foo(self):
                 pass
+
+
+def test_supports_meta_inheritance(supports_base):
+    class TestBase(supports_base):
+        has_foo = True
+
+        def foo(self):
+            pass
+
+    class Test(TestBase):
+        pass
+
+    with pytest.raises(TypeError):
+        class Test(TestBase):
+            has_foo = False
 
 
 def test_supports_meta_multi():

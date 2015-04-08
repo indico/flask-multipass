@@ -7,7 +7,7 @@
 from __future__ import unicode_literals
 
 from functools import wraps
-from inspect import isclass
+from inspect import isclass, getmro
 from pkg_resources import iter_entry_points
 
 from flask import current_app
@@ -156,23 +156,26 @@ class SupportsMeta(type):
     from :meth:`callable`.
     """
     def __new__(mcs, name, bases, dct):
-        base = next((x for x in bases if type(x) is mcs), None)
-        if base is not None:
-            for attr, methods in iteritems(base.__support_attrs__):
-                if isinstance(methods, string_types):
-                    methods = methods,
-                if isinstance(attr, tuple):
-                    supported = attr[0](dct)
-                    message = attr[1]
-                else:
-                    supported = dct.get(attr, getattr(base, attr))
-                    message = '{} is True'.format(attr)
-                for method in methods:
-                    if not supported and method in dct:
-                        raise TypeError('{} cannot override {} unless {}'.format(name, method, message))
-                    elif supported and method not in dct:
-                        raise TypeError('{} must override {} if {}'.format(name, method, message))
-        return type.__new__(mcs, name, bases, dct)
+        cls = type.__new__(mcs, name, bases, dct)
+        base = next((x for x in reversed(getmro(cls)) if type(x) is mcs and x is not cls), None)
+        if base is None:
+            return cls
+        for attr, methods in iteritems(base.__support_attrs__):
+            if isinstance(methods, string_types):
+                methods = methods,
+            if isinstance(attr, tuple):
+                supported = attr[0](cls)
+                message = attr[1]
+            else:
+                supported = getattr(cls, attr, getattr(base, attr))
+                message = '{} is True'.format(attr)
+            for method in methods:
+                is_overridden = (getattr(base, method) != getattr(cls, method))
+                if not supported and is_overridden:
+                    raise TypeError('{} cannot override {} unless {}'.format(name, method, message))
+                elif supported and not is_overridden:
+                    raise TypeError('{} must override {} if {}'.format(name, method, message))
+        return cls
 
     @staticmethod
     def callable(func, message):
