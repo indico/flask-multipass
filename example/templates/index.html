@@ -24,7 +24,7 @@
         {% if request.args.search == 'users' %}
             Results:
             <ul>
-                {% for result in results %}
+                {% for result in results|sort(attribute='identifier') %}
                     <li>{{ result }}</li>
                 {% endfor %}
             </ul>
@@ -42,7 +42,7 @@
         {% if request.args.search == 'groups' %}
             Results:
             <ul>
-                {% for result in results %}
+                {% for result in results|sort(attribute='name') %}
                     <li><a href="{{ url_for('group', provider=result.provider.name, name=result.name) }}">{{ result }}</a></li>
                 {% endfor %}
             </ul>
