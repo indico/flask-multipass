@@ -115,5 +115,5 @@ class StaticGroup(Group):
         for username in members:
             yield self.provider._get_user(username)
 
-    def has_user(self, user_info):
-        return user_info.identifier in self.provider.settings['groups'][self.name]
+    def has_user(self, identifier):
+        return identifier in self.provider.settings['groups'][self.name]

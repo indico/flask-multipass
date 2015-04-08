@@ -43,7 +43,7 @@
             Results:
             <ul>
                 {% for result in results %}
-                    <li>{{ result }}</li>
+                    <li><a href="{{ url_for('group', provider=result.provider.name, name=result.name) }}">{{ result }}</a></li>
                 {% endfor %}
             </ul>
         {% endif %}

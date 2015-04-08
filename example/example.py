@@ -80,6 +80,7 @@ app.config['MULTIAUTH_PROVIDER_MAP'] = {
 
 
 def save_user_in_session(user):
+    session['user_provider'] = user.provider.name
     session['user_identifier'] = user.identifier
     session['user_refresh_data'] = user.refresh_data
     session['user_email'] = user.data['email']
@@ -107,6 +108,15 @@ def index():
         exact = 'exact' in request.args
         results = list(multiauth.search_groups(exact=exact, name=request.args['name']))
     return render_template('index.html', results=results)
+
+
+@app.route('/group/<provider>/<name>/')
+def group(provider, name):
+    group = multiauth.get_group(provider, name)
+    if group is None:
+        flash('No such group', 'error')
+        return redirect(url_for('index'))
+    return render_template('group.html', group=group)
 
 
 @app.route('/logout')

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+    Group: <strong>{{ group.name }}</strong> (from provider <strong>{{ group.provider.title }}</strong>)
+    <br>
+    Members:
+    {% if group.supports_user_list %}
+        <ul>
+            {% for member in group %}
+                <li>{{ member }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        Not available
+    {% endif %}
+    <br>
+    {% if session.logged_in and session.user_provider == group.provider.name %}
+        You are a group member: {% if session.user_identifier in group %}YES{% else %}NO{% endif %}
+    {% endif %}
+{% endblock %}

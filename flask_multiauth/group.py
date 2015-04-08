@@ -50,13 +50,13 @@ class Group(object):
         else:
             raise RuntimeError('This group type does not support retrieving the member list')
 
-    def has_user(self, user_info):
+    def has_user(self, identifier):
         """Checks if a given user is a member of the group.
 
-        This check can also be performed using the `in` operator.
+        This check can also be performed using the ``in`` operator.
 
-        :param user_info: A :class:`.UserInfo` object of the associated
-                          user provider.
+        :param identifier: The `identifier` from a :class:`.UserInfo`
+                           provided by the associated user provider.
         """
         raise NotImplementedError
 
