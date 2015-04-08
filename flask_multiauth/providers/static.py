@@ -50,6 +50,20 @@ class StaticAuthProvider(AuthProvider):
         return AuthInfo(self, username=data['username'])
 
 
+class StaticGroup(Group):
+    """A group from the static user provider"""
+
+    supports_user_list = True
+
+    def get_users(self):
+        members = self.provider.settings['groups'][self.name]
+        for username in members:
+            yield self.provider._get_user(username)
+
+    def has_user(self, identifier):
+        return identifier in self.provider.settings['groups'][self.name]
+
+
 class StaticUserProvider(UserProvider):
     """Provides user information from a static list.
 
@@ -65,6 +79,8 @@ class StaticUserProvider(UserProvider):
     supports_search = True
     #: If the provider also provides groups and membership information
     supports_groups = True
+    #: The class that represents groups from this provider
+    group_class = StaticGroup
 
     def __init__(self, *args, **kwargs):
         super(StaticUserProvider, self).__init__(*args, **kwargs)
@@ -96,24 +112,10 @@ class StaticUserProvider(UserProvider):
     def get_group(self, name):
         if name not in self.settings['groups']:
             return None
-        return StaticGroup(self, name)
+        return self.group_class(self, name)
 
     def search_groups(self, name, exact=False):
         compare = operator.eq if exact else operator.contains
         for group_name in self.settings['groups']:
             if compare(group_name, name):
-                yield StaticGroup(self, group_name)
-
-
-class StaticGroup(Group):
-    """A group from the static user provider"""
-
-    supports_user_list = True
-
-    def get_users(self):
-        members = self.provider.settings['groups'][self.name]
-        for username in members:
-            yield self.provider._get_user(username)
-
-    def has_user(self, identifier):
-        return identifier in self.provider.settings['groups'][self.name]
+                yield self.group_class(self, group_name)

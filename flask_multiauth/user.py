@@ -23,7 +23,8 @@ class UserProvider(object):
     """
 
     __support_attrs__ = {'supports_refresh': 'refresh_user',
-                         'supports_search': 'search_users'}
+                         'supports_search': 'search_users',
+                         'supports_groups': ('get_group', 'search_groups', 'group_class')}
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multiauth.user_providers'
     #: The unique identifier of the user provider
@@ -36,6 +37,9 @@ class UserProvider(object):
     supports_search = False
     #: If the provider also provides groups and membership information
     supports_groups = False
+    #: The class that represents groups from this provider. Must be a
+    #: subclass of :class:`.Group`
+    group_class = None
 
     def __init__(self, multiauth, name, settings):
         self.multiauth = multiauth
@@ -84,6 +88,30 @@ class UserProvider(object):
             raise NotImplementedError
         else:
             raise RuntimeError('This provider does not support searching')
+
+    def get_group(self, name):
+        """Returns a specific group
+
+        :param name: The name of the group
+        :return: An instance of :attr:`group_class`
+        """
+        if self.supports_groups:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not provide groups')
+
+    def search_groups(self, name, exact=False):
+        """Searches groups by name
+
+        :param name: The name to search for
+        :param exact: If the name needs to match exactly, i.e. no
+                      substring matches are performed
+        :return: An iterable of matching :attr:`group_class` objects
+        """
+        if self.supports_groups:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not provide groups')
 
     def map_search_criteria(self, criteria):
         """Maps the search criteria from application keys to provider keys

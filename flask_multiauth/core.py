@@ -241,7 +241,7 @@ class MultiAuth(object):
         :param name: The name to search for.
         :param providers: A list of providers to search in. If not
                           specified, all providers are searched.
-        :param exact: If criteria need to match exactly, i.e. no
+        :param exact: If the name needs to match exactly, i.e. no
                       substring matches are performed.
         :return: An iterable of matching groups.
         """
