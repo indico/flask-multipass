@@ -290,3 +290,18 @@ def test_supports_meta_multi():
 
             def foo(self):
                 pass
+
+
+def test_supports_meta_default_true():
+    @add_metaclass(SupportsMeta)
+    class Base(object):
+        __support_attrs__ = {'has_foo': 'foo'}
+        has_foo = True
+
+        def foo(self):
+            pass
+
+    # foo missing
+    with pytest.raises(TypeError):
+        class Test(Base):
+            pass

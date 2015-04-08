@@ -165,7 +165,7 @@ class SupportsMeta(type):
                     supported = attr[0](dct)
                     message = attr[1]
                 else:
-                    supported = dct.get(attr)
+                    supported = dct.get(attr, getattr(base, attr))
                     message = '{} is True'.format(attr)
                 for method in methods:
                     if not supported and method in dct:
