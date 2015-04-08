@@ -22,11 +22,11 @@ class Group(object):
     #: If it is possible to get the list of members of a group.
     supports_user_list = False
 
-    def __init__(self, provider, name):
+    def __init__(self, provider, name):  # pragma: no cover
         self.provider = provider
         self.name = name
 
-    def get_users(self):
+    def get_users(self):  # pragma: no cover
         """Returns the members of the group.
 
         This can also be performed by iterating over the group.
@@ -38,7 +38,7 @@ class Group(object):
         if self.supports_user_list:
             raise NotImplementedError
 
-    def has_user(self, identifier):
+    def has_user(self, identifier):  # pragma: no cover
         """Checks if a given user is a member of the group.
 
         This check can also be performed using the ``in`` operator.
@@ -48,10 +48,10 @@ class Group(object):
         """
         raise NotImplementedError
 
-    def __iter__(self):
+    def __iter__(self):  # pragma: no cover
         return self.get_users()
 
-    def __contains__(self, user_info):
+    def __contains__(self, user_info):  # pragma: no cover
         return self.has_user(user_info)
 
     def __repr__(self):

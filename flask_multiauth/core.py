@@ -251,6 +251,16 @@ class MultiAuth(object):
             for group in provider.search_groups(name, exact=exact):
                 yield group
 
+    def is_user_in_group(self, provider, user_identifier, group_name):
+        """Checks if a user is in a group
+
+        :param provider: The name of the provider containing the group.
+        :param user_identifier: The identifier of the user.
+        :param group_name: The name of the group.
+        """
+        group = self.get_group(provider, group_name)
+        return user_identifier in group
+
     def _create_providers(self, key, base):
         """Instantiates all providers
 
