@@ -107,11 +107,11 @@ class OAuthUserProvider(UserProvider):
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
-        refresh_data = {'oauth_token': token}
-        return UserInfo(self, identifier, refresh_data, **resp.data)
+        multiauth_data = {'oauth_token': token}
+        return UserInfo(self, identifier, multiauth_data, **resp.data)
 
     def get_user_from_auth(self, auth_info):
         return self._get_user(auth_info.data['token'])
 
-    def refresh_user(self, identifier, refresh_data):
-        return self._get_user(refresh_data['oauth_token'])
+    def refresh_user(self, identifier, multiauth_data):
+        return self._get_user(multiauth_data['oauth_token'])

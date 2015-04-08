@@ -99,7 +99,7 @@ class Identity(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     provider = db.Column(db.String)
     identifier = db.Column(db.String)
-    refresh_data = db.Column(db.Text)
+    multiauth_data = db.Column(db.Text)
     user = db.relationship(User, backref='identities')
 
 
@@ -115,7 +115,7 @@ def user_handler(user_info):
         user.identities.append(identity)
     else:
         user = identity.user
-    identity.refresh_data = json.dumps(user_info.refresh_data)
+    identity.multiauth_data = json.dumps(user_info.multiauth_data)
     db.session.commit()
     session['user_id'] = user.id
     flash('Received UserInfo: {}'.format(user_info), 'success')
@@ -167,10 +167,10 @@ def refresh():
         flash('Not logged in', 'error')
         return redirect(url_for('index'))
     for identity in g.user.identities:
-        if identity.refresh_data is None:
+        if identity.multiauth_data is None:
             continue
-        user_info = multiauth.refresh_user(identity.identifier, json.loads(identity.refresh_data))
-        identity.refresh_data = json.dumps(user_info.refresh_data)
+        user_info = multiauth.refresh_user(identity.identifier, json.loads(identity.multiauth_data))
+        identity.multiauth_data = json.dumps(user_info.multiauth_data)
         flash('Refreshed UserInfo: {}'.format(user_info), 'success')
     db.session.commit()
     return redirect(url_for('index'))

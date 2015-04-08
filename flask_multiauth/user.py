@@ -59,15 +59,15 @@ class UserProvider(object):
         """
         raise NotImplementedError
 
-    def refresh_user(self, identifier, refresh_data):  # pragma: no cover
+    def refresh_user(self, identifier, multiauth_data):  # pragma: no cover
         """Retrieves user information for an existing user
 
         This method returns user information for a user who has been
         retrieved before based on the provider-specific refresh data.
 
         :param identifier: The `identifier` from :class:`.UserInfo`
-        :param refresh_data: The `refresh_data` dict from
-                             :class:`.UserInfo`
+        :param multiauth_data: The `multiauth_data` dict from
+                               :class:`.UserInfo`
         """
         if self.supports_refresh:
             raise NotImplementedError

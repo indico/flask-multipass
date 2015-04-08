@@ -81,7 +81,7 @@ class StaticUserProvider(UserProvider):
         identifier = auth_info.data['username']
         return self._get_user(identifier)
 
-    def refresh_user(self, identifier, refresh_data):
+    def refresh_user(self, identifier, multiauth_data):
         return self._get_user(identifier)
 
     def search_users(self, criteria, exact=False):
