@@ -6,7 +6,11 @@
 
 from __future__ import unicode_literals
 
+from flask_multiauth._compat import add_metaclass
+from flask_multiauth.util import SupportsMeta
 
+
+@add_metaclass(SupportsMeta)
 class AuthProvider(object):
     """Provides the base for an authentication provider.
 
@@ -16,6 +20,12 @@ class AuthProvider(object):
                      instance
     """
 
+    __support_attrs__ = {
+        SupportsMeta.callable(lambda dct: dct.get('login_form') is not None,
+                              'login_form is set'): 'process_local_login',
+        SupportsMeta.callable(lambda dct: dct.get('login_form') is None,
+                              'login_form is not set'): 'initiate_external_login'
+    }
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multiauth.auth_providers'
     #: The unique identifier of the auth provider

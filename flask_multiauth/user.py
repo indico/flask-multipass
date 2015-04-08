@@ -8,9 +8,11 @@ from __future__ import unicode_literals
 
 from flask import current_app
 
-from flask_multiauth._compat import iteritems
+from flask_multiauth._compat import iteritems, add_metaclass
+from flask_multiauth.util import SupportsMeta
 
 
+@add_metaclass(SupportsMeta)
 class UserProvider(object):
     """Provides the base for a user provider.
 
@@ -20,6 +22,8 @@ class UserProvider(object):
                      instance
     """
 
+    __support_attrs__ = {'supports_refresh': 'refresh_user',
+                         'supports_search': 'search_users'}
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multiauth.user_providers'
     #: The unique identifier of the user provider
@@ -67,8 +71,6 @@ class UserProvider(object):
         """
         if self.supports_refresh:
             raise NotImplementedError
-        else:
-            raise RuntimeError('This provider does not support refreshing')
 
     def search_users(self, criteria, exact=False):  # pragma: no cover
         """Searches users matching certain criteria

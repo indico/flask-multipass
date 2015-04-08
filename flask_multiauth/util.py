@@ -140,3 +140,46 @@ class classproperty(property):
     """
     def __get__(self, obj, type=None):
         return self.fget.__get__(None, type)()
+
+
+class SupportsMeta(type):
+    """
+    Metaclass that requires/prohibits methods to be overridden
+    depending on class attributes.
+
+    The class using this metaclass must have a `__support_attrs__`
+    attribute containing a dict mapping attribute names to method
+    names (or lists of method names) which must be overridden if the
+    attribute is True and may not mbe overridden if it isn't.
+
+    Instead of a string key the dict may also contain a tuple returned
+    from :meth:`callable`.
+    """
+    def __new__(mcs, name, bases, dct):
+        base = next((x for x in bases if type(x) is mcs), None)
+        if base is not None:
+            for attr, methods in iteritems(base.__support_attrs__):
+                if isinstance(methods, string_types):
+                    methods = methods,
+                if isinstance(attr, tuple):
+                    supported = attr[0](dct)
+                    message = attr[1]
+                else:
+                    supported = dct.get(attr)
+                    message = '{} is True'.format(attr)
+                for method in methods:
+                    if not supported and method in dct:
+                        raise TypeError('{} cannot override {} unless {}'.format(name, method, message))
+                    elif supported and method not in dct:
+                        raise TypeError('{} must override {} if {}'.format(name, method, message))
+        return type.__new__(mcs, name, bases, dct)
+
+    @staticmethod
+    def callable(func, message):
+        """Returns an object suitable for more complex
+
+        :param func: A callable that is invoked with the dict of the
+                     newly created object
+        :param message: The message to show in case of a failure.
+        """
+        return func, message

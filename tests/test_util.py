@@ -12,11 +12,11 @@ import pytest
 from flask import Flask
 
 from flask_multiauth import MultiAuth
-from flask_multiauth._compat import iteritems
+from flask_multiauth._compat import iteritems, add_metaclass
 from flask_multiauth.core import _MultiAuthState
 from flask_multiauth.exceptions import AuthenticationFailed
 from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, convert_data, login_view,
-                                  get_canonical_provider_map, validate_provider_map)
+                                  get_canonical_provider_map, validate_provider_map, SupportsMeta)
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
@@ -213,3 +213,80 @@ def test_classproperty():
     inst.bar = 'xyz'
     assert inst.bar == 'xyz'
     assert Foo.bar == 'asdf'
+
+
+def test_supports_meta_no_support_attrs():
+    @add_metaclass(SupportsMeta)
+    class BrokenBase(object):
+        pass
+
+    with pytest.raises(AttributeError):
+        class Test(BrokenBase):
+            pass
+
+
+@pytest.fixture(params=(True, False))
+def supports_base(request):
+    @add_metaclass(SupportsMeta)
+    class Base(object):
+        if request.param:
+            __support_attrs__ = {SupportsMeta.callable(lambda dct: dct.get('has_foo'), 'blah'): 'foo'}
+        else:
+            __support_attrs__ = {'has_foo': 'foo'}
+        has_foo = False
+
+        def foo(self):
+            pass
+
+    return Base
+
+
+def test_supports_meta_ok(supports_base):
+    # attr is false, method not overridden
+    class Test(supports_base):
+        pass
+
+    # attr is true, method overridden
+    class Test(supports_base):
+        has_foo = True
+
+        def foo(self):
+            pass
+
+
+def test_supports_meta_fail(supports_base):
+    # attr is true, method not overridden
+    with pytest.raises(TypeError):
+        class Test(supports_base):
+            has_foo = True
+
+    # attr is false, method overridden
+    with pytest.raises(TypeError):
+        class Test(supports_base):
+            def foo(self):
+                pass
+
+
+def test_supports_meta_multi():
+    @add_metaclass(SupportsMeta)
+    class Base(object):
+        __support_attrs__ = {'has_foobar': ('foo', 'bar')}
+        has_foobar = False
+
+        def foo(self):
+            pass
+
+        def bar(self):
+            pass
+
+    # everything ok
+    class Test(Base):
+        pass
+
+    # bar missing
+    with pytest.raises(TypeError):
+        class Test(supports_base):
+            has_foobar = True
+
+            def foo(self):
+                pass

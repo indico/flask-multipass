@@ -7,21 +7,10 @@
 from __future__ import unicode_literals
 
 from flask_multiauth._compat import add_metaclass
+from flask_multiauth.util import SupportsMeta
 
 
-class _GroupMeta(type):
-    # TODO: make this more generic and use it in UserProvider, too
-    def __new__(mcs, name, bases, dct):
-        if bases != (object,):
-            supports_user_list = dct.get('supports_user_list')
-            if not supports_user_list and 'get_users' in dct:
-                raise TypeError('{} cannot override get_users unless supports_user_list is True'.format(name))
-            elif supports_user_list and 'get_users' not in dct:
-                raise TypeError('{} must override get_users if supports_user_list is True'.format(name))
-        return type.__new__(mcs, name, bases, dct)
-
-
-@add_metaclass(_GroupMeta)
+@add_metaclass(SupportsMeta)
 class Group(object):
     """Base class for groups
 
@@ -29,6 +18,7 @@ class Group(object):
     :param name: The unique name of the group.
     """
 
+    __support_attrs__ = {'supports_user_list': 'get_users'}
     #: If it is possible to get the list of members of a group.
     supports_user_list = False
 
@@ -47,8 +37,6 @@ class Group(object):
         """
         if self.supports_user_list:
             raise NotImplementedError
-        else:
-            raise RuntimeError('This group type does not support retrieving the member list')
 
     def has_user(self, identifier):
         """Checks if a given user is a member of the group.
