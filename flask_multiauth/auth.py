@@ -28,8 +28,6 @@ class AuthProvider(object):
     }
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multiauth.auth_providers'
-    #: The unique identifier of the auth provider
-    type = None
     #: If there may be multiple instances of this auth provider
     multi_instance = True
     #: If this auth provider requires the user to enter data using a
@@ -77,4 +75,4 @@ class AuthProvider(object):
             raise RuntimeError('This provider uses a login form')
 
     def __repr__(self):
-        return '<{}({}, {})>'.format(type(self).__name__, self.type, self.name)
+        return '<{}({})>'.format(type(self).__name__, self.name)

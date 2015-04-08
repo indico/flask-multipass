@@ -271,14 +271,14 @@ class MultiAuth(object):
         :param base: The base class of the provider type.
         """
         providers = {}
-        provider_types = set()
+        provider_classes = set()
         for name, settings in iteritems(current_app.config['MULTIAUTH_{}_PROVIDERS'.format(key)]):
             settings = settings.copy()
             cls = resolve_provider_type(base, settings.pop('type'))
-            if not cls.multi_instance and cls.type in provider_types:
-                raise RuntimeError('Provider does not support multiple instances: ' + cls.type)
+            if not cls.multi_instance and cls in provider_classes:
+                raise RuntimeError('Provider does not support multiple instances: ' + cls.__name__)
             providers[name] = cls(self, name, settings)
-            provider_types.add(cls.type)
+            provider_classes.add(cls)
         return providers
 
     def _create_login_rule(self):

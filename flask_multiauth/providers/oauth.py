@@ -46,10 +46,10 @@ class OAuth(flask_oauthlib.client.OAuth):
 
 
 class OAuthAuthProvider(AuthProvider):
-    """Provides authentication using OAuth"""
+    """Provides authentication using OAuth
 
-    #: The type to use in the auth provider config.
-    type = 'oauth'
+    The type name to instantiate this provider is *oauth*.
+    """
 
     def __init__(self, *args, **kwargs):
         super(OAuthAuthProvider, self).__init__(*args, **kwargs)
@@ -83,10 +83,9 @@ class OAuthUserProvider(UserProvider):
     """Provides user information using OAuth.
 
     The remote service needs to provide user information as JSON.
+    The type name to instantiate this provider is *oauth*.
     """
 
-    #: The type to use in the user provider config.
-    type = 'oauth'
     #: If the provider supports refreshing user information
     supports_refresh = True
 

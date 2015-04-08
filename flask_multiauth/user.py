@@ -27,8 +27,6 @@ class UserProvider(object):
                          'supports_groups': ('get_group', 'search_groups', 'group_class')}
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multiauth.user_providers'
-    #: The unique identifier of the user provider
-    type = None
     #: If there may be multiple instances of this user provider
     multi_instance = True
     #: If the provider supports refreshing user information
@@ -50,7 +48,7 @@ class UserProvider(object):
         self.title = self.settings.pop('title', self.name)
         search_enabled = self.settings.pop('search_enabled', self.supports_search)
         if search_enabled and not self.supports_search:
-            raise ValueError('Provider does not support searching: ' + self.type)
+            raise ValueError('Provider does not support searching: ' + type(self).__name__)
         self.supports_search = search_enabled
 
     def get_user_from_auth(self, auth_info):  # pragma: no cover
@@ -123,4 +121,4 @@ class UserProvider(object):
         return {mapping.get(key, key): value for key, value in iteritems(criteria)}
 
     def __repr__(self):
-        return '<{}({}, {})>'.format(type(self).__name__, self.type, self.name)
+        return '<{}({})>'.format(type(self).__name__, self.name)

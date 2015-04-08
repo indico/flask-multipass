@@ -48,10 +48,9 @@ def test_multiple_apps():
 @pytest.fixture
 def mock_auth_providers(monkeypatch):
     class FooProvider(AuthProvider):
-        type = 'foo'
+        pass
 
     class UniqueProvider(AuthProvider):
-        type = 'unique'
         multi_instance = False
 
     mapping = {'foo': FooProvider,

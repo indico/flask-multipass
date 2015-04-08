@@ -30,10 +30,10 @@ class StaticAuthProvider(AuthProvider):
 
     This provider should NEVER be use in any production system.
     It serves mainly as a simply dummy/example for development.
+
+    The type name to instantiate this provider is *static*.
     """
 
-    #: The type to use in the auth provider config.
-    type = 'static'
     login_form = StaticLoginForm
 
     def __init__(self, *args, **kwargs):
@@ -69,10 +69,10 @@ class StaticUserProvider(UserProvider):
 
     This provider should NEVER be use in any production system.
     It serves mainly as a simply dummy/example for development.
+
+    The type name to instantiate this provider is *static*.
     """
 
-    #: The type to use in the user provider config.
-    type = 'static'
     #: If the provider supports refreshing user information
     supports_refresh = True
     #: If the provider supports searching users

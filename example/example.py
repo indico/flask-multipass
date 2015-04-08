@@ -45,7 +45,6 @@ class Identity(db.Model):
 
 
 class LocalAuthProvider(SQLAlchemyAuthProviderBase):
-    type = 'local'
     identity_model = Identity
     provider_column = Identity.provider
     identifier_column = Identity.identifier
@@ -55,7 +54,6 @@ class LocalAuthProvider(SQLAlchemyAuthProviderBase):
 
 
 class LocalUserProvider(SQLAlchemyUserProviderBase):
-    type = 'local'
     user_model = User
     identity_user_relationship = Identity.user
 
