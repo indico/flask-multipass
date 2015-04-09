@@ -51,8 +51,8 @@ class Group(object):
     def __iter__(self):  # pragma: no cover
         return self.get_users()
 
-    def __contains__(self, user_info):  # pragma: no cover
-        return self.has_user(user_info)
+    def __contains__(self, identifier):  # pragma: no cover
+        return self.has_user(identifier)
 
     def __repr__(self):
         return '<{}({}, {})>'.format(type(self).__name__, self.provider, self.name)
