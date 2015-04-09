@@ -12,3 +12,5 @@ htmlcov/
 *.pyc
 *.swp
 .coverage
+
+example/example.cfg

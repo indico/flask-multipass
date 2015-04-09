@@ -1,0 +1,74 @@
+# Register your test application here: https://github.com/settings/applications/
+_github_oauth_config = {
+    'consumer_key': '',  # put your key here
+    'consumer_secret': '',  # putgithub_oauth_config = {
+    'request_token_params': {'scope': 'user:email'},
+    'base_url': 'https://api.github.com',
+    'request_token_url': None,
+    'access_token_method': 'POST',
+    'access_token_url': 'https://github.com/login/oauth/access_token',
+    'authorize_url': 'https://github.com/login/oauth/authorize'
+}
+
+MULTIAUTH_AUTH_PROVIDERS = {
+    'test': {
+        'type': 'static',
+        'title': 'Insecure dummy auth',
+        'users': {
+            'Test': '123',
+            'Foo': 'bar'
+        }
+    },
+    'github': {
+        'type': 'oauth',
+        'title': 'GitHub',
+        'oauth': _github_oauth_config
+    },
+    'local': {
+        'type': None,  # set via code (since it's a reference to the class itself)
+        'title': 'Local Accounts'
+    }
+}
+
+MULTIAUTH_USER_PROVIDERS = {
+    'test': {
+        'type': 'static',
+        'users': {
+            'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
+            'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
+        },
+        'groups': {
+            'Admins': ['Test'],
+            'Everybody': ['Test', 'Somebody'],
+        }
+    },
+    'github': {
+        'type': 'oauth',
+        'oauth': _github_oauth_config,
+        'endpoint': '/user',
+        'identifier_field': 'id',
+        'mapping': {
+            'affiliation': 'company'
+        }
+    },
+    'local': {
+        'type': None,  # set via code (since it's a reference to the class itself)
+    }
+}
+
+MULTIAUTH_PROVIDER_MAP = {
+    'local': 'local',
+    'test': 'test',
+    # You can also be explicit (only needed for more complex links)
+    'github': [
+        {
+            'user_provider': 'github'
+        }
+    ]
+}
+
+MULTIAUTH_LOGIN_FORM_TEMPLATE = 'login_form.html'
+MULTIAUTH_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
+MULTIAUTH_USER_INFO_KEYS = ['email', 'name', 'affiliation']
+WTF_CSRF_ENABLED = False
+SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multiauth.db'

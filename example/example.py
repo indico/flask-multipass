@@ -7,7 +7,6 @@
 from __future__ import unicode_literals
 
 import json
-import os
 
 from flask import Flask, render_template, flash, session, url_for, redirect, request, g
 from flask_sqlalchemy import SQLAlchemy
@@ -56,77 +55,6 @@ class LocalAuthProvider(SQLAlchemyAuthProviderBase):
 class LocalUserProvider(SQLAlchemyUserProviderBase):
     user_model = User
     identity_user_relationship = Identity.user
-
-
-github_oauth_config = {
-    'consumer_key': os.environ['MULTIAUTH_GITHUB_CLIENT_ID'],
-    'consumer_secret': os.environ['MULTIAUTH_GITHUB_CLIENT_SECRET'],
-    'request_token_params': {'scope': 'user:email'},
-    'base_url': 'https://api.github.com',
-    'request_token_url': None,
-    'access_token_method': 'POST',
-    'access_token_url': 'https://github.com/login/oauth/access_token',
-    'authorize_url': 'https://github.com/login/oauth/authorize'
-}
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/multiauth.db'
-app.config['WTF_CSRF_ENABLED'] = False
-app.config['MULTIAUTH_LOGIN_FORM_TEMPLATE'] = 'login_form.html'
-app.config['MULTIAUTH_LOGIN_SELECTOR_TEMPLATE'] = 'login_selector.html'
-app.config['MULTIAUTH_USER_INFO_KEYS'] = ['email', 'name', 'affiliation']
-app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
-    'test': {
-        'type': 'static',
-        'title': 'Insecure dummy auth',
-        'users': {
-            'Test': '123',
-            'Foo': 'bar'
-        }
-    },
-    'github': {
-        'type': 'oauth',
-        'title': 'GitHub',
-        'oauth': github_oauth_config
-    },
-    'local': {
-        'type': LocalAuthProvider,
-        'title': 'Local Accounts'
-    }
-}
-app.config['MULTIAUTH_USER_PROVIDERS'] = {
-    'test': {
-        'type': 'static',
-        'users': {
-            'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
-            'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
-        },
-        'groups': {
-            'Admins': ['Test'],
-            'Everybody': ['Test', 'Somebody'],
-        }
-    },
-    'github': {
-        'type': 'oauth',
-        'oauth': github_oauth_config,
-        'endpoint': '/user',
-        'identifier_field': 'id',
-        'mapping': {
-            'affiliation': 'company'
-        }
-    },
-    'local': {
-        'type': LocalUserProvider,
-    }
-}
-app.config['MULTIAUTH_PROVIDER_MAP'] = {
-    'local': 'local',
-    'test': 'test',
-    'github': [
-        {
-            'user_provider': 'github'
-        }
-    ]
-}
 
 
 @multiauth.user_handler
@@ -203,6 +131,9 @@ def refresh():
 
 
 def main():
+    app.config.from_pyfile('example.cfg')
+    app.config['MULTIAUTH_AUTH_PROVIDERS']['local']['type'] = LocalAuthProvider
+    app.config['MULTIAUTH_USER_PROVIDERS']['local']['type'] = LocalUserProvider
     multiauth.init_app(app)
     db.init_app(app)
     with app.app_context():
