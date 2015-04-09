@@ -7,7 +7,8 @@
 from .core import MultiAuth
 from .auth import AuthProvider
 from .data import AuthInfo, UserInfo
-from .exceptions import MultiAuthException, AuthenticationFailed, UserRetrievalFailed, GroupRetrievalFailed
+from .exceptions import (MultiAuthException, AuthenticationFailed, UserRetrievalFailed, GroupRetrievalFailed,
+                         NoSuchUser, InvalidCredentials)
 from .group import Group
 from .user import UserProvider
 

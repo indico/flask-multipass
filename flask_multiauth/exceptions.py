@@ -19,6 +19,14 @@ class AuthenticationFailed(MultiAuthException):
     """
 
 
+class NoSuchUser(AuthenticationFailed):
+    """Indicates a user does not exist when attempting to authenticate."""
+
+
+class InvalidCredentials(AuthenticationFailed):
+    """Indicates a failure to authenticate using the given credentials."""
+
+
 class UserRetrievalFailed(MultiAuthException):
     """Indicates a failure while retrieving user information"""
 
