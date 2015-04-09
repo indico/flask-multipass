@@ -56,7 +56,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
                                                     type(self).identifier_column == data['identifier']).first()
         if not identity:
             raise AuthenticationFailed('No such user')
-        if identity.password != data['password']:
+        if not self.check_password(identity, data['password']):
             raise AuthenticationFailed('Invalid password')
         return AuthInfo(self, identity=identity)
 
