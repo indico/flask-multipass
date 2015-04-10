@@ -57,8 +57,14 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4'
     ],
-    entry_points={'flask_multiauth.auth_providers': {'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
-                                                     'static = flask_multiauth.providers.static:StaticAuthProvider'},
-                  'flask_multiauth.user_providers': {'oauth = flask_multiauth.providers.oauth:OAuthUserProvider',
-                                                     'static = flask_multiauth.providers.static:StaticUserProvider'}}
+    entry_points={
+        'flask_multiauth.auth_providers': {
+            'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
+            'static = flask_multiauth.providers.static:StaticAuthProvider'
+        },
+        'flask_multiauth.identity_providers': {
+            'oauth = flask_multiauth.providers.oauth:OAuthIdentityProvider',
+            'static = flask_multiauth.providers.static:StaticIdentityProvider'
+        }
+    }
 )

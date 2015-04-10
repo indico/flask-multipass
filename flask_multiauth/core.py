@@ -12,8 +12,8 @@ from werkzeug.exceptions import NotFound
 
 from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.exceptions import MultiAuthException, UserRetrievalFailed, GroupRetrievalFailed
-from flask_multiauth.user import UserProvider
+from flask_multiauth.exceptions import MultiAuthException, IdentityRetrievalFailed, GroupRetrievalFailed
+from flask_multiauth.identity import IdentityProvider
 from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map
 
 
@@ -25,7 +25,7 @@ class MultiAuth(object):
     """
 
     def __init__(self, app=None):
-        self.user_callback = None
+        self.identity_callback = None
         if app is not None:
             self.init_app(app)
 
@@ -43,9 +43,9 @@ class MultiAuth(object):
         state = app.extensions['multiauth'] = _MultiAuthState(self, app)
         # TODO: write docs for the config (see flask-cache for a pretty example)
         app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
-        app.config.setdefault('MULTIAUTH_USER_PROVIDERS', {})
+        app.config.setdefault('MULTIAUTH_IDENTITY_PROVIDERS', {})
         app.config.setdefault('MULTIAUTH_PROVIDER_MAP', {})
-        app.config.setdefault('MULTIAUTH_USER_INFO_KEYS', None)
+        app.config.setdefault('MULTIAUTH_IDENTITY_INFO_KEYS', None)
         app.config.setdefault('MULTIAUTH_LOGIN_SELECTOR_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_FORM_TEMPLATE', None)
         app.config.setdefault('MULTIAUTH_LOGIN_ENDPOINT', 'login')
@@ -53,12 +53,12 @@ class MultiAuth(object):
         app.config.setdefault('MULTIAUTH_SUCCESS_ENDPOINT', 'index')
         app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
         app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
-        app.config.setdefault('MULTIAUTH_ALL_MATCHING_USERS', False)
-        app.config.setdefault('MULTIAUTH_REQUIRE_USER', True)
+        app.config.setdefault('MULTIAUTH_ALL_MATCHING_IDENTITIES', False)
+        app.config.setdefault('MULTIAUTH_REQUIRE_IDENTITY', True)
         with app.app_context():
             self._create_login_rule()
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
-            state.user_providers = ImmutableDict(self._create_providers('USER', UserProvider))
+            state.identity_providers = ImmutableDict(self._create_providers('IDENTITY', IdentityProvider))
             state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIAUTH_PROVIDER_MAP']))
             validate_provider_map(state)
 
@@ -68,13 +68,13 @@ class MultiAuth(object):
         return get_state().auth_providers
 
     @property
-    def user_providers(self):
-        """Returns a read-only dict of the active user providers"""
-        return get_state().user_providers
+    def identity_providers(self):
+        """Returns a read-only dict of the active identity providers"""
+        return get_state().identity_providers
 
     @property
     def provider_map(self):
-        """Returns a read-only mapping between auth and user providers."""
+        """Returns a read-only mapping between auth and identity providers."""
         return get_state().provider_map
 
     def redirect_success(self):
@@ -109,46 +109,48 @@ class MultiAuth(object):
     def handle_auth_info(self, auth_info):
         """Called after a successful authentication
 
-        This method calls :meth:`login_finished` with the found user.
-        If ``MULTIAUTH_ALL_MATCHING_USERS`` is set, it will pass a list
-        of users.  If ``MULTIAUTH_REQUIRE_USER`` is set,
-        :exc:`.UserRetrievalFailed` will be raised if no users were
-        found, otherwise ``None`` or and empty list will be passed.
+        This method calls :meth:`login_finished` with the found
+        identity.  If ``MULTIAUTH_ALL_MATCHING_IDENTITIES`` is set, it
+        will pass a list of identities.  If ``MULTIAUTH_REQUIRE_IDENTITY``
+        is set, :exc:`.IdentityRetrievalFailed` will be raised if no
+        identities were found, otherwise ``None`` or and empty list
+        will be passed.
 
         :param auth_info: An :class:`.AuthInfo` instance containing
-                          data that can be used to uniquely identify
-                          the user.
+                          data that can be used to retrieve the user's
+                          unique identity.
         """
         links = self.provider_map[auth_info.provider.name]
-        users = []
+        identities = []
         for link in links:
-            provider = self.user_providers[link['user_provider']]
+            provider = self.identity_providers[link['identity_provider']]
             mapping = link.get('mapping', {})
-            user_info = provider.get_user_from_auth(auth_info.map(mapping))
-            if user_info is None:
+            identity_info = provider.get_identity_from_auth(auth_info.map(mapping))
+            if identity_info is None:
                 continue
-            users.append(user_info)
-            if not current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
+            identities.append(identity_info)
+            if not current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
                 break
-        if not users and current_app.config['MULTIAUTH_REQUIRE_USER']:
-            raise UserRetrievalFailed("No user found")
-        if current_app.config['MULTIAUTH_ALL_MATCHING_USERS']:
-            self.login_finished(users)
+        if not identities and current_app.config['MULTIAUTH_REQUIRE_IDENTITY']:
+            raise IdentityRetrievalFailed("No identity found")
+        if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
+            self.login_finished(identities)
         else:
-            self.login_finished(users[0] if users else None)
+            self.login_finished(identities[0] if identities else None)
 
-    def login_finished(self, user):
+    def login_finished(self, identity_info):
         """Called after the login process finished.
 
         This method invokes the function registered via
-        :obj:`user_handler` with the same arguments.
+        :obj:`identity_handler` with the same arguments.
 
-        :param user: A :class:`.UserInfo` instance or list of them
+        :param identity_info: An :class:`.IdentityInfo` instance or
+                              a list of them
         """
-        assert self.user_callback is not None, \
-            'No user callback has been registered. Register one using ' \
-            'Register one using the MultiAuth.user_handler decorator.'
-        self.user_callback(user)
+        assert self.identity_callback is not None, \
+            'No identity callback has been registered. Register one using ' \
+            'Register one using the MultiAuth.identity_handler decorator.'
+        self.identity_callback(identity_info)
 
     def handle_auth_error(self, exc, redirect_to_login=False):
         """Handles an authentication failure
@@ -176,51 +178,53 @@ class MultiAuth(object):
             raise RuntimeError('Config option missing: ' + key)
         return render_template(template, **kwargs)
 
-    def user_handler(self, callback):
-        """Registers the callback function that receives user information after login
+    def identity_handler(self, callback):
+        """
+        Registers the callback function that receives identity
+        information after a successful login.
 
         See :meth:`login_finished` for a description of the parameters.
         """
-        self.user_callback = callback
+        self.identity_callback = callback
         return callback
 
-    def refresh_user(self, identifier, multiauth_data):
-        """Retrieves user information for an existing user
+    def refresh_identity(self, identifier, multiauth_data):
+        """Retrieves user identity information for an existing identity
 
-        :param identifier: The `identifier` from :class:`.UserInfo`
+        :param identifier: The `identifier` from :class:`.IdentityInfo`
         :param multiauth_data: The `multiauth_data` dict from
-                               :class:`.UserInfo`
-        :return: A :class:`.UserInfo` instance or ``None`` if the user
-                 does not exist anymore.
+                               :class:`.IdentityInfo`
+        :return: An :class:`.IdentityInfo` instance or ``None`` if the
+                 identity does not exist anymore.
         """
         if multiauth_data is None:
-            raise ValueError('This user cannot be refreshed')
+            raise ValueError('This identity cannot be refreshed')
         provider_name = multiauth_data['_provider']
         try:
-            provider = self.user_providers[provider_name]
+            provider = self.identity_providers[provider_name]
         except KeyError:
-            raise UserRetrievalFailed('Provider does not exist: ' + provider_name)
+            raise IdentityRetrievalFailed('Provider does not exist: ' + provider_name)
         if not provider.supports_refresh:
-            raise UserRetrievalFailed('Provider does not support refreshing: ' + provider_name)
-        return provider.refresh_user(identifier, multiauth_data)
+            raise IdentityRetrievalFailed('Provider does not support refreshing: ' + provider_name)
+        return provider.refresh_identity(identifier, multiauth_data)
 
-    def search_users(self, providers=None, exact=False, **criteria):
-        """Searches users matching certain criteria
+    def search_identities(self, providers=None, exact=False, **criteria):
+        """Searches user identities matching certain criteria
 
         :param providers: A list of providers to search in. If not
                           specified, all providers are searched.
         :param exact: If criteria need to match exactly, i.e. no
                       substring matches are performed.
         :param criteria: The criteria to search for.
-        :return: An iterable of matching users.
+        :return: An iterable of matching user identities.
         """
-        for provider in itervalues(self.user_providers):
+        for provider in itervalues(self.identity_providers):
             if providers is not None and provider.name not in providers:
                 continue
             if not provider.supports_search:
                 continue
-            for user in provider.search_users(provider.map_search_criteria(criteria), exact=exact):
-                yield user
+            for identity_info in provider.search_identities(provider.map_search_criteria(criteria), exact=exact):
+                yield identity_info
 
     def get_group(self, provider, name):
         """Returns a specific group
@@ -230,7 +234,7 @@ class MultiAuth(object):
         :return: An instance of a :class:`.Group` subclass.
         """
         try:
-            provider = self.user_providers[provider]
+            provider = self.identity_providers[provider]
         except KeyError:
             raise GroupRetrievalFailed('Provider does not exist: ' + provider)
         return provider.get_group(name)
@@ -245,7 +249,7 @@ class MultiAuth(object):
                       substring matches are performed.
         :return: An iterable of matching groups.
         """
-        for provider in itervalues(self.user_providers):
+        for provider in itervalues(self.identity_providers):
             if providers is not None and provider.name not in providers:
                 continue
             if not provider.supports_groups:
@@ -253,15 +257,15 @@ class MultiAuth(object):
             for group in provider.search_groups(name, exact=exact):
                 yield group
 
-    def is_user_in_group(self, provider, user_identifier, group_name):
-        """Checks if a user is in a group
+    def is_identity_in_group(self, provider, identity_identifier, group_name):
+        """Checks if a user identity is in a group
 
         :param provider: The name of the provider containing the group.
-        :param user_identifier: The identifier of the user.
+        :param identity_identifier: The identifier of the user.
         :param group_name: The name of the group.
         """
         group = self.get_group(provider, group_name)
-        return user_identifier in group
+        return identity_identifier in group
 
     def _create_providers(self, key, base):
         """Instantiates all providers
@@ -347,7 +351,7 @@ class _MultiAuthState(object):
         self.multiauth = multiauth
         self.app = app
         self.auth_providers = {}
-        self.user_providers = {}
+        self.identity_providers = {}
         self.provider_map = {}
 
     def __repr__(self):

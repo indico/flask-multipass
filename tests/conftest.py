@@ -11,6 +11,6 @@ import flask_multiauth
 
 def pytest_configure(config):
     # Disable the support attr checks while testing
-    attrs = ('AuthProvider', 'Group', 'UserProvider')
+    attrs = ('AuthProvider', 'Group', 'IdentityProvider')
     for attr in attrs:
         getattr(flask_multiauth, attr).__support_attrs__ = {}

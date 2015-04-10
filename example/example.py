@@ -12,7 +12,7 @@ from flask import Flask, render_template, flash, session, url_for, redirect, req
 from flask_sqlalchemy import SQLAlchemy
 
 from flask_multiauth import MultiAuth
-from flask_multiauth.providers.sqlalchemy import SQLAlchemyAuthProviderBase, SQLAlchemyUserProviderBase
+from flask_multiauth.providers.sqlalchemy import SQLAlchemyAuthProviderBase, SQLAlchemyIdentityProviderBase
 
 
 app = Flask(__name__)
@@ -52,27 +52,28 @@ class LocalAuthProvider(SQLAlchemyAuthProviderBase):
         return identity.password == password
 
 
-class LocalUserProvider(SQLAlchemyUserProviderBase):
+class LocalIdentityProvider(SQLAlchemyIdentityProviderBase):
     user_model = User
     identity_user_relationship = Identity.user
 
 
-@multiauth.user_handler
-def user_handler(user_info):
-    identity = Identity.query.filter_by(provider=user_info.provider.name, identifier=user_info.identifier).first()
+@multiauth.identity_handler
+def identity_handler(identity_info):
+    identity = Identity.query.filter_by(provider=identity_info.provider.name,
+                                        identifier=identity_info.identifier).first()
     if not identity:
-        user = User.query.filter_by(email=user_info.data['email']).first()
+        user = User.query.filter_by(email=identity_info.data['email']).first()
         if not user:
-            user = User(**user_info.data)
+            user = User(**identity_info.data)
             db.session.add(user)
-        identity = Identity(provider=user_info.provider.name, identifier=user_info.identifier)
+        identity = Identity(provider=identity_info.provider.name, identifier=identity_info.identifier)
         user.identities.append(identity)
     else:
         user = identity.user
-    identity.multiauth_data = json.dumps(user_info.multiauth_data)
+    identity.multiauth_data = json.dumps(identity_info.multiauth_data)
     db.session.commit()
     session['user_id'] = user.id
-    flash('Received UserInfo: {}'.format(user_info), 'success')
+    flash('Received IdentityInfo: {}'.format(identity_info), 'success')
 
 
 @app.before_request
@@ -85,14 +86,14 @@ def load_user_from_session():
 @app.route('/')
 def index():
     results = None
-    if request.args.get('search') == 'users':
+    if request.args.get('search') == 'identities':
         exact = 'exact' in request.args
         criteria = {}
         if request.args['email']:
             criteria['email'] = request.args['email']
         if request.args['name']:
             criteria['name'] = request.args['name']
-        results = list(multiauth.search_users(exact=exact, **criteria))
+        results = list(multiauth.search_identities(exact=exact, **criteria))
     elif request.args.get('search') == 'groups':
         exact = 'exact' in request.args
         results = list(multiauth.search_groups(exact=exact, name=request.args['name']))
@@ -123,9 +124,9 @@ def refresh():
     for identity in g.user.identities:
         if json.loads(identity.multiauth_data) is None:
             continue
-        user_info = multiauth.refresh_user(identity.identifier, json.loads(identity.multiauth_data))
-        identity.multiauth_data = json.dumps(user_info.multiauth_data)
-        flash('Refreshed UserInfo: {}'.format(user_info), 'success')
+        identity_info = multiauth.refresh_identity(identity.identifier, json.loads(identity.multiauth_data))
+        identity.multiauth_data = json.dumps(identity_info.multiauth_data)
+        flash('Refreshed IdentityInfo: {}'.format(identity_info), 'success')
     db.session.commit()
     return redirect(url_for('index'))
 
@@ -133,7 +134,7 @@ def refresh():
 def main():
     app.config.from_pyfile('example.cfg')
     app.config['MULTIAUTH_AUTH_PROVIDERS']['local']['type'] = LocalAuthProvider
-    app.config['MULTIAUTH_USER_PROVIDERS']['local']['type'] = LocalUserProvider
+    app.config['MULTIAUTH_IDENTITY_PROVIDERS']['local']['type'] = LocalIdentityProvider
     multiauth.init_app(app)
     db.init_app(app)
     with app.app_context():

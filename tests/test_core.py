@@ -143,15 +143,15 @@ def test_login_finished():
     with pytest.raises(AssertionError):
         multiauth.login_finished(None)
     callback = Mock()
-    multiauth.user_handler(callback)
+    multiauth.identity_handler(callback)
     multiauth.login_finished('foo')
     callback.assert_called_with('foo')
 
 
-def test_user_handler():
+def test_identity_handler():
     multiauth = MultiAuth()
     callback = Mock()
-    assert multiauth.user_handler(callback) is callback
+    assert multiauth.identity_handler(callback) is callback
 
 
 def test_handle_auth_error(mocker):

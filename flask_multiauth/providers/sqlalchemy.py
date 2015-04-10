@@ -11,7 +11,7 @@ from sqlalchemy import inspect
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth import AuthProvider, UserProvider, AuthenticationFailed, AuthInfo, UserInfo
+from flask_multiauth import AuthProvider, IdentityProvider, AuthenticationFailed, AuthInfo, IdentityInfo
 from flask_multiauth._compat import string_types
 
 
@@ -24,7 +24,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
     """Provides authentication against passwords stored in SQLAlchemy
 
     This provider expects your application to have an "identity" model
-    which maps identifiers from UserInfo objects to users. For further
+    which maps identifiers from IdentityInfo objects to users. For further
     details on how to use this provider, please see the example
     application.
 
@@ -61,11 +61,11 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
         return AuthInfo(self, identity=identity)
 
 
-class SQLAlchemyUserProviderBase(UserProvider):
-    """Provides user information for users stored in SQLAlchemy
+class SQLAlchemyIdentityProviderBase(IdentityProvider):
+    """Provides identity information for users stored in SQLAlchemy
 
     This provider expects your application to have an "identity" model
-    which maps identifiers from UserInfo objects to users. For further
+    which maps identifiers from IdentityInfo objects to users. For further
     details on how to use this provider, please see the example
     application.
 
@@ -82,7 +82,7 @@ class SQLAlchemyUserProviderBase(UserProvider):
     #: The Flask-SQLAlchemy model representing a user.
     user_model = None
 
-    def get_user_from_auth(self, auth_info):
+    def get_identity_from_auth(self, auth_info):
         cls = type(self)
         identity = auth_info.data['identity']
         if isinstance(cls.identity_user_relationship, string_types):
@@ -93,4 +93,4 @@ class SQLAlchemyUserProviderBase(UserProvider):
         # Get all columns from the user model
         mapper = inspect(self.user_model)
         data = {x.key: getattr(user, x.key) for x in mapper.attrs}
-        return UserInfo(self, identity.identifier, **data)
+        return IdentityInfo(self, identity.identifier, **data)

@@ -20,15 +20,15 @@ from flask_multiauth.util import (classproperty, get_state, resolve_provider_typ
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
-    ({'foo': 'bar'},                             {'foo': ({'user_provider': 'bar'},)}),
-    ({'foo': ['bar']},                           {'foo': ({'user_provider': 'bar'},)}),
-    ({'foo': {'bar'}},                           {'foo': ({'user_provider': 'bar'},)}),
-    ({'foo': {'user_provider': 'bar'}},          {'foo': ({'user_provider': 'bar'},)}),
-    ({'foo': [{'user_provider': 'bar'}]},        {'foo': ({'user_provider': 'bar'},)}),
-    ({'foo': [{'user_provider': 'bar'}, 'moo']}, {'foo': ({'user_provider': 'bar'},
-                                                          {'user_provider': 'moo'})}),
-    ({'foo': 'bar', 'meow': 'moo'},              {'foo': ({'user_provider': 'bar'},),
-                                                  'meow': ({'user_provider': 'moo'},)}),
+    ({'foo': 'bar'},                                 {'foo': ({'identity_provider': 'bar'},)}),
+    ({'foo': ['bar']},                               {'foo': ({'identity_provider': 'bar'},)}),
+    ({'foo': {'bar'}},                               {'foo': ({'identity_provider': 'bar'},)}),
+    ({'foo': {'identity_provider': 'bar'}},          {'foo': ({'identity_provider': 'bar'},)}),
+    ({'foo': [{'identity_provider': 'bar'}]},        {'foo': ({'identity_provider': 'bar'},)}),
+    ({'foo': [{'identity_provider': 'bar'}, 'moo']}, {'foo': ({'identity_provider': 'bar'},
+                                                              {'identity_provider': 'moo'})}),
+    ({'foo': 'bar', 'meow': 'moo'},                  {'foo': ({'identity_provider': 'bar'},),
+                                                      'meow': ({'identity_provider': 'moo'},)}),
 ))
 def test_get_canonical_provider_map(config_map, canonical_map):
     assert get_canonical_provider_map(config_map) == canonical_map
@@ -165,7 +165,7 @@ def test_resolve_provider_type():
     assert resolve_provider_type(DummyBase, 'dummy') is Dummy
 
 
-@pytest.mark.parametrize(('valid', 'auth_providers', 'user_providers', 'provider_map'), (
+@pytest.mark.parametrize(('valid', 'auth_providers', 'identity_providers', 'provider_map'), (
     (False, ['a'], [],    {}),
     (False, ['a'], ['a'], {}),
     (False, ['a'], ['b'], {}),
@@ -173,11 +173,11 @@ def test_resolve_provider_type():
     (True,  ['a'], ['b'], {'a': 'b'}),
     (True,  [],    ['b'], {'a': 'b'}),
 ))
-def test_validate_provider_map(valid, auth_providers, user_providers, provider_map):
+def test_validate_provider_map(valid, auth_providers, identity_providers, provider_map):
     state = _MultiAuthState(None, None)
     state.auth_providers = {x: {} for x in auth_providers}
-    state.user_providers = {x: {} for x in user_providers}
-    state.provider_map = {a: [{'user_provider': u}] for a, u in iteritems(provider_map)}
+    state.identity_providers = {x: {} for x in identity_providers}
+    state.provider_map = {a: [{'identity_provider': u}] for a, u in iteritems(provider_map)}
     if valid:
         validate_provider_map(state)
     else:

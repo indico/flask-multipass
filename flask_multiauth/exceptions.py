@@ -27,8 +27,8 @@ class InvalidCredentials(AuthenticationFailed):
     """Indicates a failure to authenticate using the given credentials."""
 
 
-class UserRetrievalFailed(MultiAuthException):
-    """Indicates a failure while retrieving user information"""
+class IdentityRetrievalFailed(MultiAuthException):
+    """Indicates a failure while retrieving identity information"""
 
 
 class GroupRetrievalFailed(MultiAuthException):

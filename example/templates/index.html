@@ -21,16 +21,16 @@
         </ul>
     {% endif %}
     <hr>
-    <h3>Search users</h3>
+    <h3>Search identities (users)</h3>
     <form>
-        <input type="hidden" name="search" value="users">
+        <input type="hidden" name="search" value="identities">
         <input type="text" name="email" value="{{ request.args.email }}" placeholder="Email">
         <input type="text" name="name" value="{{ request.args.name }}" placeholder="Name">
         <input type="checkbox" name="exact" id="exact" value="1" {%- if request.args.exact %} checked{% endif %}>
         <label for="exact">Exact</label>
         <input type="submit" value="Search">
         <br>
-        {% if request.args.search == 'users' %}
+        {% if request.args.search == 'identities' %}
             <h4>Results</h4>
             <ul>
                 {% for result in results|sort(attribute='identifier') %}

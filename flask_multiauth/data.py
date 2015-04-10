@@ -15,8 +15,8 @@ class AuthInfo(object):
     :param provider: The authentication provider instance providing
                      the data.
     :param data: Any data the authentication provider wants to pass on
-                 to user providers. This data must allow any connected
-                 user provider to uniquely identify a user.
+                 to identity providers. This data must allow any
+                 connected user provider to uniquely identify a user.
     """
 
     def __init__(self, provider, **data):
@@ -42,18 +42,19 @@ class AuthInfo(object):
         return '<AuthInfo({}, {})>'.format(self.provider, data)
 
 
-class UserInfo(object):
-    """Stores user information for the application.
+class IdentityInfo(object):
+    """Stores user identity information for the application.
 
-    :param provider: The user provider instance providing the data.
+    :param provider: The identity provider instance providing the data.
     :param identifier: A unique identifier string that can later be
-                       used to retrieve user data for the same user.
-    :param multiauth_data: A dict containing additional data the user
-                           provider needs e.g. to refresh the user
-                           information for the same user, without him
-                           authenticating again by keeping a long-lived
-                           token.
-    :param data: Any data the user provider wants to pass on the
+                       used to retrieve identity information for the
+                       same user.
+    :param multiauth_data: A dict containing additional data the
+                           identity provider needs e.g. to refresh the
+                           user information for the same user, without
+                           him authenticating again by keeping a
+                           long-lived token.
+    :param data: Any data the identity provider wants to pass on the
                  application.
     """
 
@@ -66,8 +67,8 @@ class UserInfo(object):
         else:
             self.multiauth_data = dict(multiauth_data or {}, _provider=provider.name)
         mapping = provider.settings.get('mapping', None)
-        self.data = convert_data(data, mapping or {}, self.provider.settings['user_info_keys'])
+        self.data = convert_data(data, mapping or {}, self.provider.settings['identity_info_keys'])
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
-        return '<UserInfo({}, {}, {})>'.format(self.provider, self.identifier, data or None)
+        return '<IdentityInfo({}, {}, {})>'.format(self.provider, self.identifier, data or None)

@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import pytest
 from flask import Flask
 
-from flask_multiauth import UserProvider, MultiAuth
+from flask_multiauth import IdentityProvider, MultiAuth
 
 
 def test_settings_copied():
@@ -17,7 +17,7 @@ def test_settings_copied():
     MultiAuth(app)
     with app.app_context():
         settings = {'foo': 'bar'}
-        provider = UserProvider(None, None, settings)
+        provider = IdentityProvider(None, None, settings)
         provider.settings['foo'] = 'foobar'
         assert settings['foo'] == 'bar'
 
@@ -30,7 +30,7 @@ def test_settings_title(settings, title):
     app = Flask('test')
     MultiAuth(app)
     with app.app_context():
-        provider = UserProvider(None, 'foo', settings)
+        provider = IdentityProvider(None, 'foo', settings)
         assert provider.title == title
 
 
@@ -44,5 +44,5 @@ def test_map_search_criteria(criteria, mapping, result):
     MultiAuth(app)
     with app.app_context():
         settings = {'mapping': mapping}
-        provider = UserProvider(None, 'foo', settings)
+        provider = IdentityProvider(None, 'foo', settings)
         assert provider.map_search_criteria(criteria) == result

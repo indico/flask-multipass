@@ -14,7 +14,7 @@ MULTIAUTH_AUTH_PROVIDERS = {
     'test': {
         'type': 'static',
         'title': 'Insecure dummy auth',
-        'users': {
+        'identities': {
             'Test': '123',
             'Foo': 'bar'
         }
@@ -30,10 +30,10 @@ MULTIAUTH_AUTH_PROVIDERS = {
     }
 }
 
-MULTIAUTH_USER_PROVIDERS = {
+MULTIAUTH_IDENTITY_PROVIDERS = {
     'test': {
         'type': 'static',
-        'users': {
+        'identities': {
             'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
             'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
         },
@@ -62,13 +62,13 @@ MULTIAUTH_PROVIDER_MAP = {
     # You can also be explicit (only needed for more complex links)
     'github': [
         {
-            'user_provider': 'github'
+            'identity_provider': 'github'
         }
     ]
 }
 
 MULTIAUTH_LOGIN_FORM_TEMPLATE = 'login_form.html'
 MULTIAUTH_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
-MULTIAUTH_USER_INFO_KEYS = ['email', 'name', 'affiliation']
+MULTIAUTH_IDENTITY_INFO_KEYS = ['email', 'name', 'affiliation']
 WTF_CSRF_ENABLED = False
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multiauth.db'

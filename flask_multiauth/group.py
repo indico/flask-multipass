@@ -14,45 +14,45 @@ from flask_multiauth.util import SupportsMeta
 class Group(object):
     """Base class for groups
 
-    :param provider: The user provider instance managing the group.
+    :param provider: The identity provider managing the group.
     :param name: The unique name of the group.
     """
 
-    __support_attrs__ = {'supports_user_list': 'get_users'}
+    __support_attrs__ = {'supports_member_list': 'get_members'}
     #: If it is possible to get the list of members of a group.
-    supports_user_list = False
+    supports_member_list = False
 
     def __init__(self, provider, name):  # pragma: no cover
         self.provider = provider
         self.name = name
 
-    def get_users(self):  # pragma: no cover
+    def get_members(self):  # pragma: no cover
         """Returns the members of the group.
 
         This can also be performed by iterating over the group.
         If the group does not support listing members,
         :exc:`~exceptions.NotImplementedError` is raised.
 
-        :return: An iterable of :class:`.UserInfo` objects.
+        :return: An iterable of :class:`.IdentityInfo` objects.
         """
-        if self.supports_user_list:
+        if self.supports_member_list:
             raise NotImplementedError
 
-    def has_user(self, identifier):  # pragma: no cover
-        """Checks if a given user is a member of the group.
+    def has_member(self, identifier):  # pragma: no cover
+        """Checks if a given identity is a member of the group.
 
         This check can also be performed using the ``in`` operator.
 
-        :param identifier: The `identifier` from a :class:`.UserInfo`
-                           provided by the associated user provider.
+        :param identifier: The `identifier` from an :class:`.IdentityInfo`
+                           provided by the associated identity provider.
         """
         raise NotImplementedError
 
     def __iter__(self):  # pragma: no cover
-        return self.get_users()
+        return self.get_members()
 
     def __contains__(self, identifier):  # pragma: no cover
-        return self.has_user(identifier)
+        return self.has_member(identifier)
 
     def __repr__(self):
         return '<{}({}, {})>'.format(type(self).__name__, self.provider, self.name)

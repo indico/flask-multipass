@@ -6,12 +6,13 @@
 
 from .core import MultiAuth
 from .auth import AuthProvider
-from .data import AuthInfo, UserInfo
-from .exceptions import (MultiAuthException, AuthenticationFailed, UserRetrievalFailed, GroupRetrievalFailed,
+from .data import AuthInfo, IdentityInfo
+from .exceptions import (MultiAuthException, AuthenticationFailed, IdentityRetrievalFailed, GroupRetrievalFailed,
                          NoSuchUser, InvalidCredentials)
 from .group import Group
-from .user import UserProvider
+from .identity import IdentityProvider
 
 __version__ = '0.0.dev0'
-__all__ = ('MultiAuth', 'AuthProvider', 'UserProvider', 'AuthInfo', 'UserInfo', 'Group', 'MultiAuthException',
-           'AuthenticationFailed', 'UserRetrievalFailed', 'GroupRetrievalFailed')
+__all__ = ('MultiAuth', 'AuthProvider', 'IdentityProvider', 'AuthInfo', 'IdentityInfo', 'Group', 'MultiAuthException',
+           'AuthenticationFailed', 'IdentityRetrievalFailed', 'GroupRetrievalFailed', 'NoSuchUser',
+           'InvalidCredentials')

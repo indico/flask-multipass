@@ -14,10 +14,10 @@ from wtforms.validators import DataRequired
 
 from flask_multiauth._compat import iteritems
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo, UserInfo
+from flask_multiauth.data import AuthInfo, IdentityInfo
 from flask_multiauth.exceptions import AuthenticationFailed
 from flask_multiauth.group import Group
-from flask_multiauth.user import UserProvider
+from flask_multiauth.identity import IdentityProvider
 
 
 class StaticLoginForm(Form):
@@ -38,11 +38,11 @@ class StaticAuthProvider(AuthProvider):
 
     def __init__(self, *args, **kwargs):
         super(StaticAuthProvider, self).__init__(*args, **kwargs)
-        self.settings.setdefault('users', {})
+        self.settings.setdefault('identities', {})
 
     def process_local_login(self, data):
         username = data['username']
-        password = self.settings['users'].get(username)
+        password = self.settings['identities'].get(username)
         if password is None:
             raise AuthenticationFailed('No such user')
         if password != data['password']:
@@ -51,21 +51,21 @@ class StaticAuthProvider(AuthProvider):
 
 
 class StaticGroup(Group):
-    """A group from the static user provider"""
+    """A group from the static identity provider"""
 
-    supports_user_list = True
+    supports_member_list = True
 
-    def get_users(self):
+    def get_members(self):
         members = self.provider.settings['groups'][self.name]
         for username in members:
-            yield self.provider._get_user(username)
+            yield self.provider._get_identity(username)
 
-    def has_user(self, identifier):
+    def has_member(self, identifier):
         return identifier in self.provider.settings['groups'][self.name]
 
 
-class StaticUserProvider(UserProvider):
-    """Provides user information from a static list.
+class StaticIdentityProvider(IdentityProvider):
+    """Provides identity information from a static list.
 
     This provider should NEVER be use in any production system.
     It serves mainly as a simply dummy/example for development.
@@ -75,7 +75,7 @@ class StaticUserProvider(UserProvider):
 
     #: If the provider supports refreshing user information
     supports_refresh = True
-    #: If the provider supports searching users
+    #: If the provider supports searching identities
     supports_search = True
     #: If the provider also provides groups and membership information
     supports_groups = True
@@ -83,31 +83,31 @@ class StaticUserProvider(UserProvider):
     group_class = StaticGroup
 
     def __init__(self, *args, **kwargs):
-        super(StaticUserProvider, self).__init__(*args, **kwargs)
-        self.settings.setdefault('users', {})
+        super(StaticIdentityProvider, self).__init__(*args, **kwargs)
+        self.settings.setdefault('identities', {})
         self.settings.setdefault('groups', {})
 
-    def _get_user(self, identifier):
-        user = self.settings['users'].get(identifier)
+    def _get_identity(self, identifier):
+        user = self.settings['identities'].get(identifier)
         if user is None:
             return None
-        return UserInfo(self, identifier, **user)
+        return IdentityInfo(self, identifier, **user)
 
-    def get_user_from_auth(self, auth_info):
+    def get_identity_from_auth(self, auth_info):
         identifier = auth_info.data['username']
-        return self._get_user(identifier)
+        return self._get_identity(identifier)
 
-    def refresh_user(self, identifier, multiauth_data):
-        return self._get_user(identifier)
+    def refresh_identity(self, identifier, multiauth_data):
+        return self._get_identity(identifier)
 
-    def search_users(self, criteria, exact=False):
+    def search_identities(self, criteria, exact=False):
         compare = operator.eq if exact else operator.contains
-        for identifier, user in iteritems(self.settings['users']):
+        for identifier, user in iteritems(self.settings['identities']):
             for key, value in iteritems(criteria):
                 if not compare(user[key], value):
                     break
             else:
-                yield UserInfo(self, identifier, **user)
+                yield IdentityInfo(self, identifier, **user)
 
     def get_group(self, name):
         if name not in self.settings['groups']:

@@ -10,9 +10,9 @@ import flask_oauthlib.client
 from flask import current_app, url_for
 
 from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo, UserInfo
-from flask_multiauth.exceptions import AuthenticationFailed, UserRetrievalFailed
-from flask_multiauth.user import UserProvider
+from flask_multiauth.data import AuthInfo, IdentityInfo
+from flask_multiauth.exceptions import AuthenticationFailed, IdentityRetrievalFailed
+from flask_multiauth.identity import IdentityProvider
 from flask_multiauth.util import classproperty, login_view
 
 
@@ -79,8 +79,8 @@ class OAuthAuthProvider(AuthProvider):
         return self.multiauth.redirect_success()
 
 
-class OAuthUserProvider(UserProvider):
-    """Provides user information using OAuth.
+class OAuthIdentityProvider(IdentityProvider):
+    """Provides identity information using OAuth.
 
     The remote service needs to provide user information as JSON.
     The type name to instantiate this provider is *oauth*.
@@ -90,7 +90,7 @@ class OAuthUserProvider(UserProvider):
     supports_refresh = True
 
     def __init__(self, *args, **kwargs):
-        super(OAuthUserProvider, self).__init__(*args, **kwargs)
+        super(OAuthIdentityProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('method', 'GET')
         self.settings.setdefault('valid_statuses', {200, 404})
         self.settings.setdefault('endpoint', None)
@@ -99,18 +99,18 @@ class OAuthUserProvider(UserProvider):
         self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
                                                    **self.settings['oauth'])
 
-    def _get_user(self, token):
+    def _get_identity(self, token):
         resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=(token, None))
         if resp.status not in self.settings['valid_statuses']:
-            raise UserRetrievalFailed('Could not retrieve user data')
+            raise IdentityRetrievalFailed('Could not retrieve user data')
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
         multiauth_data = {'oauth_token': token}
-        return UserInfo(self, identifier, multiauth_data, **resp.data)
+        return IdentityInfo(self, identifier, multiauth_data, **resp.data)
 
-    def get_user_from_auth(self, auth_info):
-        return self._get_user(auth_info.data['token'])
+    def get_identity_from_auth(self, auth_info):
+        return self._get_identity(auth_info.data['token'])
 
-    def refresh_user(self, identifier, multiauth_data):
-        return self._get_user(multiauth_data['oauth_token'])
+    def refresh_identity(self, identifier, multiauth_data):
+        return self._get_identity(multiauth_data['oauth_token'])

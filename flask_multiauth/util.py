@@ -19,11 +19,12 @@ from flask_multiauth.exceptions import MultiAuthException
 def get_canonical_provider_map(provider_map):
     """Converts the configured provider map to a canonical form"""
     canonical = {}
-    for auth_provider_name, user_providers in iteritems(provider_map):
-        if not isinstance(user_providers, (list, tuple, set)):
-            user_providers = [user_providers]
-        user_providers = tuple({'user_provider': p} if isinstance(p, string_types) else p for p in user_providers)
-        canonical[auth_provider_name] = user_providers
+    for auth_provider_name, identity_providers in iteritems(provider_map):
+        if not isinstance(identity_providers, (list, tuple, set)):
+            identity_providers = [identity_providers]
+        identity_providers = tuple({'identity_provider': p} if isinstance(p, string_types) else p
+                                   for p in identity_providers)
+        canonical[auth_provider_name] = identity_providers
     return canonical
 
 
@@ -120,11 +121,11 @@ def validate_provider_map(state):
     """
     invalid_keys = viewkeys(state.auth_providers) - viewkeys(state.provider_map)
     if invalid_keys:
-        raise ValueError('Auth providers not linked to user providers: ' + ', '.join(invalid_keys))
-    targeted_providers = {p['user_provider'] for providers in itervalues(state.provider_map) for p in providers}
-    invalid_keys = targeted_providers - viewkeys(state.user_providers)
+        raise ValueError('Auth providers not linked to identity providers: ' + ', '.join(invalid_keys))
+    targeted_providers = {p['identity_provider'] for providers in itervalues(state.provider_map) for p in providers}
+    invalid_keys = targeted_providers - viewkeys(state.identity_providers)
     if invalid_keys:
-        raise ValueError('Broken user provider links: ' + ', '.join(invalid_keys))
+        raise ValueError('Broken identity provider links: ' + ', '.join(invalid_keys))
 
 
 class classproperty(property):

@@ -13,25 +13,25 @@ from flask_multiauth.util import SupportsMeta
 
 
 @add_metaclass(SupportsMeta)
-class UserProvider(object):
-    """Provides the base for a user provider.
+class IdentityProvider(object):
+    """Provides the base for an identity provider.
 
     :param multiauth: The Flask-MultiAuth instancee
-    :param name: The name of this user provider instance
-    :param settings: The settings dictionary for this user provider
-                     instance
+    :param name: The name of this identity provider instance
+    :param settings: The settings dictionary for this identity
+                     provider instance
     """
 
-    __support_attrs__ = {'supports_refresh': 'refresh_user',
-                         'supports_search': 'search_users',
+    __support_attrs__ = {'supports_refresh': 'refresh_identity',
+                         'supports_search': 'search_identities',
                          'supports_groups': ('get_group', 'search_groups', 'group_class')}
     #: The entry point to lookup providers (do not override this!)
-    _entry_point = 'flask_multiauth.user_providers'
-    #: If there may be multiple instances of this user provider
+    _entry_point = 'flask_multiauth.identity_providers'
+    #: If there may be multiple instances of this identity provider
     multi_instance = True
-    #: If the provider supports refreshing user information
+    #: If the provider supports refreshing identity information
     supports_refresh = False
-    #: If the provider supports searching users
+    #: If the provider supports searching identities
     supports_search = False
     #: If the provider also provides groups and membership information
     supports_groups = False
@@ -43,7 +43,7 @@ class UserProvider(object):
         self.multiauth = multiauth
         self.name = name
         self.settings = settings.copy()
-        self.settings.setdefault('user_info_keys', current_app.config['MULTIAUTH_USER_INFO_KEYS'])
+        self.settings.setdefault('identity_info_keys', current_app.config['MULTIAUTH_IDENTITY_INFO_KEYS'])
         self.settings.setdefault('mapping', {})
         self.title = self.settings.pop('title', self.name)
         search_enabled = self.settings.pop('search_enabled', self.supports_search)
@@ -51,36 +51,37 @@ class UserProvider(object):
             raise ValueError('Provider does not support searching: ' + type(self).__name__)
         self.supports_search = search_enabled
 
-    def get_user_from_auth(self, auth_info):  # pragma: no cover
-        """Retrieves user information after authentication
+    def get_identity_from_auth(self, auth_info):  # pragma: no cover
+        """Retrieves identity information after authentication
 
         :param auth_info: An :class:`.AuthInfo` instance from an auth
                           provider
-        :return: A :class:`.UserInfo` instance containing user
-                 information or ``None`` if no user was found
+        :return: An :class:`.IdentityInfo` instance containing identity
+                 information or ``None`` if no identity was found
         """
         raise NotImplementedError
 
-    def refresh_user(self, identifier, multiauth_data):  # pragma: no cover
-        """Retrieves user information for an existing user
+    def refresh_identity(self, identifier, multiauth_data):  # pragma: no cover
+        """Retrieves identity information for an existing user identity
 
-        This method returns user information for a user who has been
-        retrieved before based on the provider-specific refresh data.
+        This method returns user information for an identity that has
+        been retrieved before based on the provider-specific refresh
+        data.
 
-        :param identifier: The `identifier` from :class:`.UserInfo`
+        :param identifier: The `identifier` from :class:`.IdentityInfo`
         :param multiauth_data: The `multiauth_data` dict from
-                               :class:`.UserInfo`
+                               :class:`.IdentityInfo`
         """
         if self.supports_refresh:
             raise NotImplementedError
 
-    def search_users(self, criteria, exact=False):  # pragma: no cover
-        """Searches users matching certain criteria
+    def search_identities(self, criteria, exact=False):  # pragma: no cover
+        """Searches user identities matching certain criteria
 
         :param criteria: A dict containing the criteria to search for.
         :param exact: If criteria need to match exactly, i.e. no
                       substring matches are performed.
-        :return: An iterable of matching users.
+        :return: An iterable of matching identities.
         """
         if self.supports_search:
             raise NotImplementedError

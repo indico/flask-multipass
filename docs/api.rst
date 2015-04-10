@@ -20,15 +20,15 @@ Authentication Providers
    :members:
 
 
-User Providers
---------------
-.. automodule:: flask_multiauth.user
+User Identity Providers
+-----------------------
+.. automodule:: flask_multiauth.identity
    :members:
-.. autoclass:: flask_multiauth.providers.oauth.OAuthUserProvider
+.. autoclass:: flask_multiauth.providers.oauth.OAuthIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.static.StaticUserProvider
+.. autoclass:: flask_multiauth.providers.static.StaticIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyUserProviderBase
+.. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyIdentityProviderBase
    :members:
 
 
