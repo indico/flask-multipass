@@ -146,6 +146,12 @@ def test_login_finished():
     callback.assert_called_with('foo')
 
 
+def test_login_finished_returns():
+    multiauth = MultiAuth()
+    multiauth.identity_handler(Mock(return_value='bar'))
+    assert multiauth.login_finished('foo') == 'bar'
+
+
 def test_identity_handler():
     multiauth = MultiAuth()
     callback = Mock()

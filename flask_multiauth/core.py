@@ -153,9 +153,9 @@ class MultiAuth(object):
         if not identities and current_app.config['MULTIAUTH_REQUIRE_IDENTITY']:
             raise IdentityRetrievalFailed("No identity found")
         if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
-            self.login_finished(identities)
+            return self.login_finished(identities)
         else:
-            self.login_finished(identities[0] if identities else None)
+            return self.login_finished(identities[0] if identities else None)
 
     def login_finished(self, identity_info):
         """Called after the login process finished.
@@ -169,7 +169,7 @@ class MultiAuth(object):
         assert self.identity_callback is not None, \
             'No identity callback has been registered. Register one using ' \
             'Register one using the MultiAuth.identity_handler decorator.'
-        self.identity_callback(identity_info)
+        return self.identity_callback(identity_info)
 
     def handle_auth_error(self, exc, redirect_to_login=False):
         """Handles an authentication failure
@@ -201,6 +201,12 @@ class MultiAuth(object):
         """
         Registers the callback function that receives identity
         information after a successful login.
+
+        If the callback returns a value, it is expected to be a valid
+        return value for a Flask view function such as a redirect.
+        In this case the target page should do whatever it needs to do
+        (like showing an account creation form) and then use
+        :meth:`redirect_success` to redirect to the destination page.
 
         See :meth:`login_finished` for a description of the parameters.
         """
@@ -358,11 +364,11 @@ class MultiAuth(object):
         if form.validate_on_submit():
             try:
                 auth_info = provider.process_local_login(form.data)
-                self.handle_auth_info(auth_info)
+                rv = self.handle_auth_info(auth_info)
             except MultiAuthException as e:
                 self.handle_auth_error(e)
             else:
-                return self.redirect_success()
+                return rv or self.redirect_success()
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
 
