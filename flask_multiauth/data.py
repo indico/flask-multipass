@@ -6,6 +6,7 @@
 
 from __future__ import unicode_literals
 
+from flask_multiauth._compat import text_type
 from flask_multiauth.util import map_provider_data
 
 
@@ -60,7 +61,7 @@ class IdentityInfo(object):
 
     def __init__(self, provider, identifier, multiauth_data=None, **data):
         self.provider = provider
-        self.identifier = identifier
+        self.identifier = text_type(identifier)
         if not provider.supports_refresh:
             assert multiauth_data is None
             self.multiauth_data = None

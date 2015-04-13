@@ -7,8 +7,9 @@
 from __future__ import unicode_literals
 
 import pytest
+from mock import MagicMock
 
-from flask_multiauth import AuthInfo
+from flask_multiauth import AuthInfo, IdentityInfo
 
 
 def test_authinfo():
@@ -34,3 +35,7 @@ def test_authinfo_map_invalid():
     ai = AuthInfo(None, foo='bar')
     with pytest.raises(KeyError):
         ai.map({'foo': 'nop'})
+
+
+def test_identityinfo_identifier_string():
+    assert IdentityInfo(MagicMock(), 123).identifier == '123'
