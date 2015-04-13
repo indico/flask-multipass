@@ -3,7 +3,7 @@
     Available login providers:
     <ul>
         {% for provider in providers|sort(attribute='title') %}
-            <li><a href="{{ url_for('login', provider=provider.name, next=next) }}">{{ provider.title }}</a></li>
+            <li><a href="{{ url_for(login_endpoint, provider=provider.name, next=next) }}">{{ provider.title }}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

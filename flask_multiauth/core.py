@@ -337,13 +337,13 @@ class MultiAuth(object):
         providers = self.auth_providers
         next_url = request.args.get('next')
         auth_failed = session.pop('multiauth_auth_failed', False)
+        login_endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
         if not auth_failed and len(providers) == 1:
             provider = next(iter(providers.values()))
-            return redirect(url_for(current_app.config['MULTIAUTH_LOGIN_ENDPOINT'], provider=provider.name,
-                                    next=next_url))
+            return redirect(url_for(login_endpoint, provider=provider.name, next=next_url))
         else:
             return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url,
-                                        auth_failed=auth_failed)
+                                        auth_failed=auth_failed, login_endpoint=login_endpoint)
 
     def _login_external(self, provider):
         """Starts the external login process"""
