@@ -88,12 +88,35 @@ def convert_data(data, mapping, keys=None):
     return result
 
 
-def resolve_provider_type(base, type_):
+def get_provider_base(cls):
+    """Returns the base class of a provider class.
+
+    :param cls: A subclass of either :class:`.AuthProvider` or
+                :class:`.IdentityProvider`.
+    :return: :class:`.AuthProvider` or :class:`.IdentityProvider`
+    """
+    from flask_multiauth.auth import AuthProvider
+    from flask_multiauth.identity import IdentityProvider
+    if issubclass(cls, AuthProvider) and issubclass(cls, IdentityProvider):
+        raise TypeError('Class inherits from both AuthProvider and IdentityProvider: ' + cls.__name__)
+    elif issubclass(cls, AuthProvider):
+        return AuthProvider
+    elif issubclass(cls, IdentityProvider):
+        return IdentityProvider
+    else:
+        raise TypeError('Class is neither an auth nor an identity provider: ' + cls.__name__)
+
+
+def resolve_provider_type(base, type_, registry=None):
     """Resolves a provider type to its class
 
     :param base: The base class of the provider
     :param type_: The type of the provider. Can be a subclass of
                   `base` or the identifier of a registered type.
+    :param registry: A dict containing registered providers. This
+                     complements the entrypoint-based lookup. Any
+                     provider type defined in this dict takes priority
+                     over an entrypoint-based one with the same name.
     :return: The type's class, which is a subclass of `base`.
     """
     if isclass(type_):
@@ -101,14 +124,17 @@ def resolve_provider_type(base, type_):
             raise TypeError('Received a class {} which is not a subclass of {}'.format(type_, base))
         return type_
 
-    entry_points = list(iter_entry_points(base._entry_point, type_))
-    if not entry_points:
-        raise ValueError('Unknown type: ' + type_)
-    elif len(entry_points) != 1:
-        raise RuntimeError('Type {} is not unique. Defined in {}'.format(
-            type_, ', '.join(ep.module_name for ep in entry_points)))
-    entry_point = entry_points[0]
-    cls = entry_point.load()
+    if registry is not None and type_ in registry:
+        cls = registry[type_]
+    else:
+        entry_points = list(iter_entry_points(base._entry_point, type_))
+        if not entry_points:
+            raise ValueError('Unknown type: ' + type_)
+        elif len(entry_points) != 1:
+            raise RuntimeError('Type {} is not unique. Defined in {}'.format(
+                type_, ', '.join(ep.module_name for ep in entry_points)))
+        entry_point = entry_points[0]
+        cls = entry_point.load()
     if not issubclass(cls, base):
         raise TypeError('Found a class {} which is not a subclass of {}'.format(cls, base))
     return cls

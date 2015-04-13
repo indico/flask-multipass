@@ -14,7 +14,8 @@ from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.auth import AuthProvider
 from flask_multiauth.exceptions import MultiAuthException, IdentityRetrievalFailed, GroupRetrievalFailed
 from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map
+from flask_multiauth.util import (get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map,
+                                  get_provider_base)
 
 
 class MultiAuth(object):
@@ -26,6 +27,7 @@ class MultiAuth(object):
 
     def __init__(self, app=None):
         self.identity_callback = None
+        self.provider_registry = {AuthProvider: {}, IdentityProvider: {}}
         if app is not None:
             self.init_app(app)
 
@@ -76,6 +78,23 @@ class MultiAuth(object):
     def provider_map(self):
         """Returns a read-only mapping between auth and identity providers."""
         return get_state().provider_map
+
+    def register_provider(self, cls, type_):
+        """Registers a new provider type.
+
+        This can be used to register a new provider type in the
+        application without having to go through the entry point
+        system.
+
+        :param cls: The provider. Must be a subclass of either
+                    :class:`.AuthProvider` or
+                    :class:`.IdentityProvider`.
+        :param type_: The type name of the provider used to reference
+                      it in the configuration.
+        """
+        registry = self.provider_registry[get_provider_base(cls)]
+        assert type_ not in registry, 'Provider is already registered: ' + cls.__name__
+        registry[type_] = cls
 
     def redirect_success(self):
         """Redirects to whatever page should be displayed after login"""
@@ -274,11 +293,12 @@ class MultiAuth(object):
                     ``MULTIAUTH_*_PROVIDERS``
         :param base: The base class of the provider type.
         """
+        registry = self.provider_registry[AuthProvider if key == 'AUTH' else IdentityProvider]
         providers = {}
         provider_classes = set()
         for name, settings in iteritems(current_app.config['MULTIAUTH_{}_PROVIDERS'.format(key)]):
             settings = settings.copy()
-            cls = resolve_provider_type(base, settings.pop('type'))
+            cls = resolve_provider_type(base, settings.pop('type'), registry)
             if not cls.multi_instance and cls in provider_classes:
                 raise RuntimeError('Provider does not support multiple instances: ' + cls.__name__)
             providers[name] = cls(self, name, settings)

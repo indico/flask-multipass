@@ -13,10 +13,12 @@ from flask import Flask
 
 from flask_multiauth import MultiAuth
 from flask_multiauth._compat import iteritems, add_metaclass
+from flask_multiauth.auth import AuthProvider
 from flask_multiauth.core import _MultiAuthState
 from flask_multiauth.exceptions import AuthenticationFailed
+from flask_multiauth.identity import IdentityProvider
 from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, convert_data, login_view,
-                                  get_canonical_provider_map, validate_provider_map, SupportsMeta)
+                                  get_canonical_provider_map, validate_provider_map, SupportsMeta, get_provider_base)
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
@@ -75,6 +77,32 @@ def test_get_state():
 ))
 def test_map_data(data, mapping, keys, result):
     assert convert_data(data, mapping, keys) == result
+
+
+def test_get_provider_base():
+    class SomeAuthProvider(AuthProvider):
+        pass
+
+    class NestedAuthProvider(SomeAuthProvider):
+        pass
+
+    class SomeIdentityProvider(IdentityProvider):
+        pass
+
+    assert get_provider_base(SomeAuthProvider) is AuthProvider
+    assert get_provider_base(NestedAuthProvider) is AuthProvider
+    assert get_provider_base(SomeIdentityProvider) is IdentityProvider
+
+
+def test_get_provider_base_invalid():
+    class NoProvider(object):
+        pass
+
+    class InvalidProvider(AuthProvider, IdentityProvider):
+        pass
+
+    pytest.raises(TypeError, get_provider_base, NoProvider)
+    pytest.raises(TypeError, get_provider_base, InvalidProvider)
 
 
 def test_login_view(mocker):

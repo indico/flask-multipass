@@ -25,7 +25,7 @@ MULTIAUTH_AUTH_PROVIDERS = {
         'oauth': _github_oauth_config
     },
     'local': {
-        'type': None,  # set via code (since it's a reference to the class itself)
+        'type': 'example_local',
         'title': 'Local Accounts'
     }
 }
@@ -52,7 +52,7 @@ MULTIAUTH_IDENTITY_PROVIDERS = {
         }
     },
     'local': {
-        'type': None,  # set via code (since it's a reference to the class itself)
+        'type': 'example_local'
     }
 }
 

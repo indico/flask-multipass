@@ -133,8 +133,8 @@ def refresh():
 
 def main():
     app.config.from_pyfile('example.cfg')
-    app.config['MULTIAUTH_AUTH_PROVIDERS']['local']['type'] = LocalAuthProvider
-    app.config['MULTIAUTH_IDENTITY_PROVIDERS']['local']['type'] = LocalIdentityProvider
+    multiauth.register_provider(LocalAuthProvider, 'example_local')
+    multiauth.register_provider(LocalIdentityProvider, 'example_local')
     multiauth.init_app(app)
     db.init_app(app)
     with app.app_context():

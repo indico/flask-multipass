@@ -45,20 +45,14 @@ def test_multiple_apps():
         assert app.extensions['multiauth'].multiauth is multiauth
 
 
-@pytest.fixture
-def mock_auth_providers(monkeypatch):
-    class FooProvider(AuthProvider):
-        pass
-
-    class UniqueProvider(AuthProvider):
-        multi_instance = False
-
-    mapping = {'foo': FooProvider,
-               'unique': UniqueProvider}
-    monkeypatch.setattr('flask_multiauth.core.resolve_provider_type', lambda _, t: mapping[t])
+class FooProvider(AuthProvider):
+    pass
 
 
-@pytest.mark.usefixtures('mock_auth_providers')
+class UniqueProvider(AuthProvider):
+    multi_instance = False
+
+
 def test_initialize_providers():
     app = Flask('test')
     app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
@@ -66,21 +60,25 @@ def test_initialize_providers():
         'test2': {'type': 'unique', 'hello': 'world'},
     }
     multiauth = MultiAuth()
+    multiauth.register_provider(FooProvider, 'foo')
+    multiauth.register_provider(UniqueProvider, 'unique')
     with app.app_context():
         auth_providers = multiauth._create_providers('AUTH', AuthProvider)
         assert auth_providers['test'].settings == {'foo': 'bar'}
         assert auth_providers['test2'].settings == {'hello': 'world'}
 
 
-@pytest.mark.usefixtures('mock_auth_providers')
 def test_initialize_providers_unique():
     app = Flask('test')
     app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
         'test': {'type': 'unique', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
+    multiauth = MultiAuth()
+    multiauth.register_provider(FooProvider, 'foo')
+    multiauth.register_provider(UniqueProvider, 'unique')
     with pytest.raises(RuntimeError):
-        MultiAuth(app)
+        multiauth.init_app(app)
 
 
 def test_create_login_rule(mocker):
