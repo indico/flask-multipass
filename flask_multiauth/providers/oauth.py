@@ -71,7 +71,7 @@ class OAuthAuthProvider(AuthProvider):
 
     @login_view
     def _authorize_callback(self):
-        resp = self.oauth_app.authorized_response()
+        resp = self.oauth_app.authorized_response() or {}
         if self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
             raise AuthenticationFailed(error)
