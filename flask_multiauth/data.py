@@ -6,7 +6,7 @@
 
 from __future__ import unicode_literals
 
-from flask_multiauth.util import convert_data
+from flask_multiauth.util import map_provider_data
 
 
 class AuthInfo(object):
@@ -35,7 +35,7 @@ class AuthInfo(object):
         missing_keys = set(mapping.values()) - set(self.data)
         if missing_keys:
             raise KeyError(next(iter(missing_keys)))
-        return AuthInfo(self.provider, **convert_data(self.data, mapping))
+        return AuthInfo(self.provider, **map_provider_data(self.data, mapping))
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
@@ -67,7 +67,7 @@ class IdentityInfo(object):
         else:
             self.multiauth_data = dict(multiauth_data or {}, _provider=provider.name)
         mapping = provider.settings.get('mapping', None)
-        self.data = convert_data(data, mapping or {}, self.provider.settings['identity_info_keys'])
+        self.data = map_provider_data(data, mapping or {}, self.provider.settings['identity_info_keys'])
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))

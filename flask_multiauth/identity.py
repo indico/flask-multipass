@@ -8,8 +8,8 @@ from __future__ import unicode_literals
 
 from flask import current_app
 
-from flask_multiauth._compat import iteritems, add_metaclass
-from flask_multiauth.util import SupportsMeta
+from flask_multiauth._compat import add_metaclass
+from flask_multiauth.util import SupportsMeta, map_app_data
 
 
 @add_metaclass(SupportsMeta)
@@ -119,7 +119,7 @@ class IdentityProvider(object):
         :return: A dict containing search criteria with mapped keys
         """
         mapping = self.settings['mapping']
-        return {mapping.get(key, key): value for key, value in iteritems(criteria)}
+        return map_app_data(criteria, mapping)
 
     def __repr__(self):
         return '<{}({})>'.format(type(self).__name__, self.name)

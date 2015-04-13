@@ -58,34 +58,54 @@ def login_view(func):
     return decorator
 
 
-def convert_data(data, mapping, keys=None):
-    """Converts a data dict based on a mapping and a key list.
+def map_provider_data(provider_data, mapping, key_filter=None):
+    """Maps data coming from the provider to be used by the application
 
     The result will have all the keys listed in `keys` with values
     coming either from `data` (using the key mapping defined in
-    `mapping`) or ``None`` in case the key is not present. If `keys`
-    is ``None``, all keys from `data` will be used unless they are
-    mapped to a different key in `mapping`.
+    `mapping`) or ``None`` in case the key is not present. If
+    `key_filter` is ``None``, all keys from `provider_data` will be used
+    unless they are mapped to a different key in `mapping`.
 
-    :param data: A dict containing data.
-    :param mapping: A dict containing the mapping between the `data`
-                    dict and the result dict. Each key in the dict will
-                    be used as a key in the returned dict and each
-                    value will be used as the key to get the value from
-                    `data`.
-    :param keys: A list containing the keys that should be preserved in
-                 the returned dict. If it's ``None``, all items are
-                 returned.
-    :return: A dict based on `data`, `mapping` and `keys`.
+    :param provider_data: dict -- Data coming from the provider.
+    :param mapping: dict -- Mapping between keys used to define the data
+                    in the provider and those used by the application.
+                    All application keys will be present in the return
+                    value, defaulting to ``None``.
+    :param key_filter: list -- Keys to be exclusively considered. If
+                       ``None``, all items will be returned. Keys not
+                       present in the mapped data, will have a value of
+                       ``None``.
+    :return: dict -- containing the values of `app_data` mapped to the
+             keys of the application as defined in the `mapping` and
+             filtered out by `key_filter`.
     """
-    mapped_keys = set(mapping.values())
-    result = {key: value for key, value in iteritems(data) if key not in mapped_keys}
-    result.update((target_key, data.get(source_key)) for target_key, source_key in iteritems(mapping))
-    if keys is not None:
-        keys = set(keys)
-        result = {key: value for key, value in iteritems(result) if key in keys}
-        result.update({key: None for key in keys - set(result)})
+    provider_keys = set(mapping.values())
+    result = {key: value for key, value in iteritems(provider_data) if key not in provider_keys}
+    result.update((app_key, provider_data.get(provider_key)) for app_key, provider_key in iteritems(mapping))
+    if key_filter is not None:
+        key_filter = set(key_filter)
+        result = {key: value for key, value in iteritems(result) if key in key_filter}
+        result.update({key: None for key in key_filter - set(result)})
     return result
+
+
+def map_app_data(app_data, mapping, key_filter=None):
+    """Maps data coming from the application to be used by the provider.
+
+    :param app_data: dict -- Data coming from the application.
+    :param mapping: dict -- Mapping between keys used to define the data
+                    in the application and those used by the provider.
+    :param key_filter: list -- Keys to be exclusively considered. If
+                       ``None``, all items will be returned.
+    :return: dict -- containing the values of `app_data` mapped to the
+             keys of the provider as defined in the `mapping` and
+             filtered out by `key_filter`.
+    """
+    if key_filter:
+        key_filter = set(key_filter)
+        app_data = {k: v for k, v in iteritems(app_data) if k in key_filter}
+    return {mapping.get(key, key): value for key, value in iteritems(app_data)}
 
 
 def get_provider_base(cls):
