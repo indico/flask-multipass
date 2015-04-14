@@ -68,7 +68,7 @@ class IdentityInfo(object):
             self.multiauth_data = None
         else:
             self.multiauth_data = dict(multiauth_data or {}, _provider=provider.name)
-        mapping = provider.settings.get('mapping', None)
+        mapping = provider.settings.get('mapping')
         self.data = map_provider_data(data, mapping or {}, self.provider.settings['identity_info_keys'])
 
     def __repr__(self):

@@ -11,7 +11,7 @@ from sqlalchemy import inspect
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth import AuthProvider, IdentityProvider, AuthenticationFailed, AuthInfo, IdentityInfo
+from flask_multiauth import AuthProvider, IdentityProvider, NoSuchUser, InvalidCredentials, AuthInfo, IdentityInfo
 from flask_multiauth._compat import string_types
 
 
@@ -55,9 +55,9 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
         identity = self.identity_model.query.filter(type(self).provider_column == self.name,
                                                     type(self).identifier_column == data['identifier']).first()
         if not identity:
-            raise AuthenticationFailed('No such user')
+            raise NoSuchUser("User not found")
         if not self.check_password(identity, data['password']):
-            raise AuthenticationFailed('Invalid password')
+            raise InvalidCredentials("Invalid password")
         return AuthInfo(self, identity=identity)
 
 
