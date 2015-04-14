@@ -27,6 +27,7 @@ class MultiAuth(object):
 
     def __init__(self, app=None):
         self.identity_callback = None
+        self.login_check_callback = None
         self.provider_registry = {AuthProvider: {}, IdentityProvider: {}}
         if app is not None:
             self.init_app(app)
@@ -112,6 +113,10 @@ class MultiAuth(object):
 
         :param provider: The provider named used to log in.
         """
+        if self.login_check_callback and self.login_check_callback():
+            self._set_next_url()
+            return self.redirect_success()
+
         if provider is None:
             return self._login_selector()
 
@@ -211,6 +216,20 @@ class MultiAuth(object):
         See :meth:`login_finished` for a description of the parameters.
         """
         self.identity_callback = callback
+        return callback
+
+    def login_check(self, callback):
+        """
+        Registers the callback function used to determine if the user
+        is already logged in.
+
+        This is optional, but recommended, as it will avoid showing
+        the login form to a user who is already logged in. When
+        accessing the login page while being logged in, the user will
+        be redirected to the same URL he'd be redirected to after a
+        successful login.
+        """
+        self.login_check_callback = callback
         return callback
 
     def refresh_identity(self, identifier, multiauth_data):

@@ -158,6 +158,12 @@ def test_identity_handler():
     assert multiauth.identity_handler(callback) is callback
 
 
+def test_login_check():
+    multiauth = MultiAuth()
+    callback = Mock()
+    assert multiauth.login_check(callback) is callback
+
+
 def test_handle_auth_error(mocker):
     flash = mocker.patch('flask_multiauth.core.flash')
     app = Flask('test')
