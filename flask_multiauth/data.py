@@ -17,7 +17,7 @@ class AuthInfo(object):
                      the data.
     :param data: Any data the authentication provider wants to pass on
                  to identity providers. This data must allow any
-                 connected user provider to uniquely identify a user.
+                 connected identity provider to uniquely identify a user.
     """
 
     def __init__(self, provider, **data):
@@ -30,8 +30,9 @@ class AuthInfo(object):
         """Creates a new instance with transformed data keys
 
         :param mapping: The dict mapping the current data keys to the
-                        the keys that are expected by the user provider.
-                        Any key that is not in `mapping` is kept as-is.
+                        the keys that are expected by the identity
+                        provider. Any key that is not in `mapping` is
+                        kept as-is.
         """
         missing_keys = set(mapping.values()) - set(self.data)
         if missing_keys:
@@ -52,8 +53,8 @@ class IdentityInfo(object):
                        same user.
     :param multiauth_data: A dict containing additional data the
                            identity provider needs e.g. to refresh the
-                           user information for the same user, without
-                           him authenticating again by keeping a
+                           identity information for the same user,
+                           without him authenticating again by keeping a
                            long-lived token.
     :param data: Any data the identity provider wants to pass on the
                  application.

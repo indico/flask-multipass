@@ -64,8 +64,8 @@ class IdentityProvider(object):
     def refresh_identity(self, identifier, multiauth_data):  # pragma: no cover
         """Retrieves identity information for an existing user identity
 
-        This method returns user information for an identity that has
-        been retrieved before based on the provider-specific refresh
+        This method returns identity information for an identity that
+        has been retrieved before based on the provider-specific refresh
         data.
 
         :param identifier: The `identifier` from :class:`.IdentityInfo`

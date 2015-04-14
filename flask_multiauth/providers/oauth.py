@@ -82,11 +82,11 @@ class OAuthAuthProvider(AuthProvider):
 class OAuthIdentityProvider(IdentityProvider):
     """Provides identity information using OAuth.
 
-    The remote service needs to provide user information as JSON.
+    The remote service needs to provide identity information as JSON.
     The type name to instantiate this provider is *oauth*.
     """
 
-    #: If the provider supports refreshing user information
+    #: If the provider supports refreshing identity information
     supports_refresh = True
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +102,7 @@ class OAuthIdentityProvider(IdentityProvider):
     def _get_identity(self, token):
         resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=(token, None))
         if resp.status not in self.settings['valid_statuses']:
-            raise IdentityRetrievalFailed('Could not retrieve user data')
+            raise IdentityRetrievalFailed('Could not retrieve identity data')
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
