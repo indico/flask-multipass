@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE, SCOPE_SUBTREE
 from ldap.controls import SimplePagedResultsControl
 
+from flask_multiauth.exceptions import GroupRetrievalFailed, UserRetrievalFailed
 from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie, to_unicode
 
@@ -36,15 +37,33 @@ def build_group_search_filter(criteria, mapping=None, exact=False):
 
 
 def get_user_by_id(uid, attributes=None):
-    # TODO handle identifier None
-    # TODO document
+    """Retrieves a user's data from LDAP, given its identifier.
+
+    :param uid: str -- the identifier of the user
+    :param attributes: list -- Attributes to be retrieved for the user.
+                       If ``None``, all attributes will be retrieved.
+    :raises UserRetrievalFailed: If the identifier is falsely.
+    :return: A tuple containing the `dn` of the user as ``str`` and the
+             found attributes in a ``dict``.
+    """
+    if not uid:
+        raise UserRetrievalFailed("No identifier specified")
     user_filter = build_user_search_filter({current_ldap.settings['uid']: uid}, exact=True)
     return find_one(current_ldap.settings['user_base'], user_filter, attributes=attributes)
 
 
 def get_group_by_id(gid, attributes=None):
-    # TODO handle identifier None
-    # TODO document
+    """Retrieves a user's data from LDAP, given its identifier.
+
+    :param uid: str -- the identifier of the user
+    :param attributes: list -- Attributes to be retrieved for the user.
+                       If ``None``, all attributes will be retrieved.
+    :raises GroupRetrievalFailed: If the identifier is falsely.
+    :return: A tuple containing the `dn` of the user as ``str`` and the
+             found attributes in a ``dict``.
+    """
+    if not gid:
+        raise GroupRetrievalFailed("No identifier specified")
     group_filter = build_group_search_filter({current_ldap.settings['gid']: gid}, exact=True)
     return find_one(current_ldap.settings['group_base'], group_filter, attributes=attributes)
 

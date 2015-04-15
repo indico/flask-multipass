@@ -26,7 +26,15 @@ def ldap_context(settings):
     Establishes a connection to the LDAP server from the `uri` in the
     ``settings`` and makes the context available in ``current_ldap``.
 
-    TODO explain settings used for establishing connection
+    To establish a connection, the settings must be specified:
+     - ``uri``: valid URI which points to a LDAP server,
+     - ``bind_dn``: `dn` used to initially bind every LDAP connection
+     - ``bind_password``" password used for the initial bind
+     - ``tls``: ``True`` if the connection should use TLS encryption
+     - ``starttls``: ``True`` to negotiate TLS with the server
+
+    `Note`: ``starttls`` is ignored if the URI uses LDAPS and ``tls`` is
+    set to ``True``.
 
     :param settings: dict -- The settings for a LDAP provider.
     :return: LDAPContext -- A ``namedtuple`` tuple containing the
@@ -71,7 +79,7 @@ def find_one(base_dn, search_filter, attributes=None):
     """Looks for a single entry in the LDAP server.
 
     This will return the first entry given by the server which matches
-    the ``search_filter`` found in the ``base_dn`` subtree. If the
+    the ``search_filter`` found in the ``base_dn`` sub tree. If the
     ``search_filter`` matches multiples entries there is no guarantee
     the same entry is returned.
 
@@ -80,7 +88,7 @@ def find_one(base_dn, search_filter, attributes=None):
                           the entry.
     :param attributes: list -- Attributes to be retrieved for the entry.
                        If ``None``, all attributes will be retrieved.
-    :return: A tuple containint the `dn` of the entry as ``str`` and the
+    :return: A tuple containing the `dn` of the entry as ``str`` and the
              found attributes in a ``dict``.
     """
     entry = current_ldap.connection.search_ext_s(base_dn, ldap.SCOPE_SUBTREE,
