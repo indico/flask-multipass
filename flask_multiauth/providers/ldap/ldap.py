@@ -102,9 +102,7 @@ class LDAPGroup(Group):
             group_dns = self._iter_group()
             for group_dn in group_dns:
                 user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
-                attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
-                attributes.append(self.ldap_settings['uid'])
-                for _, user_data in search(self.ldap_settings['user_base'], user_filter, attributes):
+                for _, user_data in self.provider._search_users(user_filter):
                     yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
                 group_dns.send(self.provider._search_groups(group_filter))
@@ -142,16 +140,21 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')
         self.ldap_settings.setdefault('member_of_attr', 'memberOf')
         self.ldap_settings.setdefault('ad_group_style', False)
+        self._attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
+        self._attributes.append(self.ldap_settings['uid'])
 
     def _get_identity(self, identifier):
         with ldap_context(self.ldap_settings):
-            # TODO: get right attribute filter
-            attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
-            attributes.append(self.ldap_settings['uid'])
-            user_dn, user_data = get_user_by_id(identifier, attributes)
+            user_dn, user_data = get_user_by_id(identifier, self._attributes)
         if not user_dn:
             return None
         return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+
+    def _search_users(self, search_filter):
+        return search(self.ldap_settings['user_base'], search_filter, self._attributes)
+
+    def _search_groups(self, search_filter):
+        return search(self.ldap_settings['group_base'], search_filter, attributes=[self.ldap_settings['gid']])
 
     def get_identity_from_auth(self, auth_info):
         return self._get_identity(auth_info.data.pop('identifier'))
@@ -164,9 +167,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)
             if not search_filter:
                 raise IdentityRetrievalFailed("Unable to generate search filter from criteria")
-            attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
-            attributes.append(self.ldap_settings['uid'])
-            for _, user_data in search(self.ldap_settings['user_base'], search_filter, attributes):
+            for _, user_data in self._search_users(search_filter):
                 yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
 
     def get_group(self, name):
@@ -181,6 +182,5 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             search_filter = build_group_search_filter({self.ldap_settings['gid']: name}, exact=exact)
             if not search_filter:
                 raise GroupRetrievalFailed("Unable to generate search filter from criteria")
-            for group_dn, group_data in search(self.ldap_settings['group_base'], search_filter,
-                                               [self.ldap_settings['gid']]):
+            for group_dn, group_data in self._search_groups(search_filter):
                 yield self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn)
