@@ -60,7 +60,7 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
                 current_ldap.connection.simple_bind_s(user_dn, password)
             except INVALID_CREDENTIALS:
                 raise InvalidCredentials()
-        return AuthInfo(self, identifier=user_data[self.ldap_settings['uid']])
+        return AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
 
 
 class LDAPGroup(Group):
@@ -147,7 +147,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             user_dn, user_data = get_user_by_id(identifier, attributes)
         if not user_dn:
             return None
-        return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']], **user_data)
+        return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
 
     def get_user_from_auth(self, auth_info):
         return self._get_identity(auth_info.data.pop('identifier'))
@@ -163,14 +163,14 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
             attributes.append(self.ldap_settings['uid'])
             for _, user_data in search(self.ldap_settings['user_base'], search_filter, attributes):
-                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']], **user_data)
+                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
 
     def get_group(self, name):
         with ldap_context(self.ldap_settings):
             group_dn, group_data = get_group_by_id(name)
         if not group_dn:
             return None
-        return self.group_class(self, group_data.get(self.ldap_settings['gid']), group_dn)
+        return self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn)
 
     def search_groups(self, name, exact=False):
         with ldap_context(self.ldap_settings):
@@ -179,4 +179,4 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
                 raise GroupRetrievalFailed("Unable to generate search filter from criteria")
             for group_dn, group_data in search(self.ldap_settings['group_base'], search_filter,
                                                [self.ldap_settings['gid']]):
-                yield self.group_class(self, group_data.get(self.ldap_settings['gid']), group_dn)
+                yield self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn)
