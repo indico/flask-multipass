@@ -7,6 +7,7 @@ from warnings import warn
 
 import ldap
 from ldap.controls import SimplePagedResultsControl
+from ldap.filter import filter_format
 
 from flask_multiauth._compat import iteritems
 from flask_multiauth.providers.ldap.exceptions import LDAPServerError
@@ -32,28 +33,31 @@ def ldap_context(settings):
     """
     uri_info = urlparse(settings['uri'])
     credentials = (settings['bind_dn'], settings['bind_password'])
-    ldap_ctx = LDAPContext(conn=None, settings=settings)
+    ldap_connection = None
     try:
-        ldap_ctx.connection = ldap.initialize(settings['uri'])
-        ldap_ctx.connection.protocol_version = ldap.VERSION3
-        ldap_ctx.connection.set_option(ldap.OPT_REFERRALS, 0)
-        ldap_ctx.connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND
-                                       if settings['tls'] else ldap.OPT_X_TLS_NEVER)
+        ldap_connection = ldap.initialize(settings['uri'])
+        ldap_connection.protocol_version = ldap.VERSION3
+        ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
+        ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if settings['tls'] else ldap.OPT_X_TLS_NEVER)
         if uri_info.scheme != 'ldaps' and settings['starttls']:
-            ldap_ctx.connection.start_tls_s()
+            ldap_connection.start_tls_s()
         elif settings['starttls']:
             warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
-        # TODO: allow annonyous bind
-        ldap_ctx.connection.simple_bind_s(*credentials)
+        # TODO: allow anonymous bind
+        ldap_connection.simple_bind_s(*credentials)
+        ldap_ctx = LDAPContext(connection=ldap_connection, settings=settings)
         _ldap_ctx_stack.push(ldap_ctx)
-        yield ldap_ctx
+        try:
+            yield ldap_ctx
+        finally:
+            assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
     except ldap.INVALID_CREDENTIALS:
         raise ValueError("Invalid bind credentials")
     except ldap.SIZELIMIT_EXCEEDED:
         raise ValueError("Size limit exceeded (try setting a smaller page size)")
     finally:
-        ldap_ctx.connection.unbind_s()
-        assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
+        if ldap_connection:
+            ldap_connection.unbind_s()
 
 
 def find_one(base_dn, search_filter, attributes=None):
@@ -91,10 +95,10 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     assertions = map_app_data(criteria, mapping or {})
     if not assertions:
         return None
-    assertions = (item for assertion in iteritems(assertions) for item in assertion)
+    assertions = list(iteritems(assertions))
     assert_template = '(%s=%s)' if exact else '(%s=*%s*)'
     filter_template = '(&{}{})'.format(assert_template * len(assertions), type_filter)
-    return ldap.filter.filter_format(filter_template, assertions)
+    return filter_format(filter_template, (item for assertion in assertions for item in assertion))
 
 
 def get_page_cookie(server_ctrls):

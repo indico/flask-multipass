@@ -5,10 +5,11 @@ from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth.auth import AuthProvider, IdentityProvider
+from flask_multiauth.auth import AuthProvider
 from flask_multiauth.data import AuthInfo, IdentityInfo
 from flask_multiauth.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
 from flask_multiauth.group import Group
+from flask_multiauth.identity import IdentityProvider
 from flask_multiauth.util import map_app_data
 
 from flask_multiauth.providers.ldap.globals import current_ldap
@@ -51,7 +52,6 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
     def process_local_login(self, data):
         username = data['username']
         password = data['password']
-
         with ldap_context(self.ldap_settings):
             try:
                 user_dn, user_data = get_user_by_id(username, attributes=[self.ldap_settings['uid']])
@@ -66,6 +66,9 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
 class LDAPGroup(Group):
     """A group from the LDAP identity provider"""
 
+    #: If it is possible to get the list of members of a group.
+    supports_member_list = True
+
     def __init__(self, provider, name, dn):  # pragma: no cover
         super(LDAPGroup, self).__init__(provider, name)
         self.dn = dn
@@ -74,25 +77,30 @@ class LDAPGroup(Group):
     def ldap_settings(self):
         return self.provider.ldap_settings
 
-    def _iter_group(self):
-        to_visit = set(self.dn)
-        visited = set()
+    @property
+    def settings(self):
+        return self.provider.settings
 
+    def _iter_group(self):
+        to_visit = set([self.dn])
+        visited = set()
         while to_visit:
             next_group_dn = to_visit.pop()
             visited.add(next_group_dn)
             groups = yield next_group_dn
-            to_visit.update({group_dn for group_dn, group_data in groups if group_dn not in visited})
+            if groups:
+                to_visit.update({group_dn for group_dn, group_data in groups if group_dn not in visited})
 
     def get_members(self):
         with ldap_context(self.ldap_settings):
             group_dns = self._iter_group()
             for group_dn in group_dns:
                 user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
-                for _, user_data in search(self.ldap_settings['user_base'], user_filter, [self.ldap_settings['uid']]):
-                    user_id = user_data.get(self.ldap_settings['uid'])
-                    if user_id:
-                        yield user_id[0]
+                attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
+                attributes.append(self.ldap_settings['uid'])
+                for _, user_data in search(self.ldap_settings['user_base'], user_filter, attributes):
+                    yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
                 for groups in search(self.ldap_settings['group_base'], group_filter, [self.ldap_settings['gid']]):
                     group_dns.send(groups)
@@ -135,7 +143,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         with ldap_context(self.ldap_settings):
             # TODO: get right attribute filter
             attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
-            attributes.append(self.ldap_settings['ldap']['uid'])
+            attributes.append(self.ldap_settings['uid'])
             user_dn, user_data = get_user_by_id(identifier, attributes)
         if not user_dn:
             return None
@@ -148,15 +156,14 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):
-        search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)
-        if not search_filter:
-            raise IdentityRetrievalFailed("Unable to generate search filter from criteria")
-
         with ldap_context(self.ldap_settings):
+            search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)
+            if not search_filter:
+                raise IdentityRetrievalFailed("Unable to generate search filter from criteria")
             attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
-            for users in search(self.ldap_settings['user_base'], search_filter, attributes):
-                for _, user_data in users:
-                    yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']], **user_data)
+            attributes.append(self.ldap_settings['uid'])
+            for _, user_data in search(self.ldap_settings['user_base'], search_filter, attributes):
+                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']], **user_data)
 
     def get_group(self, name):
         with ldap_context(self.ldap_settings):
@@ -166,11 +173,10 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         return self.group_class(self, group_data.get(self.ldap_settings['gid']), group_dn)
 
     def search_groups(self, name, exact=False):
-        search_filter = build_group_search_filter({self.ldap_settings['gid']: name}, exact=exact)
-        if not search_filter:
-            raise GroupRetrievalFailed("Unable to generate search filter from criteria")
-
         with ldap_context(self.ldap_settings):
-            for groups in search(self.ldap_settings['group_base'], search_filter, [self.ldap_settings['gid']]):
-                for group_dn, group_data in groups:
-                    yield self.group_class(group_data.get(self.ldap_settings['gid']), group_dn)
+            search_filter = build_group_search_filter({self.ldap_settings['gid']: name}, exact=exact)
+            if not search_filter:
+                raise GroupRetrievalFailed("Unable to generate search filter from criteria")
+            for group_dn, group_data in search(self.ldap_settings['group_base'], search_filter,
+                                               [self.ldap_settings['gid']]):
+                yield self.group_class(self, group_data.get(self.ldap_settings['gid']), group_dn)

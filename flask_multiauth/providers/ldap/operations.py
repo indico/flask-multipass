@@ -17,8 +17,8 @@ def build_user_search_filter(criteria, mapping=None, exact=False):
                   othewise perform substring matching.
     :return: str -- Valid LDAP search filter.
     """
-    type_filter = current_ldap.settings['userfilter']
-    return build_search_filter(criteria, mapping, type_filter, exact)
+    type_filter = current_ldap.settings['user_filter']
+    return build_search_filter(criteria, type_filter, mapping, exact)
 
 
 def build_group_search_filter(criteria, mapping=None, exact=False):
@@ -32,7 +32,7 @@ def build_group_search_filter(criteria, mapping=None, exact=False):
     :return: str -- Valid LDAP search filter.
     """
     type_filter = current_ldap.settings['group_filter']
-    return build_search_filter(criteria, mapping, type_filter, exact)
+    return build_search_filter(criteria, type_filter, mapping, exact)
 
 
 def get_user_by_id(uid, attributes=None):
@@ -73,8 +73,9 @@ def search(base_dn, search_filter, attributes):
         except NO_SUCH_OBJECT:
             break
 
-        result = ((dn, entry) for dn, entry in r_data if dn)
-        yield result
+        for dn, entry in r_data:
+            if dn:
+                yield (dn, entry)
 
         page_ctrl.cookie = get_page_cookie(server_ctrls)
         if not page_ctrl.cookie:
