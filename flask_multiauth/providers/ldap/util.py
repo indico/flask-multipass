@@ -9,7 +9,7 @@ import ldap
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 
-from flask_multiauth._compat import iteritems
+from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.providers.ldap.exceptions import LDAPServerError
 from flask_multiauth.providers.ldap.globals import _ldap_ctx_stack, current_ldap
@@ -86,7 +86,7 @@ def find_one(base_dn, search_filter, attributes=None):
     entry = current_ldap.connection.search_ext_s(base_dn, ldap.SCOPE_SUBTREE,
                                                  attrlist=attributes, filterstr=search_filter,
                                                  timeout=current_ldap.settings['timeout'], sizelimit=1)
-    return next(((dn, data) for dn, data in entry if dn), (None, None))
+    return next((to_unicode(dn, data) for dn, data in entry if dn), (None, None))
 
 
 def build_search_filter(criteria, type_filter, mapping=None, exact=False):
@@ -120,3 +120,16 @@ def get_page_cookie(server_ctrls):
     if not page_ctrls:
         raise LDAPServerError("The LDAP server ignores the RFC 2696 specification")
     return page_ctrls[0].cookie
+
+
+def to_unicode(dn=None, data=None):
+    unicode_dn = text_type(dn)
+    unicode_data = {text_type(k): [x.decode('utf-8') for x in v] for k, v in iteritems(data)}
+    if dn and data:
+        return (unicode_dn, unicode_data)
+    elif dn:
+        return unicode_dn
+    elif data:
+        return unicode_data
+    else:
+        raise ValueError('dn and data cannot both be None')
