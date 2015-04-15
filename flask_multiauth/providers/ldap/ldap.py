@@ -20,7 +20,7 @@ from flask_multiauth.providers.ldap.util import ldap_context
 
 
 class LoginForm(Form):
-    identifier = StringField('Username', [DataRequired()])
+    username = StringField('Username', [DataRequired()])
     password = PasswordField('Password', [DataRequired()])
 
 
@@ -90,6 +90,12 @@ class LDAPGroup(Group):
             groups = yield next_group_dn
             if groups:
                 to_visit.update({group_dn for group_dn, group_data in groups if group_dn not in visited})
+                # 'generator.send' returns the next value to be yield,
+                # which is not the desired behaviour here as the
+                # generator is used in a loop, so we yield 'None' to
+                # the 'generator.send' call in order to get the next
+                # value in the loop.
+                yield None
 
     def get_members(self):
         with ldap_context(self.ldap_settings):
@@ -100,10 +106,8 @@ class LDAPGroup(Group):
                 attributes.append(self.ldap_settings['uid'])
                 for _, user_data in search(self.ldap_settings['user_base'], user_filter, attributes):
                     yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
-
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
-                for groups in search(self.ldap_settings['group_base'], group_filter, [self.ldap_settings['gid']]):
-                    group_dns.send(groups)
+                group_dns.send(self.provider._search_groups(group_filter))
 
     def has_user(self, user_identifier):
         with ldap_context(self.ldap_settings):
@@ -149,7 +153,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             return None
         return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
 
-    def get_user_from_auth(self, auth_info):
+    def get_identity_from_auth(self, auth_info):
         return self._get_identity(auth_info.data.pop('identifier'))
 
     def refresh_identity(self, identifier, multiauth_data):

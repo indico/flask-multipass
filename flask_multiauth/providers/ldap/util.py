@@ -10,6 +10,7 @@ from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 
 from flask_multiauth._compat import iteritems
+from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.providers.ldap.exceptions import LDAPServerError
 from flask_multiauth.providers.ldap.globals import _ldap_ctx_stack, current_ldap
 from flask_multiauth.util import map_app_data
@@ -55,6 +56,12 @@ def ldap_context(settings):
         raise ValueError("Invalid bind credentials")
     except ldap.SIZELIMIT_EXCEEDED:
         raise ValueError("Size limit exceeded (try setting a smaller page size)")
+    except ldap.TIMELIMIT_EXCEEDED:
+        raise MultiAuthException("The time limit for the operation has been exceeded.")
+    except ldap.FILTER_ERROR:
+        raise ValueError("The filter supplied to the operation is invalid. "
+                         "(This is most likely due to a base user or group filter.")
+    # TODO: handle a MultiAuth time out exception
     finally:
         if ldap_connection:
             ldap_connection.unbind_s()
@@ -93,9 +100,9 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     :return: str -- Valid LDAP search filter.
     """
     assertions = map_app_data(criteria, mapping or {})
+    assertions = [(k, v) for k, v in iteritems(assertions) if k and v]
     if not assertions:
         return None
-    assertions = list(iteritems(assertions))
     assert_template = '(%s=%s)' if exact else '(%s=*%s*)'
     filter_template = '(&{}{})'.format(assert_template * len(assertions), type_filter)
     return filter_format(filter_template, (item for assertion in assertions for item in assertion))
