@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE, SCOPE_SUBTREE
 from ldap.controls import SimplePagedResultsControl
 

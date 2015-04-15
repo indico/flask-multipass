@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from flask_wtf import Form
 from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
