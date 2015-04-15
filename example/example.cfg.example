@@ -11,6 +11,26 @@ _github_oauth_config = {
     'authorize_url': 'https://github.com/login/oauth/authorize'
 }
 
+_my_ldap_config = {
+    'uri': 'ldaps://ldap.example.com:636',
+    'bind_dn': 'uid=admin,DC=example,DC=com',
+    'bind_password': 'p455w0rd',
+    'timeout': 30,
+    'tls': True,
+    'starttls': False,
+    'page_size': 1000,
+
+    'uid': 'uid',
+    'user_base': 'OU=Users,DC=example,DC=com',
+    'user_filter': '(objectCategory=person)',
+
+    'gid': 'cn',
+    'group_base': 'OU=Organizational Units,DC=example,DC=com',
+    'group_filter': '(objectCategory=groupOfNames)',
+    'member_of_attr': 'memberOf',
+    'ad_group_style': False,
+}
+
 MULTIAUTH_AUTH_PROVIDERS = {
     'test': {
         'type': 'static',
@@ -24,6 +44,11 @@ MULTIAUTH_AUTH_PROVIDERS = {
         'type': 'oauth',
         'title': 'GitHub',
         'oauth': _github_oauth_config
+    },
+    'my-ldap': {
+        'type': 'ldap',
+        'title': 'My Organization LDAP',
+        'ldap': _my_ldap_config,
     },
     'local': {
         'type': 'example_local',
@@ -68,12 +93,22 @@ MULTIAUTH_IDENTITY_PROVIDERS = {
             'name': 'ADFS_FIRSTNAME',
             'affiliation': 'ADFS_HOMEINSTITUTE'
         }
+    },
+    'my-ldap': {
+        'type': 'ldap',
+        'ldap': _my_ldap_config,
+        'mapping': {
+            'name': 'givenName',
+            'email': 'mail',
+            'affiliation': 'company'
+        }
     }
 }
 
 MULTIAUTH_PROVIDER_MAP = {
     'local': 'local',
     'my_shibboleth': 'my_shibboleth',
+    'my-ldap': 'my-ldap',
     'test': 'test',
     # You can also be explicit (only needed for more complex links)
     'github': [
