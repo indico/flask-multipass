@@ -15,7 +15,7 @@ from flask_multiauth import MultiAuth
 from flask_multiauth.providers.sqlalchemy import SQLAlchemyAuthProviderBase, SQLAlchemyIdentityProviderBase
 
 
-app = Flask(__name__)
+application = app = Flask(__name__)
 app.debug = True
 app.secret_key = 'fma-example'
 db = SQLAlchemy()
@@ -64,7 +64,7 @@ def identity_handler(identity_info):
     if not identity:
         user = User.query.filter_by(email=identity_info.data['email']).first()
         if not user:
-            user = User(**identity_info.data)
+            user = User(**identity_info.data.to_dict())
             db.session.add(user)
         identity = Identity(provider=identity_info.provider.name, identifier=identity_info.identifier)
         user.identities.append(identity)
@@ -131,22 +131,20 @@ def refresh():
     return redirect(url_for('index'))
 
 
-def main():
-    app.config.from_pyfile('example.cfg')
-    multiauth.register_provider(LocalAuthProvider, 'example_local')
-    multiauth.register_provider(LocalIdentityProvider, 'example_local')
-    multiauth.init_app(app)
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(name='Local Guinea Pig').count():
-            user = User(name='Local Guinea Pig', email='test@example.com', affiliation='Local')
-            identity = Identity(provider='local', identifier='Test', multiauth_data='null', password='123')
-            user.identities.append(identity)
-            db.session.add(user)
-            db.session.commit()
-    app.run('0.0.0.0', 10500, use_evalex=False)
+app.config.from_pyfile('example.cfg')
+multiauth.register_provider(LocalAuthProvider, 'example_local')
+multiauth.register_provider(LocalIdentityProvider, 'example_local')
+multiauth.init_app(app)
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+    if not User.query.filter_by(name='Local Guinea Pig').count():
+        user = User(name='Local Guinea Pig', email='test@example.com', affiliation='Local')
+        identity = Identity(provider='local', identifier='Test', multiauth_data='null', password='123')
+        user.identities.append(identity)
+        db.session.add(user)
+        db.session.commit()
 
 
 if __name__ == '__main__':
-    main()
+    app.run('0.0.0.0', 10500, use_evalex=False)
