@@ -1,7 +1,7 @@
-# This file is part of Flask-PluginEngine.
-# Copyright (C) 2014 CERN
+# This file is part of Flask-MultiAuth.
+# Copyright (C) 2015 CERN
 #
-# Flask-PluginEngine is free software; you can redistribute it
+# Flask-MultiAuth is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from werkzeug.local import LocalStack, LocalProxy
