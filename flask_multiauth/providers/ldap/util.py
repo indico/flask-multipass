@@ -66,19 +66,22 @@ def ldap_context(settings):
             yield ldap_ctx
         finally:
             assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
+    except ldap.SERVER_DOWN:
+        raise MultiAuthException("The LDAP server is unreachable")
     except ldap.INVALID_CREDENTIALS:
         raise ValueError("Invalid bind credentials")
     except ldap.SIZELIMIT_EXCEEDED:
-        raise ValueError("Size limit exceeded (try setting a smaller page size)")
+        raise MultiAuthException("Size limit exceeded (try setting a smaller page size)")
     except ldap.TIMELIMIT_EXCEEDED:
         raise MultiAuthException("The time limit for the operation has been exceeded.")
+    except ldap.TIMEOUT:
+        raise MultiAuthException("The operation timed out.")
     except ldap.FILTER_ERROR:
         raise ValueError("The filter supplied to the operation is invalid. "
                          "(This is most likely due to a base user or group filter.")
     # TODO: handle a MultiAuth time out exception
     finally:
-        if ldap_connection:
-            ldap_connection.unbind_s()
+        ldap_connection.unbind_s()
 
 
 def find_one(base_dn, search_filter, attributes=None):
@@ -137,13 +140,13 @@ def get_page_cookie(server_ctrls):
 
 
 def to_unicode(dn=None, data=None):
-    unicode_dn = text_type(dn)
-    unicode_data = {text_type(k): [x.decode('utf-8') for x in v] for k, v in iteritems(data)}
-    if dn and data:
-        return (unicode_dn, unicode_data)
-    elif dn:
-        return unicode_dn
-    elif data:
-        return unicode_data
-    else:
+    if not dn and not data:
         raise ValueError('dn and data cannot both be None')
+    if dn:
+        unicode_dn = text_type(dn)
+        if not data:
+            return unicode_dn
+    unicode_data = {text_type(k): [x.decode('utf-8') for x in v] for k, v in iteritems(data)}
+    if not dn:
+        return unicode_data
+    return (unicode_dn, unicode_data)
