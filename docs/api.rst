@@ -16,6 +16,8 @@ Authentication Providers
    :members:
 .. autoclass:: flask_multiauth.providers.static.StaticAuthProvider
    :members:
+.. autoclass:: flask_multiauth.providers.shibboleth.ShibbolethAuthProvider
+   :members:
 .. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyAuthProviderBase
    :members:
 
@@ -27,6 +29,8 @@ User Identity Providers
 .. autoclass:: flask_multiauth.providers.oauth.OAuthIdentityProvider
    :members:
 .. autoclass:: flask_multiauth.providers.static.StaticIdentityProvider
+   :members:
+.. autoclass:: flask_multiauth.providers.shibboleth.ShibbolethIdentityProvider
    :members:
 .. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyIdentityProviderBase
    :members:
