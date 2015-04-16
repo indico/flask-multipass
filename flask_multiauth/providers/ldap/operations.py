@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE, SCOPE_SUBTREE
 from ldap.controls import SimplePagedResultsControl
 
-from flask_multiauth.exceptions import GroupRetrievalFailed, UserRetrievalFailed
+from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
 from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie, to_unicode
 
@@ -48,12 +48,12 @@ def get_user_by_id(uid, attributes=None):
     :param uid: str -- the identifier of the user
     :param attributes: list -- Attributes to be retrieved for the user.
                        If ``None``, all attributes will be retrieved.
-    :raises UserRetrievalFailed: If the identifier is falsely.
+    :raises IdentityRetrievalFailed: If the identifier is falsely.
     :return: A tuple containing the `dn` of the user as ``str`` and the
              found attributes in a ``dict``.
     """
     if not uid:
-        raise UserRetrievalFailed("No identifier specified")
+        raise IdentityRetrievalFailed("No identifier specified")
     user_filter = build_user_search_filter({current_ldap.settings['uid']: uid}, exact=True)
     return find_one(current_ldap.settings['user_base'], user_filter, attributes=attributes)
 
