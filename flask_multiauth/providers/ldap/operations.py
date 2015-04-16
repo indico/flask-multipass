@@ -14,7 +14,7 @@ from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie, to_unicode
 
 
-def build_user_search_filter(criteria, mapping=None, exact=False):
+def build_user_search_filter(criteria, mapping=None, exact=False):  # pragma: no cover
     """Builds the LDAP search filter for retrieving users.
 
     :param criteria: dict -- Criteria to be `AND`ed together to build
@@ -28,7 +28,7 @@ def build_user_search_filter(criteria, mapping=None, exact=False):
     return build_search_filter(criteria, type_filter, mapping, exact)
 
 
-def build_group_search_filter(criteria, mapping=None, exact=False):
+def build_group_search_filter(criteria, mapping=None, exact=False):  # pragma: no cover
     """Builds the LDAP search filter for retrieving groups.
 
     :param criteria: dict -- Criteria to be `AND`ed together to build
