@@ -29,15 +29,15 @@ class ShibbolethAuthProvider(AuthProvider):
         self.settings.setdefault('attrs_prefix', 'ADFS_')
         if not self.settings.get('callback_uri'):
             raise MultiAuthException("`callback_uri` must be specified in the provider settings")
-        self.authorized_endpoint = '_flaskmultiauth_shibboleth_' + self.name
-        current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
-                                 self._authorize_callback, methods=('GET', 'POST'))
+        self.shibboleth_endpoint = '_flaskmultiauth_shibboleth_' + self.name
+        current_app.add_url_rule(self.settings['callback_uri'], self.shibboleth_endpoint,
+                                 self._shibboleth_callback, methods=('GET', 'POST'))
 
     def initiate_external_login(self):
-        return redirect(url_for(self.authorized_endpoint))
+        return redirect(url_for(self.shibboleth_endpoint))
 
     @login_view
-    def _authorize_callback(self):
+    def _shibboleth_callback(self):
         attributes = {k: v for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
         if not attributes:
             raise AuthenticationFailed("No valid data received")
@@ -58,8 +58,7 @@ class ShibbolethIdentityProvider(IdentityProvider):
         self.settings.setdefault('identifier_field', 'ADFS_LOGIN')
 
     def get_identity_from_auth(self, auth_info):
-        identifier = auth_info.data[self.settings['identifier_field']]
+        identifier = auth_info.data.get(self.settings['identifier_field'])
         if not identifier:
-            raise IdentityRetrievalFailed("Identifier field '{}' is not present"
-                                          .format(self.settings['identifier_field']))
-        return IdentityInfo(self, identifier=auth_info.data[self.settings['identifier_field']], **auth_info.data)
+            raise IdentityRetrievalFailed('Identifier missing in shibboleth response')
+        return IdentityInfo(self, identifier=identifier, **auth_info.data)
