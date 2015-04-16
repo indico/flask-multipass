@@ -64,7 +64,7 @@ def identity_handler(identity_info):
     if not identity:
         user = User.query.filter_by(email=identity_info.data['email']).first()
         if not user:
-            user = User(**identity_info.data)
+            user = User(**identity_info.data.to_dict())
             db.session.add(user)
         identity = Identity(provider=identity_info.provider.name, identifier=identity_info.identifier)
         user.identities.append(identity)
