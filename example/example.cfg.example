@@ -1,4 +1,5 @@
 # Register your test application here: https://github.com/settings/applications/
+
 _github_oauth_config = {
     'consumer_key': '',  # put your key here
     'consumer_secret': '',  # put your secret here
