@@ -1,4 +1,5 @@
 # Register your test application here: https://github.com/settings/applications/
+
 _github_oauth_config = {
     'consumer_key': '',  # put your key here
     'consumer_secret': '',  # put your secret here
@@ -27,6 +28,11 @@ MULTIAUTH_AUTH_PROVIDERS = {
     'local': {
         'type': 'example_local',
         'title': 'Local Accounts'
+    },
+    'my_shibboleth': {
+        'type': 'shibboleth',
+        'title': 'Shibboleth',
+        'callback_uri': '/shibboleth/sso'
     }
 }
 
@@ -53,11 +59,20 @@ MULTIAUTH_IDENTITY_PROVIDERS = {
     },
     'local': {
         'type': 'example_local'
+    },
+    'my_shibboleth': {
+        'type': 'shibboleth',
+        'mapping': {
+            'email': 'ADFS_EMAIL',
+            'name': 'ADFS_FIRSTNAME',
+            'affiliation': 'ADFS_HOMEINSTITUTE'
+        }
     }
 }
 
 MULTIAUTH_PROVIDER_MAP = {
     'local': 'local',
+    'my_shibboleth': 'my_shibboleth',
     'test': 'test',
     # You can also be explicit (only needed for more complex links)
     'github': [

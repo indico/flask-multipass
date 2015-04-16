@@ -4,7 +4,7 @@
 # Flask-MultiAuth is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 from flask_wtf import Form
 from sqlalchemy import inspect
