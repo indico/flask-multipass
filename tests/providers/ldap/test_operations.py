@@ -9,8 +9,11 @@ from __future__ import unicode_literals
 import pytest
 from mock import MagicMock
 
+from ldap import NO_SUCH_OBJECT, SCOPE_BASE
+
 from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
-from flask_multiauth.providers.ldap.operations import get_group_by_id, get_user_by_id, search
+from flask_multiauth.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,
+                                                       search)
 from flask_multiauth.providers.ldap.util import ldap_context
 
 
@@ -70,3 +73,76 @@ def test_search(mocker, settings, base_dn, search_filter, attributes, mock_data,
     with ldap_context(settings):
         for i, result in enumerate(search(base_dn, search_filter, attributes)):
             assert result == expected[i]
+
+
+@pytest.mark.parametrize(('settings', 'base_dn', 'search_filter', 'attributes', 'msg_ids'), (
+    ({'uri': 'ldaps://ldap.example.com:636',
+      'bind_dn': 'uid=admin,DC=example,DC=com',
+      'bind_password': 'LemotdepassedeLDAP',
+      'tls': True,
+      'starttls': True,
+      'timeout': 10,
+      'page_size': 3},
+     'dc=example,dc=com',
+     '(&(name=Alain)(objectCategory=user))',
+     ['mail'],
+     ['msg_id<{}>'.format(i) for i in range(3)]),
+))
+def test_search_none_existing_entry(mocker, settings, base_dn, search_filter, attributes, msg_ids):
+    page_ctrl = MagicMock()
+    mocker.patch('flask_multiauth.providers.ldap.operations.SimplePagedResultsControl', return_value=page_ctrl)
+    ldap_connection = MagicMock(result3=MagicMock(side_effect=NO_SUCH_OBJECT),
+                                search_ext=MagicMock(side_effect=msg_ids))
+    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_connection)
+
+    with ldap_context(settings):
+        for result in (search(base_dn, search_filter, attributes)):
+            pytest.fail('search should not yield any result')
+
+
+@pytest.mark.parametrize(('user_dn', 'mock_data', 'expected'), (
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
+     ['token<{}>'.format(i) for i in range(5)]),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
+     ['token<{}>'.format(i) for i in range(5)]),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [(None, {'cn': ['Configuration']}),
+      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'name': [b'I\xc3\xa9losubmarine']})], []),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [(None, {'cn': ['Configuration']}),
+      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
+     ['token<{}>'.format(i) for i in range(5)]),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [(None, {'cn': ['Configuration']}),
+      ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
+     ['token<{}>'.format(i) for i in range(5)]),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [(None, {'cn': ['Configuration']}),
+      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'name': [b'I\xc3\xa9losubmarine']})],
+     []),
+    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
+     [(None, {'cn': ['Configuration']})],
+     []),
+))
+def test_get_token_groups_from_user_dn(mocker, user_dn, mock_data, expected):
+    settings = {
+        'uri': 'ldaps://ldap.example.com:636',
+        'bind_dn': 'uid=admin,DC=example,DC=com',
+        'bind_password': 'LemotdepassedeLDAP',
+        'tls': True,
+        'starttls': True,
+        'timeout': 10
+    }
+
+    ldap_search = MagicMock(return_value=mock_data)
+    ldap_conn = MagicMock(search_ext_s=ldap_search)
+    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
+    with ldap_context(settings):
+        assert get_token_groups_from_user_dn(user_dn) == expected
+        # Token-Groups must be retrieved from a base scope query
+        ldap_search.assert_called_once_with(user_dn, SCOPE_BASE, sizelimit=1, timeout=settings['timeout'],
+                                            attrlist=['tokenGroups'])

@@ -178,12 +178,9 @@ def test_find_one(mocker, base_dn, search_filter, data, expected):
         'timeout': 10
     }
 
-    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
-    ldap_conn = MagicMock()
-    ldap_initialize.return_value = ldap_conn
-    ldap_search = MagicMock()
-    ldap_search.return_value = data
-    ldap_conn.search_ext_s = ldap_search
+    ldap_search = MagicMock(return_value=data)
+    ldap_conn = MagicMock(search_ext_s=ldap_search)
+    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
 
     with ldap_context(settings):
         assert find_one(base_dn, search_filter) == expected
