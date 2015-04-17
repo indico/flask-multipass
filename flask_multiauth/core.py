@@ -199,7 +199,7 @@ class MultiAuth(object):
         :param redirect_to_login: Returns a redirect response to the
                                   login page.
         """
-        session['multiauth_auth_failed'] = True
+        session['_multiauth_auth_failed'] = True
         flash(current_app.config['MULTIAUTH_FAILURE_MESSAGE'].format(error=text_type(exc)),
               current_app.config['MULTIAUTH_FAILURE_CATEGORY'])
         if redirect_to_login:
@@ -360,7 +360,7 @@ class MultiAuth(object):
         next_url = request.args.get('next')
         if not next_url:
             next_url = url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
-        session['multiauth_next_url'] = next_url
+        session['_multiauth_next_url'] = next_url
 
     def _get_next_url(self):
         """Returns the saved URL to redirect to after logging in.
@@ -369,7 +369,7 @@ class MultiAuth(object):
         session afterwards.
         """
         try:
-            return session.pop('multiauth_next_url')
+            return session.pop('_multiauth_next_url')
         except KeyError:
             return url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
 
@@ -377,7 +377,7 @@ class MultiAuth(object):
         """Shows the login method (auth provider) selector"""
         providers = self.auth_providers
         next_url = request.args.get('next')
-        auth_failed = session.pop('multiauth_auth_failed', False)
+        auth_failed = session.pop('_multiauth_auth_failed', False)
         login_endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
         if not auth_failed and len(providers) == 1:
             provider = next(iter(providers.values()))

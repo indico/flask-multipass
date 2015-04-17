@@ -172,7 +172,7 @@ def test_handle_auth_error(mocker):
     with app.test_request_context():
         multiauth.handle_auth_error(AuthenticationFailed())
         assert flash.called
-        assert session['multiauth_auth_failed']
+        assert session['_multiauth_auth_failed']
 
 
 def test_handle_auth_error_with_redirect(mocker):
