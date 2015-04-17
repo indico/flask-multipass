@@ -140,7 +140,7 @@ class MultiAuth(object):
 
         :return: ``None`` or a Flask respnse
         """
-        auth_provider_name = session['auth_provider']
+        auth_provider_name = session['_multiauth_login_provider']
         auth_provider = self.auth_providers.get(auth_provider_name)
         if auth_provider:
             return auth_provider.process_logout()
@@ -172,7 +172,7 @@ class MultiAuth(object):
                 break
         if not identities and current_app.config['MULTIAUTH_REQUIRE_IDENTITY']:
             raise IdentityRetrievalFailed("No identity found")
-        session['auth_provider'] = auth_info.provider.name
+        session['_multiauth_login_provider'] = auth_info.provider.name
         if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
             return self.login_finished(identities)
         else:
