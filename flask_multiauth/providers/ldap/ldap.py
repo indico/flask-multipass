@@ -22,7 +22,7 @@ from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
                                                        get_user_by_id, get_group_by_id, get_token_groups_from_user_dn,
                                                        search)
-from flask_multiauth.providers.ldap.util import ldap_context
+from flask_multiauth.providers.ldap.util import ldap_context, to_unicode
 
 
 class LoginForm(Form):
@@ -151,7 +151,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             user_dn, user_data = get_user_by_id(identifier, self._attributes)
         if not user_dn:
             return None
-        return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+        return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **to_unicode(user_data))
 
     def _search_users(self, search_filter):
         return search(self.ldap_settings['user_base'], search_filter, self._attributes)
@@ -171,7 +171,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             if not search_filter:
                 raise IdentityRetrievalFailed("Unable to generate search filter from criteria")
             for _, user_data in self._search_users(search_filter):
-                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **to_unicode(user_data))
 
     def get_group(self, name):
         with ldap_context(self.ldap_settings):

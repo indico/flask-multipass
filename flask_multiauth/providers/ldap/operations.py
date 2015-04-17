@@ -11,7 +11,7 @@ from ldap.controls import SimplePagedResultsControl
 
 from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
 from flask_multiauth.providers.ldap.globals import current_ldap
-from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie, to_unicode
+from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie
 
 
 def build_user_search_filter(criteria, mapping=None, exact=False):  # pragma: no cover
@@ -100,7 +100,7 @@ def search(base_dn, search_filter, attributes):
 
         for dn, entry in r_data:
             if dn:
-                yield to_unicode(dn, entry)
+                yield dn, entry
 
         page_ctrl.cookie = get_page_cookie(server_ctrls)
         if not page_ctrl.cookie:
@@ -125,8 +125,8 @@ def get_token_groups_from_user_dn(user_dn):
               member of.
     """
     entry = current_ldap.connection.search_ext_s(user_dn, SCOPE_BASE, attrlist=['tokenGroups'],
-    user_data = next((to_unicode(data=data) for dn, data in entry if dn), None)
                                                  timeout=current_ldap.settings['timeout'], sizelimit=1)
+    user_data = next((data for dn, data in entry if dn), None)
     if not user_data:
         return []
     return user_data.get('tokenGroups', [])

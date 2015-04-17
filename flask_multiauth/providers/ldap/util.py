@@ -103,7 +103,7 @@ def find_one(base_dn, search_filter, attributes=None):
     entry = current_ldap.connection.search_ext_s(base_dn, ldap.SCOPE_SUBTREE,
                                                  attrlist=attributes, filterstr=search_filter,
                                                  timeout=current_ldap.settings['timeout'], sizelimit=1)
-    return next((to_unicode(dn, data) for dn, data in entry if dn), (None, None))
+    return next(((dn, data) for dn, data in entry if dn), (None, None))
 
 
 def build_search_filter(criteria, type_filter, mapping=None, exact=False):
@@ -139,14 +139,5 @@ def get_page_cookie(server_ctrls):
     return page_ctrls[0].cookie
 
 
-def to_unicode(dn=None, data=None):
-    if not dn and not data:
-        raise ValueError('dn and data cannot both be None')
-    if dn:
-        unicode_dn = text_type(dn)
-        if not data:
-            return unicode_dn
-    unicode_data = {text_type(k): [x.decode('utf-8') for x in v] for k, v in iteritems(data)}
-    if not dn:
-        return unicode_data
-    return (unicode_dn, unicode_data)
+def to_unicode(data):
+    return {text_type(k): [x.decode('utf-8', 'replace') for x in v] for k, v in iteritems(data)}

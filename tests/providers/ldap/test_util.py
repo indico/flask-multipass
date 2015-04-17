@@ -43,28 +43,14 @@ def test_build_search_filter(criteria, type_filter, mapping, exact, expected):
     assert build_search_filter(criteria, type_filter, mapping, exact) == expected
 
 
-@pytest.mark.parametrize(('dn', 'data', 'expected'), (
-    ('CN=amazzing,OU=Users,DN=example,DN=com', {'uid': [b'amazzing'], 'givenName': [b'Antonio'], 'sn': [b'Mazzinghy']},
-     ('CN=amazzing,OU=Users,DN=example,DN=com', {'uid': [u'amazzing'], 'givenName': [u'Antonio'],
-                                                 'sn': [u'Mazzinghy']})),
-    ('CN=poisson,OU=Users,DN=example,DN=com', {'uid': ['poisson'], 'company': [b'Chez Ordralfab\xc3\xa9tix'],
-                                               'sn': [b'I\xc3\xa9losubmarine']},
-     ('CN=poisson,OU=Users,DN=example,DN=com', {'uid': [u'poisson'], 'company': [u'Chez Ordralfab\xe9tix'],
-                                                'sn': [u'I\xe9losubmarine']})),
-    ('CN=amazzing,OU=Users,DN=example,DN=com', None, 'CN=amazzing,OU=Users,DN=example,DN=com'),
-    (None, {'uid': [b'amazzing'], 'givenName': [b'Antonio'], 'sn': [b'Mazzinghy']},
+@pytest.mark.parametrize(('data', 'expected'), (
+    ({'uid': [b'amazzing'], 'givenName': [b'Antonio'], 'sn': [b'Mazzinghy']},
      {'uid': [u'amazzing'], 'givenName': [u'Antonio'], 'sn': [u'Mazzinghy']}),
-    (None, {'uid': ['poisson'], 'company': [b'Chez Ordralfab\xc3\xa9tix'], 'sn': [b'I\xc3\xa9losubmarine']},
-     {'uid': [u'poisson'], 'company': [u'Chez Ordralfab\xe9tix'], 'sn': [u'I\xe9losubmarine']}),
+    ({'uid': ['poisson'], 'company': [b'Chez Ordralfab\xc3\xa9tix'], 'sn': [b'I\xc3\xa9losubmarine']},
+     {'uid': [u'poisson'], 'company': [u'Chez Ordralfab\xe9tix'], 'sn': [u'I\xe9losubmarine']})
 ))
-def test_to_unicode(dn, data, expected):
-    assert to_unicode(dn, data) == expected
-
-
-def test_to_unicode_without_args():
-    with pytest.raises(ValueError) as excinfo:
-        to_unicode()
-    assert excinfo.value.message == 'dn and data cannot both be None'
+def test_to_unicode(data, expected):
+    assert to_unicode(data) == expected
 
 
 @pytest.mark.parametrize(('settings', 'options'), (
