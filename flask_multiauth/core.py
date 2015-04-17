@@ -172,6 +172,7 @@ class MultiAuth(object):
         :param auth_info: An :class:`.AuthInfo` instance containing
                           data that can be used to retrieve the user's
                           unique identity.
+        :return: A Flask response
         """
         links = self.provider_map[auth_info.provider.name]
         identities = []
@@ -188,9 +189,10 @@ class MultiAuth(object):
             raise IdentityRetrievalFailed("No identity found")
         session['_multiauth_login_provider'] = auth_info.provider.name
         if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
-            return self.login_finished(identities)
+            response = self.login_finished(identities)
         else:
-            return self.login_finished(identities[0] if identities else None)
+            response = self.login_finished(identities[0] if identities else None)
+        return response or self.redirect_success()
 
     def handle_auth_error(self, exc, redirect_to_login=False):
         """Handles an authentication failure
@@ -398,12 +400,11 @@ class MultiAuth(object):
             self._set_next_url()
         if form.validate_on_submit():
             try:
-                auth_info = provider.process_local_login(form.data)
-                rv = self.handle_auth_success(auth_info)
+                response = provider.process_local_login(form.data)
             except MultiAuthException as e:
                 self.handle_auth_error(e)
             else:
-                return rv or self.redirect_success()
+                return response
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
 

@@ -51,12 +51,20 @@ class AuthProvider(object):
         return self.login_form is None
 
     def process_local_login(self, data):  # pragma: no cover
-        """Called after successful validation of the login form
+        """Handles the login process based on form data.
+
+        Only called if the login form validates successfully.
+        This method needs to verify the form data actually contains
+        valid credentials.
+
+        After successful authentication this method needs to call
+        :meth:`.MultiAuth.handle_auth_success` with an :class:`.AuthInfo`
+        instance containing data that can be used by the identity provider
+        to retrieve information for that user.
 
         :param data: The form data (as returned by the `data` attribute
                       of the :obj:`login_form` instance)
-        :return: An :class:`.AuthInfo` instance containing data that can
-                 be used to uniquely identify the user
+        :return: The return value of :meth:`.MultiAuth.handle_auth_success`
         """
         if not self.is_external:
             raise NotImplementedError
@@ -64,7 +72,20 @@ class AuthProvider(object):
             raise RuntimeError('This provider has no login form')
 
     def initiate_external_login(self):  # pragma: no cover
-        """Called when the provider is selected and has no login form
+        """Initiates the login process for external authentication.
+
+        Called when the provider is selected and has no login form.
+        This method usually redirects to an external login page.
+
+        Executing this method eventually needs to result in a call to
+        :meth:`.MultiAuth.handle_auth_success` with an :class:`.AuthInfo`
+        instance containing data that can be used by the identity provider
+        to retrieve information for that user.
+
+        The most common way to achieve this is registering a new
+        endpoint (decorated with :func:`.login_view`) and passing the
+        URL of that endpoint to the external provider so it redirects
+        to it once the user authenticated with that provider.
 
         :return: A Flask :class:`~flask.Response`, usually created by
                  :func:`~flask.redirect`

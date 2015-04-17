@@ -58,7 +58,8 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
             raise NoSuchUser("User not found")
         if not self.check_password(identity, data['password']):
             raise InvalidCredentials("Invalid password")
-        return AuthInfo(self, identity=identity)
+        auth_info = AuthInfo(self, identity=identity)
+        return self.multiauth.handle_auth_success(auth_info)
 
 
 class SQLAlchemyIdentityProviderBase(IdentityProvider):

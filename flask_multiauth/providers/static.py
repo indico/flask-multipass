@@ -47,7 +47,8 @@ class StaticAuthProvider(AuthProvider):
             raise AuthenticationFailed('No such user')
         if password != data['password']:
             raise AuthenticationFailed('Invalid password.')
-        return AuthInfo(self, username=data['username'])
+        auth_info = AuthInfo(self, username=data['username'])
+        return self.multiauth.handle_auth_success(auth_info)
 
 
 class StaticGroup(Group):
