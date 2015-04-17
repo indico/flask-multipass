@@ -75,7 +75,17 @@ class AuthProvider(object):
             raise RuntimeError('This provider uses a login form')
 
     def process_logout(self):
-        """Handles logout process for the provider.
+        """Handles logging out from the provider.
+
+        This is only necessary if logging out from the application
+        needs to perform some provider-specific action such as sending
+        a logout notification to the provider or redirecting to a SSO
+        logout page.
+
+        If a value is returned, it's eventually returned to Flask as a
+        view function return value, so anything that's valid there can
+        be used. Most likely you want to use :func:`~flask.redirect`
+        to redirect to an external logout page though.
 
         :return: ``None`` or a Flask response.
         """

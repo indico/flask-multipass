@@ -131,10 +131,14 @@ class MultiAuth(object):
             return self._login_form(provider)
 
     def logout(self):
-        """Logs out from the auth provider used to initiate session.
+        """Performs a provider-specific logout.
 
-        :return: ``None`` or the response of the logout process of the
-                 provider.
+        This should be called by the application before clearing the
+        session. If it returns a value that is not ``None``, it must
+        be returned from your view function to Flask so a provider can
+        for example redirect to an external logout page.
+
+        :return: ``None`` or a Flask respnse
         """
         auth_provider_name = session['auth_provider']
         auth_provider = self.auth_providers.get(auth_provider_name)
