@@ -96,22 +96,19 @@ class LDAPGroup(Group):
             groups = yield next_group_dn
             if groups:
                 to_visit.update({group_dn for group_dn, group_data in groups if group_dn not in visited})
-                # 'generator.send' returns the next value to be yield,
-                # which is not the desired behaviour here as the
-                # generator is used in a loop, so we yield 'None' to
-                # the 'generator.send' call in order to get the next
-                # value in the loop.
-                yield None
 
     def get_members(self):
         with ldap_context(self.ldap_settings):
             group_dns = self._iter_group()
-            for group_dn in group_dns:
+            group_dn = next(group_dns)
+            while group_dn:
                 user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
                 for _, user_data in self.provider._search_users(user_filter):
-                    yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+                    yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0],
+                                       **to_unicode(user_data))
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
-                group_dns.send(self.provider._search_groups(group_filter))
+                subgroups = list(self.provider._search_groups(group_filter))
+                group_dn = group_dns.send(subgroups)
 
     def has_user(self, user_identifier):
         with ldap_context(self.ldap_settings):
@@ -178,7 +175,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
 
     def get_group(self, name):
         with ldap_context(self.ldap_settings):
-            group_dn, group_data = get_group_by_id(name)
+            group_dn, group_data = get_group_by_id(name, [self.ldap_settings['gid']])
         if not group_dn:
             return None
         return self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn)
