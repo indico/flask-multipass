@@ -17,9 +17,9 @@ from flask_multiauth.auth import AuthProvider
 from flask_multiauth.core import _MultiAuthState
 from flask_multiauth.exceptions import AuthenticationFailed
 from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, map_provider_data, login_view,
+from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, convert_provider_data, login_view,
                                   get_canonical_provider_map, validate_provider_map, SupportsMeta, get_provider_base,
-                                  map_app_data)
+                                  convert_app_data)
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
@@ -80,8 +80,8 @@ def test_get_state():
     ({'pk1': 'a', 'pk2': 'b'}, {'ak1': 'pk1', 'ak2': 'pk3'}, {'ak1', 'ak2'}, {'ak1': 'a', 'ak2': None}),
     ({'pk1': 'a', 'pk2': 'b'}, {'ak1': 'pk1'},               {'ak1', 'ak2'}, {'ak1': 'a', 'ak2': None}),
 ))
-def test_map_provider_data(provider_data, mapping, key_filter, result):
-    assert map_provider_data(provider_data, mapping, key_filter) == result
+def test_convert_provider_data(provider_data, mapping, key_filter, result):
+    assert convert_provider_data(provider_data, mapping, key_filter) == result
 
 
 @pytest.mark.parametrize(('app_data', 'mapping', 'key_filter', 'result'), (
@@ -112,8 +112,8 @@ def test_map_provider_data(provider_data, mapping, key_filter, result):
     ({'ak1': 'a', 'ak2': 'b'}, {'ak1': 'pk1', 'ak2': 'pk2'}, {'ak3'}, {}),
     ({'ak1': 'a', 'ak2': 'b'}, {'ak1': 'pk1', 'ak2': 'pk2'}, {'ak1', 'ak2'}, {'pk1': 'a', 'pk2': 'b'}),
 ))
-def test_map_app_data(app_data, mapping, key_filter, result):
-    assert map_app_data(app_data, mapping, key_filter) == result
+def test_convert_app_data(app_data, mapping, key_filter, result):
+    assert convert_app_data(app_data, mapping, key_filter) == result
 
 
 def test_get_provider_base():

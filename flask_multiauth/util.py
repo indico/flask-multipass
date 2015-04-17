@@ -16,50 +16,26 @@ from flask_multiauth._compat import iteritems, string_types, viewkeys, itervalue
 from flask_multiauth.exceptions import MultiAuthException
 
 
-def get_canonical_provider_map(provider_map):
-    """Converts the configured provider map to a canonical form"""
-    canonical = {}
-    for auth_provider_name, identity_providers in iteritems(provider_map):
-        if not isinstance(identity_providers, (list, tuple, set)):
-            identity_providers = [identity_providers]
-        identity_providers = tuple({'identity_provider': p} if isinstance(p, string_types) else p
-                                   for p in identity_providers)
-        canonical[auth_provider_name] = identity_providers
-    return canonical
+def convert_app_data(app_data, mapping, key_filter=None):
+    """Converts data coming from the application to be used by the provider.
 
-
-def get_state(app=None):
-    """Gets the application-specific multiauth data.
-
-    :param app: The Flask application. Defaults to the current app.
-    :rtype: flask_multiauth.core._MultiAuthState
+    :param app_data: dict -- Data coming from the application.
+    :param mapping: dict -- Mapping between keys used to define the data
+                    in the application and those used by the provider.
+    :param key_filter: list -- Keys to be exclusively considered. If
+                       ``None``, all items will be returned.
+    :return: dict -- containing the values of `app_data` mapped to the
+             keys of the provider as defined in the `mapping` and
+             filtered out by `key_filter`.
     """
-    if app is None:
-        app = current_app
-    assert 'multiauth' in app.extensions, \
-        'The multiauth extension was not registered to the current application. ' \
-        'Please make sure to call init_app() first.'
-    return app.extensions['multiauth']
+    if key_filter:
+        key_filter = set(key_filter)
+        app_data = {k: v for k, v in iteritems(app_data) if k in key_filter}
+    return {mapping.get(key, key): value for key, value in iteritems(app_data)}
 
 
-def login_view(func):
-    """Decorates a Flask view function as an authentication view.
-
-    This catches multiauth-related exceptions and flashes a message and
-    redirects back to the login page.
-    """
-    @wraps(func)
-    def decorator(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except MultiAuthException as e:
-            return get_state().multiauth.handle_auth_error(e, True)
-
-    return decorator
-
-
-def map_provider_data(provider_data, mapping, key_filter=None):
-    """Maps data coming from the provider to be used by the application
+def convert_provider_data(provider_data, mapping, key_filter=None):
+    """Converts data coming from the provider to be used by the application
 
     The result will have all the keys listed in `keys` with values
     coming either from `data` (using the key mapping defined in
@@ -90,22 +66,30 @@ def map_provider_data(provider_data, mapping, key_filter=None):
     return result
 
 
-def map_app_data(app_data, mapping, key_filter=None):
-    """Maps data coming from the application to be used by the provider.
+def get_canonical_provider_map(provider_map):
+    """Converts the configured provider map to a canonical form"""
+    canonical = {}
+    for auth_provider_name, identity_providers in iteritems(provider_map):
+        if not isinstance(identity_providers, (list, tuple, set)):
+            identity_providers = [identity_providers]
+        identity_providers = tuple({'identity_provider': p} if isinstance(p, string_types) else p
+                                   for p in identity_providers)
+        canonical[auth_provider_name] = identity_providers
+    return canonical
 
-    :param app_data: dict -- Data coming from the application.
-    :param mapping: dict -- Mapping between keys used to define the data
-                    in the application and those used by the provider.
-    :param key_filter: list -- Keys to be exclusively considered. If
-                       ``None``, all items will be returned.
-    :return: dict -- containing the values of `app_data` mapped to the
-             keys of the provider as defined in the `mapping` and
-             filtered out by `key_filter`.
+
+def get_state(app=None):
+    """Gets the application-specific multiauth data.
+
+    :param app: The Flask application. Defaults to the current app.
+    :rtype: flask_multiauth.core._MultiAuthState
     """
-    if key_filter:
-        key_filter = set(key_filter)
-        app_data = {k: v for k, v in iteritems(app_data) if k in key_filter}
-    return {mapping.get(key, key): value for key, value in iteritems(app_data)}
+    if app is None:
+        app = current_app
+    assert 'multiauth' in app.extensions, \
+        'The multiauth extension was not registered to the current application. ' \
+        'Please make sure to call init_app() first.'
+    return app.extensions['multiauth']
 
 
 def get_provider_base(cls):
@@ -125,6 +109,22 @@ def get_provider_base(cls):
         return IdentityProvider
     else:
         raise TypeError('Class is neither an auth nor an identity provider: ' + cls.__name__)
+
+
+def login_view(func):
+    """Decorates a Flask view function as an authentication view.
+
+    This catches multiauth-related exceptions and flashes a message and
+    redirects back to the login page.
+    """
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except MultiAuthException as e:
+            return get_state().multiauth.handle_auth_error(e, True)
+
+    return decorator
 
 
 def resolve_provider_type(base, type_, registry=None):
