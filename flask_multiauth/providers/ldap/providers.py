@@ -66,7 +66,8 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
                 current_ldap.connection.simple_bind_s(user_dn, password)
             except INVALID_CREDENTIALS:
                 raise InvalidCredentials()
-        return AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
+        auth_info = AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
+        return self.multiauth.handle_auth_success(auth_info)
 
 
 class LDAPGroup(Group):

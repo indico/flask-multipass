@@ -35,9 +35,11 @@ def test_authenticate(mocker, settings, data):
     ldap_conn = MagicMock(simple_bind_s=MagicMock())
     mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
 
-    auth_provider = LDAPAuthProvider(None, 'LDAP test provider', settings)
-    auth_info = auth_provider.process_local_login(data)
+    multiauth = MagicMock()
+    auth_provider = LDAPAuthProvider(multiauth, 'LDAP test provider', settings)
+    auth_provider.process_local_login(data)
     ldap_conn.simple_bind_s.assert_called_with(user_dn(data['username']), data['password'])
+    auth_info = multiauth.handle_auth_success.call_args[0][0]
     assert auth_info.data['identifier'] == data['username']
 
 
