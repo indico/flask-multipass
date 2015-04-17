@@ -75,7 +75,7 @@ class OAuthAuthProvider(AuthProvider):
         if self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
             raise AuthenticationFailed(error)
-        rv = self.multiauth.handle_auth_info(self._make_auth_info(resp))
+        rv = self.multiauth.handle_auth_success(self._make_auth_info(resp))
         return rv or self.multiauth.redirect_success()
 
 

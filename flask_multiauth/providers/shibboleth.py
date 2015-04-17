@@ -47,7 +47,7 @@ class ShibbolethAuthProvider(AuthProvider):
         attributes = {k: v for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
         if not attributes:
             raise AuthenticationFailed("No valid data received")
-        response = self.multiauth.handle_auth_info(AuthInfo(self, **attributes))
+        response = self.multiauth.handle_auth_success(AuthInfo(self, **attributes))
         return response or self.multiauth.redirect_success()
 
 

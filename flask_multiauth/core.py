@@ -145,7 +145,21 @@ class MultiAuth(object):
         if auth_provider:
             return auth_provider.process_logout()
 
-    def handle_auth_info(self, auth_info):
+    def login_finished(self, identity_info):
+        """Called after the login process finished.
+
+        This method invokes the function registered via
+        :obj:`identity_handler` with the same arguments.
+
+        :param identity_info: An :class:`.IdentityInfo` instance or
+                              a list of them
+        """
+        assert self.identity_callback is not None, \
+            'No identity callback has been registered. Register one using ' \
+            'Register one using the MultiAuth.identity_handler decorator.'
+        return self.identity_callback(identity_info)
+
+    def handle_auth_success(self, auth_info):
         """Called after a successful authentication
 
         This method calls :meth:`login_finished` with the found
@@ -177,20 +191,6 @@ class MultiAuth(object):
             return self.login_finished(identities)
         else:
             return self.login_finished(identities[0] if identities else None)
-
-    def login_finished(self, identity_info):
-        """Called after the login process finished.
-
-        This method invokes the function registered via
-        :obj:`identity_handler` with the same arguments.
-
-        :param identity_info: An :class:`.IdentityInfo` instance or
-                              a list of them
-        """
-        assert self.identity_callback is not None, \
-            'No identity callback has been registered. Register one using ' \
-            'Register one using the MultiAuth.identity_handler decorator.'
-        return self.identity_callback(identity_info)
 
     def handle_auth_error(self, exc, redirect_to_login=False):
         """Handles an authentication failure
@@ -399,7 +399,7 @@ class MultiAuth(object):
         if form.validate_on_submit():
             try:
                 auth_info = provider.process_local_login(form.data)
-                rv = self.handle_auth_info(auth_info)
+                rv = self.handle_auth_success(auth_info)
             except MultiAuthException as e:
                 self.handle_auth_error(e)
             else:
