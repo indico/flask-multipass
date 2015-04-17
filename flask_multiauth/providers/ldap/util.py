@@ -19,7 +19,7 @@ from flask_multiauth._compat import iteritems, text_type
 from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.providers.ldap.exceptions import LDAPServerError
 from flask_multiauth.providers.ldap.globals import _ldap_ctx_stack, current_ldap
-from flask_multiauth.util import map_app_data
+from flask_multiauth.util import convert_app_data
 
 #: A context holding the LDAP connection and the LDAP provider settings.
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
@@ -116,7 +116,7 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
                   othewise perform substring matching.
     :return: str -- Valid LDAP search filter.
     """
-    assertions = map_app_data(criteria, mapping or {})
+    assertions = convert_app_data(criteria, mapping or {})
     assertions = [(k, v) for k, v in iteritems(assertions) if k and v]
     if not assertions:
         return None

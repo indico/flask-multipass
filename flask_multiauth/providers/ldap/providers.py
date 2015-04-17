@@ -16,7 +16,7 @@ from flask_multiauth.data import AuthInfo, IdentityInfo
 from flask_multiauth.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
 from flask_multiauth.group import Group
 from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import map_app_data
+from flask_multiauth.util import convert_app_data
 
 from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
@@ -143,7 +143,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')
         self.ldap_settings.setdefault('member_of_attr', 'memberOf')
         self.ldap_settings.setdefault('ad_group_style', False)
-        self._attributes = map_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
+        self._attributes = convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
         self._attributes.append(self.ldap_settings['uid'])
 
     def _get_identity(self, identifier):
