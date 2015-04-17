@@ -80,11 +80,11 @@ class LDAPGroup(Group):
         self.dn = dn
 
     @property
-    def ldap_settings(self):
+    def ldap_settings(self):  # pragma: no cover
         return self.provider.ldap_settings
 
     @property
-    def settings(self):
+    def settings(self):  # pragma: no cover
         return self.provider.settings
 
     def _iter_group(self):
@@ -153,16 +153,16 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             return None
         return IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **to_unicode(user_data))
 
-    def _search_users(self, search_filter):
+    def _search_users(self, search_filter):  # pragma: no cover
         return search(self.ldap_settings['user_base'], search_filter, self._attributes)
 
-    def _search_groups(self, search_filter):
+    def _search_groups(self, search_filter):  # pragma: no cover
         return search(self.ldap_settings['group_base'], search_filter, attributes=[self.ldap_settings['gid']])
 
-    def get_identity_from_auth(self, auth_info):
+    def get_identity_from_auth(self, auth_info):  # pragma: no cover
         return self._get_identity(auth_info.data.pop('identifier'))
 
-    def refresh_identity(self, identifier, multiauth_data):
+    def refresh_identity(self, identifier, multiauth_data):  # pragma: no cover
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):
