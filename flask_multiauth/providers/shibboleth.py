@@ -6,6 +6,8 @@
 
 from __future__ import unicode_literals
 
+import urllib
+
 from flask import request, current_app, url_for, redirect
 
 from flask_multiauth._compat import iteritems
@@ -37,10 +39,10 @@ class ShibbolethAuthProvider(AuthProvider):
     def initiate_external_login(self):
         return redirect(url_for(self.shibboleth_endpoint))
 
-    def process_logout(self):
+    def process_logout(self, return_url):
         logout_uri = self.settings.get('logout_uri')
         if logout_uri:
-            return redirect(logout_uri)
+            return redirect(logout_uri.format(return_url=urllib.quote(return_url)))
 
     @login_view
     def _shibboleth_callback(self):

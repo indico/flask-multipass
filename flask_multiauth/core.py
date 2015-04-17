@@ -130,20 +130,25 @@ class MultiAuth(object):
         else:
             return self._login_form(provider)
 
-    def logout(self):
+    def logout(self, return_url, clear_session=False):
         """Performs a provider-specific logout.
 
-        This should be called by the application before clearing the
-        session. If it returns a value that is not ``None``, it must
-        be returned from your view function to Flask so a provider can
-        for example redirect to an external logout page.
+        This should be called by the application before. It returns a
+        Flask response (usually a redirect) which must be returned from
+        the view function calling this method so a provider can for
+        example redirect to an external logout page.
 
-        :return: ``None`` or a Flask respnse
+        :param return_url: The URL to redirect to after logging out.
+                           This is only used if the provider supports
+                           it.
+        :param clear_session: If true, the Flask session is cleared.
+        :return: A Flask respnse
         """
-        auth_provider_name = session['_multiauth_login_provider']
-        auth_provider = self.auth_providers.get(auth_provider_name)
-        if auth_provider:
-            return auth_provider.process_logout()
+        auth_provider = self.auth_providers.get(session.get('_multiauth_login_provider'))
+        response = auth_provider.process_logout(return_url) if auth_provider else None
+        if clear_session:
+            session.clear()
+        return response or redirect(return_url)
 
     def login_finished(self, identity_info):
         """Called after the login process finished.

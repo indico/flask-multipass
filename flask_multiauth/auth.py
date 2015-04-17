@@ -95,7 +95,7 @@ class AuthProvider(object):
         else:
             raise RuntimeError('This provider uses a login form')
 
-    def process_logout(self):
+    def process_logout(self, return_url):
         """Handles logging out from the provider.
 
         This is only necessary if logging out from the application
@@ -108,6 +108,11 @@ class AuthProvider(object):
         be used. Most likely you want to use :func:`~flask.redirect`
         to redirect to an external logout page though.
 
+        When redirecting to an external site, you should pass along the
+        `return_url` if the external provider allows you to specify a
+        URL to redirect to after logging out.
+
+        :param return_url: The URL to redirect to after logging our.
         :return: ``None`` or a Flask response.
         """
         return None
