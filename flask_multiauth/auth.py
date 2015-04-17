@@ -74,5 +74,12 @@ class AuthProvider(object):
         else:
             raise RuntimeError('This provider uses a login form')
 
+    def process_logout(self):
+        """Handles logout process for the provider.
+
+        :return: ``None`` or a Flask response.
+        """
+        return None
+
     def __repr__(self):
         return '<{}({})>'.format(type(self).__name__, self.name)

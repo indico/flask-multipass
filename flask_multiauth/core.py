@@ -130,6 +130,17 @@ class MultiAuth(object):
         else:
             return self._login_form(provider)
 
+    def logout(self):
+        """Logs out from the auth provider used to initiate session.
+
+        :return: ``None`` or the response of the logout process of the
+                 provider.
+        """
+        auth_provider_name = session['auth_provider']
+        auth_provider = self.auth_providers.get(auth_provider_name)
+        if auth_provider:
+            return auth_provider.process_logout()
+
     def handle_auth_info(self, auth_info):
         """Called after a successful authentication
 
@@ -157,6 +168,7 @@ class MultiAuth(object):
                 break
         if not identities and current_app.config['MULTIAUTH_REQUIRE_IDENTITY']:
             raise IdentityRetrievalFailed("No identity found")
+        session['auth_provider'] = auth_info.provider.name
         if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
             return self.login_finished(identities)
         else:

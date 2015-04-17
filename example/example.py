@@ -111,9 +111,10 @@ def group(provider, name):
 
 @app.route('/logout')
 def logout():
+    response = multiauth.logout()
     session.clear()
     flash('Logged out', 'success')
-    return redirect(url_for('index'))
+    return response or redirect(url_for('index'))
 
 
 @app.route('/refresh')

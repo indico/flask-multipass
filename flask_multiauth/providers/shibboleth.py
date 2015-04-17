@@ -21,6 +21,7 @@ class ShibbolethAuthProvider(AuthProvider):
 
     This provider requires the application to run inside the Apache
     webserver with mod_shib.
+
     The type name to instantiate this provider is *shibboleth*.
     """
 
@@ -36,13 +37,18 @@ class ShibbolethAuthProvider(AuthProvider):
     def initiate_external_login(self):
         return redirect(url_for(self.shibboleth_endpoint))
 
+    def process_logout(self):
+        logout_uri = self.settings.get('logout_uri')
+        if logout_uri:
+            return redirect(logout_uri)
+
     @login_view
     def _shibboleth_callback(self):
         attributes = {k: v for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
         if not attributes:
             raise AuthenticationFailed("No valid data received")
-        return_value = self.multiauth.handle_auth_info(AuthInfo(self, **attributes))
-        return return_value or self.multiauth.redirect_success()
+        response = self.multiauth.handle_auth_info(AuthInfo(self, **attributes))
+        return response or self.multiauth.redirect_success()
 
 
 class ShibbolethIdentityProvider(IdentityProvider):
@@ -50,6 +56,7 @@ class ShibbolethIdentityProvider(IdentityProvider):
 
     This provider requires the application to run inside the Apache
     webserver with mod_shib.
+
     The type name to instantiate this provider is *shibboleth*.
     """
 

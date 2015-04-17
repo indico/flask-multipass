@@ -29,10 +29,11 @@ MULTIAUTH_AUTH_PROVIDERS = {
         'type': 'example_local',
         'title': 'Local Accounts'
     },
-    'my_shibboleth': {
+    'sso': {
         'type': 'shibboleth',
-        'title': 'Shibboleth',
-        'callback_uri': '/shibboleth/sso'
+        'title': 'SSO',
+        'callback_uri': '/shibboleth/sso',
+        'logout_uri': 'https://sso.example.com/logout'
     }
 }
 
