@@ -9,6 +9,7 @@ env:
 install:
   - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/flask.git || :'
   - pip install pytest pytest-cov pytest-mock pytest-pep8 coveralls
+  - pip install python-ldap
 script:
   - python setup.py develop
   - py.test --pep8
