@@ -6,11 +6,11 @@
 
 from __future__ import unicode_literals
 
-import pytest
-from mock import call, MagicMock
 from urlparse import urlparse
 
 import ldap
+import pytest
+from mock import call, MagicMock
 
 from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.providers.ldap.globals import current_ldap
