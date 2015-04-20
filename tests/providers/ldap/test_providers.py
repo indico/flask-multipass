@@ -6,7 +6,6 @@
 
 from __future__ import unicode_literals
 
-
 import pytest
 from flask import Flask
 from ldap import INVALID_CREDENTIALS

@@ -6,13 +6,15 @@
 
 from __future__ import unicode_literals
 
-import pytest
-from mock import call, MagicMock
+from collections import OrderedDict
 from urlparse import urlparse
 
 import ldap
+import pytest
+from mock import call, MagicMock
 
 from flask_multiauth.exceptions import MultiAuthException
+from flask_multiauth.util import convert_app_data
 from flask_multiauth.providers.ldap.globals import current_ldap
 from flask_multiauth.providers.ldap.util import build_search_filter, find_one, ldap_context, to_unicode, LDAPContext
 
@@ -39,7 +41,10 @@ from flask_multiauth.providers.ldap.util import build_search_filter, find_one, l
      {'first_name': 'givenName', 'last_name': 'sn'}, False,
      "(&(givenName=*Alain*)(sn=*D'Issoir*)(|(objectClass=Person)(objectCategory=user)))")
 ))
-def test_build_search_filter(criteria, type_filter, mapping, exact, expected):
+def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact, expected):
+    def _convert_app_data(*args, **kwargs):
+        return OrderedDict(sorted(convert_app_data(*args, **kwargs).items()))
+    monkeypatch.setattr('flask_multiauth.providers.ldap.util.convert_app_data', _convert_app_data)
     assert build_search_filter(criteria, type_filter, mapping, exact) == expected
 
 

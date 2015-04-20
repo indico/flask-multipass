@@ -7,9 +7,8 @@
 from __future__ import unicode_literals
 
 import pytest
-from mock import MagicMock
-
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE
+from mock import MagicMock
 
 from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
 from flask_multiauth.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,
@@ -96,7 +95,7 @@ def test_search_none_existing_entry(mocker, settings, base_dn, search_filter, at
     mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_connection)
 
     with ldap_context(settings):
-        for result in (search(base_dn, search_filter, attributes)):
+        for result in search(base_dn, search_filter, attributes):
             pytest.fail('search should not yield any result')
 
 
