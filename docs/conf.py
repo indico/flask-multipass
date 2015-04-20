@@ -18,10 +18,20 @@ from __future__ import print_function
 import sys
 import os
 
+try:
+    from mock import MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_themes'))
+
+# Mock away ldap
+for module in ('ldap', 'ldap.controls', 'ldap.filter', 'urlparse'):
+    sys.modules[module] = MagicMock()
 
 # -- General configuration ------------------------------------------------
 

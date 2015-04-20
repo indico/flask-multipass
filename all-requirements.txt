@@ -6,5 +6,4 @@ flask
 flask_oauthlib
 flask_wtf
 flask_sqlalchemy
-python-ldap
 wtforms

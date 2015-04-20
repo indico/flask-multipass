@@ -12,6 +12,8 @@ Authentication Providers
 ------------------------
 .. automodule:: flask_multiauth.auth
    :members:
+.. autoclass:: flask_multiauth.providers.ldap.LDAPAuthProvider
+   :members:
 .. autoclass:: flask_multiauth.providers.oauth.OAuthAuthProvider
    :members:
 .. autoclass:: flask_multiauth.providers.static.StaticAuthProvider
@@ -25,6 +27,8 @@ Authentication Providers
 User Identity Providers
 -----------------------
 .. automodule:: flask_multiauth.identity
+   :members:
+.. autoclass:: flask_multiauth.providers.ldap.LDAPIdentityProvider
    :members:
 .. autoclass:: flask_multiauth.providers.oauth.OAuthIdentityProvider
    :members:
