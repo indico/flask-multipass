@@ -111,7 +111,7 @@ class LDAPGroup(Group):
                 subgroups = list(self.provider._search_groups(group_filter))
                 group_dn = group_dns.send(subgroups)
 
-    def has_user(self, user_identifier):
+    def has_member(self, user_identifier):
         with ldap_context(self.ldap_settings):
             user_dn, user_data = get_user_by_id(user_identifier, attributes=[self.ldap_settings['member_of_attr']])
             if not user_dn:
