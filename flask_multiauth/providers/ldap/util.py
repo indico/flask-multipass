@@ -8,14 +8,16 @@ from __future__ import absolute_import
 
 from collections import namedtuple
 from contextlib import contextmanager
+from functools import wraps
 from urlparse import urlparse
 from warnings import warn
 
 import ldap
+from flask import appcontext_tearing_down, g, has_app_context
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 
-from flask_multiauth._compat import iteritems, text_type
+from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.exceptions import MultiAuthException
 from flask_multiauth.providers.ldap.exceptions import LDAPServerError
 from flask_multiauth.providers.ldap.globals import _ldap_ctx_stack, current_ldap
@@ -25,6 +27,43 @@ from flask_multiauth.util import convert_app_data
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
 
 
+@appcontext_tearing_down.connect
+def _clear_ldap_cache(*args, **kwargs):
+    for conn in itervalues(g.get('_multiauth_ldap_connections', {})):
+        try:
+            conn.unbind_s()
+        except ldap.LDAPError:
+            # That's ugly but we couldn't care less about a failure while disconnecting
+            pass
+
+
+def _get_ldap_cache():
+    """Returns the cache dictionary for ldap contexts"""
+    if not has_app_context():
+        return {}
+    try:
+        return g._multiauth_ldap_connections
+    except AttributeError:
+        g._multiauth_ldap_connections = cache = {}
+        return cache
+
+
+def _cache_ldap_connection(fn):
+    """Decorator to cache the ldap connection"""
+    conn_keys = {'uri', 'bind_dn', 'bind_password', 'tls', 'starttls'}
+
+    @wraps(fn)
+    def wrapper(settings):
+        cache = _get_ldap_cache()
+        key = frozenset((k, hash(v)) for k, v in iteritems(settings) if k in conn_keys)
+        ldap_ctx = cache.get(key)
+        if ldap_ctx is None:
+            cache[key] = ldap_ctx = fn(settings)
+        return ldap_ctx
+
+    return wrapper
+
+
 @contextmanager
 def ldap_context(settings):
     """Establishes an LDAP session context.
@@ -32,35 +71,14 @@ def ldap_context(settings):
     Establishes a connection to the LDAP server from the `uri` in the
     ``settings`` and makes the context available in ``current_ldap``.
 
-    To establish a connection, the settings must be specified:
-     - ``uri``: valid URI which points to a LDAP server,
-     - ``bind_dn``: `dn` used to initially bind every LDAP connection
-     - ``bind_password``" password used for the initial bind
-     - ``tls``: ``True`` if the connection should use TLS encryption
-     - ``starttls``: ``True`` to negotiate TLS with the server
-
-    `Note`: ``starttls`` is ignored if the URI uses LDAPS and ``tls`` is
-    set to ``True``.
+    Yields a namedtuple containing the connection to the server and the
+    provider settings.
 
     :param settings: dict -- The settings for a LDAP provider.
-    :return: LDAPContext -- A ``namedtuple`` tuple containing the
-             connection to the server and the provider settings.
     """
-    uri_info = urlparse(settings['uri'])
-    credentials = (settings['bind_dn'], settings['bind_password'])
-    ldap_connection = None
     try:
-        ldap_connection = ldap.initialize(settings['uri'])
-        ldap_connection.protocol_version = ldap.VERSION3
-        ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
-        ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if settings['tls'] else ldap.OPT_X_TLS_NEVER)
-        if uri_info.scheme != 'ldaps' and settings['starttls']:
-            ldap_connection.start_tls_s()
-        elif settings['starttls']:
-            warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
-        # TODO: allow anonymous bind
-        ldap_connection.simple_bind_s(*credentials)
-        ldap_ctx = LDAPContext(connection=ldap_connection, settings=settings)
+        connection = ldap_connect(settings)
+        ldap_ctx = LDAPContext(connection=connection, settings=settings)
         _ldap_ctx_stack.push(ldap_ctx)
         try:
             yield ldap_ctx
@@ -78,10 +96,46 @@ def ldap_context(settings):
         raise MultiAuthException("The operation timed out.")
     except ldap.FILTER_ERROR:
         raise ValueError("The filter supplied to the operation is invalid. "
-                         "(This is most likely due to a base user or group filter.")
+                         "(This is most likely due to a bad user or group filter.")
     # TODO: handle a MultiAuth time out exception
-    finally:
-        ldap_connection.unbind_s()
+
+
+@_cache_ldap_connection
+def ldap_connect(settings):
+    """Establishes an LDAP connection.
+
+    Establishes a connection to the LDAP server from the `uri` in the
+    ``settings``.
+
+    To establish a connection, the settings must be specified:
+     - ``uri``: valid URI which points to a LDAP server,
+     - ``bind_dn``: `dn` used to initially bind every LDAP connection
+     - ``bind_password``" password used for the initial bind
+     - ``tls``: ``True`` if the connection should use TLS encryption
+     - ``starttls``: ``True`` to negotiate TLS with the server
+
+    `Note`: ``starttls`` is ignored if the URI uses LDAPS and ``tls`` is
+    set to ``True``.
+
+    This function re-uses an existing LDAP connection if there is one
+    available in the application context.
+
+    :param settings: dict -- The settings for a LDAP provider.
+    :return: The ldap connection.
+    """
+    uri_info = urlparse(settings['uri'])
+    credentials = (settings['bind_dn'], settings['bind_password'])
+    ldap_connection = ldap.initialize(settings['uri'])
+    ldap_connection.protocol_version = ldap.VERSION3
+    ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
+    ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if settings['tls'] else ldap.OPT_X_TLS_NEVER)
+    if uri_info.scheme != 'ldaps' and settings['starttls']:
+        ldap_connection.start_tls_s()
+    elif settings['starttls']:
+        warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
+    # TODO: allow anonymous bind
+    ldap_connection.simple_bind_s(*credentials)
+    return ldap_connection
 
 
 def find_one(base_dn, search_filter, attributes=None):

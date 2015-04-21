@@ -138,7 +138,7 @@ def test_ldap_context(mocker, settings, options):
      'The time limit for the operation has been exceeded.'),
     ('simple_bind_s', ldap.TIMEOUT, MultiAuthException, 'The operation timed out.'),
     ('simple_bind_s', ldap.FILTER_ERROR, ValueError,
-     'The filter supplied to the operation is invalid. (This is most likely due to a base user or group filter.'),
+     'The filter supplied to the operation is invalid. (This is most likely due to a bad user or group filter.'),
 ))
 def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, caught_exception, message):
     settings = {
