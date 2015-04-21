@@ -58,7 +58,7 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
     def process_local_login(self, data):
         username = data['username']
         password = data['password']
-        with ldap_context(self.ldap_settings):
+        with ldap_context(self.ldap_settings, use_cache=False):
             try:
                 user_dn, user_data = get_user_by_id(username, attributes=[self.ldap_settings['uid']])
                 if not user_dn:

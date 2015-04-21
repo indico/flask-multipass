@@ -33,7 +33,7 @@ def test_authenticate(mocker, settings, data):
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(user_dn(data['username']), {settings['ldap']['uid']: [data['username']]}))
     ldap_conn = MagicMock(simple_bind_s=MagicMock())
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
 
     multiauth = MagicMock()
     auth_provider = LDAPAuthProvider(multiauth, 'LDAP test provider', settings)
@@ -58,7 +58,7 @@ def test_authenticate_invalid_user(mocker, settings, data):
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(None, {'cn': ['Configuration']}))
     ldap_conn = MagicMock(simple_bind_s=MagicMock())
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
 
     auth_provider = LDAPAuthProvider(None, 'LDAP test provider', settings)
     with pytest.raises(NoSuchUser):
@@ -82,7 +82,7 @@ def test_authenticate_invalid_credentials(mocker, settings, data):
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(user_dn(data['username']), {settings['ldap']['uid']: [data['username']]}))
     ldap_conn = MagicMock(simple_bind_s=MagicMock(side_effect=[None, INVALID_CREDENTIALS]))
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
 
     auth_provider = LDAPAuthProvider(None, 'LDAP test provider', settings)
     with pytest.raises(InvalidCredentials):
@@ -204,7 +204,7 @@ def test_iter_group(mocker, settings, group_dn, subgroups, expected):
      ['user_1', 'user_2', 'user_3', 'user_4', 'user_5', 'user_6', 'user_7', 'user_8'])
 ))
 def test_get_members(mocker, settings, group_dn, mock_data, expected):
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multiauth.providers.ldap.providers.build_group_search_filter',
                  side_effect=MagicMock(side_effect=mock_data['groups']))
     mocker.patch('flask_multiauth.providers.ldap.providers.build_user_search_filter',
@@ -306,7 +306,7 @@ def test_has_member_ad(mocker, settings, group_mock, user_mock, expected):
         if user_mock['dn'] != user_dn:
             pytest.fail('expected {0}, got {1}'.format(user_mock['dn'], user_dn))
         return user_mock['token_groups']
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(user_mock['dn'], user_mock['data']))
     mocker.patch('flask_multiauth.providers.ldap.providers.get_group_by_id',
@@ -376,7 +376,7 @@ def test_has_member_ad(mocker, settings, group_mock, user_mock, expected):
      True),
 ))
 def test_has_member_slapd(mocker, settings, group_dn, user_mock, expected):
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(user_mock['dn'], user_mock['data']))
 
@@ -411,7 +411,7 @@ def test_has_member_slapd(mocker, settings, group_dn, user_mock, expected):
         'member_of_attr': 'member_of'}}
 ))
 def test_has_member_bad_identifier(mocker, settings):
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     app = Flask('test')
     multiauth = MultiAuth(app)
     with app.app_context():
@@ -445,7 +445,7 @@ def test_has_member_bad_identifier(mocker, settings):
         'member_of_attr': 'member_of'}}
 ))
 def test_has_member_unkown_user(mocker, settings):
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multiauth.providers.ldap.providers.get_user_by_id',
                  return_value=(None, {'cn': ['Configuration']}))
     app = Flask('test')

@@ -8,7 +8,6 @@ from __future__ import absolute_import
 
 from collections import namedtuple
 from contextlib import contextmanager
-from functools import wraps
 from urlparse import urlparse
 from warnings import warn
 
@@ -16,6 +15,7 @@ import ldap
 from flask import appcontext_tearing_down, g, has_app_context
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
+from ldap.ldapobject import ReconnectLDAPObject
 
 from flask_multiauth._compat import iteritems, itervalues, text_type
 from flask_multiauth.exceptions import MultiAuthException
@@ -26,15 +26,20 @@ from flask_multiauth.util import convert_app_data
 #: A context holding the LDAP connection and the LDAP provider settings.
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
 
+conn_keys = {'uri', 'bind_dn', 'bind_password', 'tls', 'starttls'}
+
 
 @appcontext_tearing_down.connect
 def _clear_ldap_cache(*args, **kwargs):
-    for conn in itervalues(g.get('_multiauth_ldap_connections', {})):
+    if not has_app_context() or '_multiauth_ldap_connections' not in g:
+        return
+    for conn in itervalues(g._multiauth_ldap_connections):
         try:
             conn.unbind_s()
         except ldap.LDAPError:
             # That's ugly but we couldn't care less about a failure while disconnecting
             pass
+    del g._multiauth_ldap_connections
 
 
 def _get_ldap_cache():
@@ -48,24 +53,8 @@ def _get_ldap_cache():
         return cache
 
 
-def _cache_ldap_connection(fn):
-    """Decorator to cache the ldap connection"""
-    conn_keys = {'uri', 'bind_dn', 'bind_password', 'tls', 'starttls'}
-
-    @wraps(fn)
-    def wrapper(settings):
-        cache = _get_ldap_cache()
-        key = frozenset((k, hash(v)) for k, v in iteritems(settings) if k in conn_keys)
-        ldap_ctx = cache.get(key)
-        if ldap_ctx is None:
-            cache[key] = ldap_ctx = fn(settings)
-        return ldap_ctx
-
-    return wrapper
-
-
 @contextmanager
-def ldap_context(settings):
+def ldap_context(settings, use_cache=True):
     """Establishes an LDAP session context.
 
     Establishes a connection to the LDAP server from the `uri` in the
@@ -75,13 +64,21 @@ def ldap_context(settings):
     provider settings.
 
     :param settings: dict -- The settings for a LDAP provider.
+    :param use_cache: bool -- If the connection should be cached.
     """
     try:
-        connection = ldap_connect(settings)
+        connection = ldap_connect(settings, use_cache=use_cache)
         ldap_ctx = LDAPContext(connection=connection, settings=settings)
         _ldap_ctx_stack.push(ldap_ctx)
         try:
             yield ldap_ctx
+        except ldap.LDAPError:
+            # If something went wrong we get rid of cached connections.
+            # This is mostly for the python shell where you have a very
+            # long-living application context that usually results in
+            # the ldap connection timing out.
+            _clear_ldap_cache()
+            raise
         finally:
             assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
     except ldap.SERVER_DOWN:
@@ -100,8 +97,7 @@ def ldap_context(settings):
     # TODO: handle a MultiAuth time out exception
 
 
-@_cache_ldap_connection
-def ldap_connect(settings):
+def ldap_connect(settings, use_cache=True):
     """Establishes an LDAP connection.
 
     Establishes a connection to the LDAP server from the `uri` in the
@@ -118,14 +114,23 @@ def ldap_connect(settings):
     set to ``True``.
 
     This function re-uses an existing LDAP connection if there is one
-    available in the application context.
+    available in the application context, unless caching is disabled.
 
     :param settings: dict -- The settings for a LDAP provider.
+    :param use_cache: bool -- If the connection should be cached.
     :return: The ldap connection.
     """
+
+    if use_cache:
+        cache = _get_ldap_cache()
+        cache_key = frozenset((k, hash(v)) for k, v in iteritems(settings) if k in conn_keys)
+        conn = cache.get(cache_key)
+        if conn is not None:
+            return conn
+
     uri_info = urlparse(settings['uri'])
     credentials = (settings['bind_dn'], settings['bind_password'])
-    ldap_connection = ldap.initialize(settings['uri'])
+    ldap_connection = ReconnectLDAPObject(settings['uri'])
     ldap_connection.protocol_version = ldap.VERSION3
     ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
     ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if settings['tls'] else ldap.OPT_X_TLS_NEVER)
@@ -135,6 +140,8 @@ def ldap_connect(settings):
         warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
     # TODO: allow anonymous bind
     ldap_connection.simple_bind_s(*credentials)
+    if use_cache:
+        cache[cache_key] = ldap_connection
     return ldap_connection
 
 

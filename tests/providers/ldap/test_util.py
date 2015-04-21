@@ -110,7 +110,7 @@ def test_to_unicode(data, expected):
 ))
 def test_ldap_context(mocker, settings, options):
     warn = mocker.patch('flask_multiauth.providers.ldap.util.warn')
-    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     ldap_conn = MagicMock()
     ldap_initialize.return_value = ldap_conn
     with ldap_context(settings) as ldap_ctx:
@@ -149,7 +149,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
         'starttls': True
     }
 
-    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize')
+    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
     ldap_conn = MagicMock()
     getattr(ldap_conn, method).side_effect = triggered_exception
     ldap_initialize.return_value = ldap_conn
@@ -185,7 +185,7 @@ def test_find_one(mocker, base_dn, search_filter, data, expected):
 
     ldap_search = MagicMock(return_value=data)
     ldap_conn = MagicMock(search_ext_s=ldap_search)
-    mocker.patch('flask_multiauth.providers.ldap.util.ldap.initialize', return_value=ldap_conn)
+    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
 
     with ldap_context(settings):
         assert find_one(base_dn, search_filter) == expected
