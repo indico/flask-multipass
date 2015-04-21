@@ -22,9 +22,15 @@ class AuthenticationFailed(MultiAuthException):
 class NoSuchUser(AuthenticationFailed):
     """Indicates a user does not exist when attempting to authenticate."""
 
+    def __init__(self):
+        AuthenticationFailed.__init__(self, 'No such user')
+
 
 class InvalidCredentials(AuthenticationFailed):
     """Indicates a failure to authenticate using the given credentials."""
+
+    def __init__(self):
+        AuthenticationFailed.__init__(self, 'Invalid credentials')
 
 
 class IdentityRetrievalFailed(MultiAuthException):
