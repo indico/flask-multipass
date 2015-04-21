@@ -155,7 +155,7 @@ def test_login_view(mocker):
     @app.route('/err')
     @login_view
     def err():
-        raise Exception()
+        raise Exception
 
     @app.route('/fail')
     @login_view

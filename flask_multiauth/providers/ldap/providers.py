@@ -62,10 +62,10 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
             try:
                 user_dn, user_data = get_user_by_id(username, attributes=[self.ldap_settings['uid']])
                 if not user_dn:
-                    raise NoSuchUser()
+                    raise NoSuchUser
                 current_ldap.connection.simple_bind_s(user_dn, password)
             except INVALID_CREDENTIALS:
-                raise InvalidCredentials()
+                raise InvalidCredentials
         auth_info = AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
         return self.multiauth.handle_auth_success(auth_info)
 
