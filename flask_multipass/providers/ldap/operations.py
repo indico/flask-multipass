@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import absolute_import
@@ -9,9 +9,9 @@ from __future__ import absolute_import
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE, SCOPE_SUBTREE
 from ldap.controls import SimplePagedResultsControl
 
-from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
-from flask_multiauth.providers.ldap.globals import current_ldap
-from flask_multiauth.providers.ldap.util import build_search_filter, find_one, get_page_cookie
+from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
+from flask_multipass.providers.ldap.globals import current_ldap
+from flask_multipass.providers.ldap.util import build_search_filter, find_one, get_page_cookie
 
 
 def build_user_search_filter(criteria, mapping=None, exact=False):  # pragma: no cover

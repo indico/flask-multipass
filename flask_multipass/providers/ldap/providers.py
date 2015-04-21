@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import absolute_import
@@ -11,18 +11,18 @@ from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo, IdentityInfo
-from flask_multiauth.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
-from flask_multiauth.group import Group
-from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import convert_app_data
+from flask_multipass.auth import AuthProvider
+from flask_multipass.data import AuthInfo, IdentityInfo
+from flask_multipass.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
+from flask_multipass.group import Group
+from flask_multipass.identity import IdentityProvider
+from flask_multipass.util import convert_app_data
 
-from flask_multiauth.providers.ldap.globals import current_ldap
-from flask_multiauth.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
+from flask_multipass.providers.ldap.globals import current_ldap
+from flask_multipass.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
                                                        get_user_by_id, get_group_by_id, get_token_groups_from_user_dn,
                                                        search)
-from flask_multiauth.providers.ldap.util import ldap_context, to_unicode
+from flask_multipass.providers.ldap.util import ldap_context, to_unicode
 
 
 class LoginForm(Form):
@@ -67,7 +67,7 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
             except INVALID_CREDENTIALS:
                 raise InvalidCredentials
         auth_info = AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
-        return self.multiauth.handle_auth_success(auth_info)
+        return self.multipass.handle_auth_success(auth_info)
 
 
 class LDAPGroup(Group):
@@ -163,7 +163,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def get_identity_from_auth(self, auth_info):  # pragma: no cover
         return self._get_identity(auth_info.data.pop('identifier'))
 
-    def refresh_identity(self, identifier, multiauth_data):  # pragma: no cover
+    def refresh_identity(self, identifier, multipass_data):  # pragma: no cover
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):

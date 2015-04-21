@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -10,10 +10,10 @@ import pytest
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE
 from mock import MagicMock
 
-from flask_multiauth.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
-from flask_multiauth.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,
+from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
+from flask_multipass.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,
                                                        search)
-from flask_multiauth.providers.ldap.util import ldap_context
+from flask_multipass.providers.ldap.util import ldap_context
 
 
 def test_get_user_by_id_handles_none_id():
@@ -62,12 +62,12 @@ def test_get_group_by_id_handles_none_id():
 def test_search(mocker, settings, base_dn, search_filter, attributes, mock_data, expected):
     mock_data['cookies'].append('')  # last search operation should not return a cookie
     page_ctrl = MagicMock()
-    mocker.patch('flask_multiauth.providers.ldap.operations.SimplePagedResultsControl', return_value=page_ctrl)
+    mocker.patch('flask_multipass.providers.ldap.operations.SimplePagedResultsControl', return_value=page_ctrl)
     ldap_connection = MagicMock(result3=MagicMock(side_effect=((None, entries, None, [page_ctrl])
                                                                for entries in mock_data['results'])),
                                 search_ext=MagicMock(side_effect=mock_data['msg_ids']))
-    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_connection)
-    mocker.patch('flask_multiauth.providers.ldap.operations.get_page_cookie', side_effect=mock_data['cookies'])
+    mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_connection)
+    mocker.patch('flask_multipass.providers.ldap.operations.get_page_cookie', side_effect=mock_data['cookies'])
 
     with ldap_context(settings):
         for i, result in enumerate(search(base_dn, search_filter, attributes)):
@@ -89,10 +89,10 @@ def test_search(mocker, settings, base_dn, search_filter, attributes, mock_data,
 ))
 def test_search_none_existing_entry(mocker, settings, base_dn, search_filter, attributes, msg_ids):
     page_ctrl = MagicMock()
-    mocker.patch('flask_multiauth.providers.ldap.operations.SimplePagedResultsControl', return_value=page_ctrl)
+    mocker.patch('flask_multipass.providers.ldap.operations.SimplePagedResultsControl', return_value=page_ctrl)
     ldap_connection = MagicMock(result3=MagicMock(side_effect=NO_SUCH_OBJECT),
                                 search_ext=MagicMock(side_effect=msg_ids))
-    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_connection)
+    mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_connection)
 
     with ldap_context(settings):
         for result in search(base_dn, search_filter, attributes):
@@ -139,7 +139,7 @@ def test_get_token_groups_from_user_dn(mocker, user_dn, mock_data, expected):
 
     ldap_search = MagicMock(return_value=mock_data)
     ldap_conn = MagicMock(search_ext_s=ldap_search)
-    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
+    mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
     with ldap_context(settings):
         assert get_token_groups_from_user_dn(user_dn) == expected
         # Token-Groups must be retrieved from a base scope query

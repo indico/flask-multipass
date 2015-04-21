@@ -87,9 +87,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/Flask-MultiAuth.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/Flask-Multipass.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/Flask-MultiAuth.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/Flask-Multipass.qhc"
 
 applehelp:
 	$(SPHINXBUILD) -b applehelp $(ALLSPHINXOPTS) $(BUILDDIR)/applehelp
@@ -104,8 +104,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/Flask-MultiAuth"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/Flask-MultiAuth"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/Flask-Multipass"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/Flask-Multipass"
 	@echo "# devhelp"
 
 epub:

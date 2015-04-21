@@ -4,62 +4,62 @@ API
 
 Core
 ----
-.. automodule:: flask_multiauth.core
+.. automodule:: flask_multipass.core
    :members:
 
 
 Authentication Providers
 ------------------------
-.. automodule:: flask_multiauth.auth
+.. automodule:: flask_multipass.auth
    :members:
-.. autoclass:: flask_multiauth.providers.ldap.LDAPAuthProvider
+.. autoclass:: flask_multipass.providers.ldap.LDAPAuthProvider
    :members:
-.. autoclass:: flask_multiauth.providers.oauth.OAuthAuthProvider
+.. autoclass:: flask_multipass.providers.oauth.OAuthAuthProvider
    :members:
-.. autoclass:: flask_multiauth.providers.static.StaticAuthProvider
+.. autoclass:: flask_multipass.providers.static.StaticAuthProvider
    :members:
-.. autoclass:: flask_multiauth.providers.shibboleth.ShibbolethAuthProvider
+.. autoclass:: flask_multipass.providers.shibboleth.ShibbolethAuthProvider
    :members:
-.. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyAuthProviderBase
+.. autoclass:: flask_multipass.providers.sqlalchemy.SQLAlchemyAuthProviderBase
    :members:
 
 
 User Identity Providers
 -----------------------
-.. automodule:: flask_multiauth.identity
+.. automodule:: flask_multipass.identity
    :members:
-.. autoclass:: flask_multiauth.providers.ldap.LDAPIdentityProvider
+.. autoclass:: flask_multipass.providers.ldap.LDAPIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.oauth.OAuthIdentityProvider
+.. autoclass:: flask_multipass.providers.oauth.OAuthIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.static.StaticIdentityProvider
+.. autoclass:: flask_multipass.providers.static.StaticIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.shibboleth.ShibbolethIdentityProvider
+.. autoclass:: flask_multipass.providers.shibboleth.ShibbolethIdentityProvider
    :members:
-.. autoclass:: flask_multiauth.providers.sqlalchemy.SQLAlchemyIdentityProviderBase
+.. autoclass:: flask_multipass.providers.sqlalchemy.SQLAlchemyIdentityProviderBase
    :members:
 
 
 Data Structures
 ---------------
-.. automodule:: flask_multiauth.data
+.. automodule:: flask_multipass.data
    :members:
 
 
 Groups
 ------
-.. automodule:: flask_multiauth.group
+.. automodule:: flask_multipass.group
    :members:
 
 
 Utils
 -----
-.. automodule:: flask_multiauth.util
+.. automodule:: flask_multipass.util
    :members:
    :exclude-members: expand_provider_links, get_state, classproperty, validate_provider_map
 
 
 Exceptions
 ----------
-.. automodule:: flask_multiauth.exceptions
+.. automodule:: flask_multipass.exceptions
    :members:

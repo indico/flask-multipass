@@ -1,15 +1,15 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
 from werkzeug.datastructures import MultiDict
 
-from flask_multiauth._compat import text_type
-from flask_multiauth.util import convert_provider_data
+from flask_multipass._compat import text_type
+from flask_multipass.util import convert_provider_data
 
 
 class AuthInfo(object):
@@ -53,7 +53,7 @@ class IdentityInfo(object):
     :param identifier: A unique identifier string that can later be
                        used to retrieve identity information for the
                        same user.
-    :param multiauth_data: A dict containing additional data the
+    :param multipass_data: A dict containing additional data the
                            identity provider needs e.g. to refresh the
                            identity information for the same user,
                            without him authenticating again by keeping a
@@ -62,14 +62,14 @@ class IdentityInfo(object):
                  application.
     """
 
-    def __init__(self, provider, identifier, multiauth_data=None, **data):
+    def __init__(self, provider, identifier, multipass_data=None, **data):
         self.provider = provider
         self.identifier = text_type(identifier)
         if not provider.supports_refresh:
-            assert multiauth_data is None
-            self.multiauth_data = None
+            assert multipass_data is None
+            self.multipass_data = None
         else:
-            self.multiauth_data = dict(multiauth_data or {}, _provider=provider.name)
+            self.multipass_data = dict(multipass_data or {}, _provider=provider.name)
         mapping = provider.settings.get('mapping')
         self.data = MultiDict(convert_provider_data(data, mapping or {}, self.provider.settings['identity_info_keys']))
 

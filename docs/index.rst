@@ -1,10 +1,10 @@
-===================
- Flask-MultiAuth
-===================
+===============
+Flask-Multipass
+===============
 
-.. module:: flask_multiauth
+.. module:: flask_multipass
 
-Flask-MultiAuth allows you to provide different authentication systems in
+Flask-Multipass allows you to provide different authentication systems in
 your Flask application. It provides support for the most common systems
 and can be easily extended to support additional ones.
 

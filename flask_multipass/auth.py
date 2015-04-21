@@ -1,20 +1,20 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
-from flask_multiauth._compat import add_metaclass
-from flask_multiauth.util import SupportsMeta
+from flask_multipass._compat import add_metaclass
+from flask_multipass.util import SupportsMeta
 
 
 @add_metaclass(SupportsMeta)
 class AuthProvider(object):
     """Provides the base for an authentication provider.
 
-    :param multiauth: The Flask-MultiAuth instancee
+    :param multipass: The Flask-Multipass instance
     :param name: The name of this auth provider instance
     :param settings: The settings dictionary for this auth provider
                      instance
@@ -27,7 +27,7 @@ class AuthProvider(object):
                               'login_form is not set'): 'initiate_external_login'
     }
     #: The entry point to lookup providers (do not override this!)
-    _entry_point = 'flask_multiauth.auth_providers'
+    _entry_point = 'flask_multipass.auth_providers'
     #: If there may be multiple instances of this auth provider
     multi_instance = True
     #: If this auth provider requires the user to enter data using a
@@ -35,8 +35,8 @@ class AuthProvider(object):
     #: here (usually containing a username/email and a password field).
     login_form = None
 
-    def __init__(self, multiauth, name, settings):
-        self.multiauth = multiauth
+    def __init__(self, multipass, name, settings):
+        self.multipass = multipass
         self.name = name
         self.settings = settings.copy()
         self.title = self.settings.pop('title', self.name)
@@ -58,13 +58,13 @@ class AuthProvider(object):
         valid credentials.
 
         After successful authentication this method needs to call
-        :meth:`.MultiAuth.handle_auth_success` with an :class:`.AuthInfo`
+        :meth:`.Multipass.handle_auth_success` with an :class:`.AuthInfo`
         instance containing data that can be used by the identity provider
         to retrieve information for that user.
 
         :param data: The form data (as returned by the `data` attribute
                       of the :obj:`login_form` instance)
-        :return: The return value of :meth:`.MultiAuth.handle_auth_success`
+        :return: The return value of :meth:`.Multipass.handle_auth_success`
         """
         if not self.is_external:
             raise NotImplementedError
@@ -78,7 +78,7 @@ class AuthProvider(object):
         This method usually redirects to an external login page.
 
         Executing this method eventually needs to result in a call to
-        :meth:`.MultiAuth.handle_auth_success` with an :class:`.AuthInfo`
+        :meth:`.Multipass.handle_auth_success` with an :class:`.AuthInfo`
         instance containing data that can be used by the identity provider
         to retrieve information for that user.
 

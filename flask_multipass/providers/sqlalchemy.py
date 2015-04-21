@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals, absolute_import
@@ -11,8 +11,8 @@ from sqlalchemy import inspect
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth import AuthProvider, IdentityProvider, NoSuchUser, InvalidCredentials, AuthInfo, IdentityInfo
-from flask_multiauth._compat import string_types
+from flask_multipass import AuthProvider, IdentityProvider, NoSuchUser, InvalidCredentials, AuthInfo, IdentityInfo
+from flask_multipass._compat import string_types
 
 
 class LoginForm(Form):
@@ -59,7 +59,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
         if not self.check_password(identity, data['password']):
             raise InvalidCredentials
         auth_info = AuthInfo(self, identity=identity)
-        return self.multiauth.handle_auth_success(auth_info)
+        return self.multipass.handle_auth_success(auth_info)
 
 
 class SQLAlchemyIdentityProviderBase(IdentityProvider):

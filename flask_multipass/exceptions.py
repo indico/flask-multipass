@@ -1,17 +1,17 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
 
-class MultiAuthException(Exception):
-    """Base class for MultiAuth exceptions"""
+class MultipassException(Exception):
+    """Base class for Multipass exceptions"""
 
 
-class AuthenticationFailed(MultiAuthException):
+class AuthenticationFailed(MultipassException):
     """
     Indicates an authentication failure that was caused by the user,
     e.g. by entering the wrong credentials or not authorizing the
@@ -33,9 +33,9 @@ class InvalidCredentials(AuthenticationFailed):
         AuthenticationFailed.__init__(self, 'Invalid credentials')
 
 
-class IdentityRetrievalFailed(MultiAuthException):
+class IdentityRetrievalFailed(MultipassException):
     """Indicates a failure while retrieving identity information"""
 
 
-class GroupRetrievalFailed(MultiAuthException):
+class GroupRetrievalFailed(MultipassException):
     """Indicates a failure while retrieving group information"""

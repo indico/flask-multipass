@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -10,16 +10,16 @@ from flask import current_app, render_template, request, url_for, session, redir
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
 
-from flask_multiauth._compat import iteritems, itervalues, text_type
-from flask_multiauth.auth import AuthProvider
-from flask_multiauth.exceptions import MultiAuthException, IdentityRetrievalFailed, GroupRetrievalFailed
-from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import (get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map,
+from flask_multipass._compat import iteritems, itervalues, text_type
+from flask_multipass.auth import AuthProvider
+from flask_multipass.exceptions import MultipassException, IdentityRetrievalFailed, GroupRetrievalFailed
+from flask_multipass.identity import IdentityProvider
+from flask_multipass.util import (get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map,
                                   get_provider_base)
 
 
-class MultiAuth(object):
-    """Base class of the Flask-MultiAuth extension.
+class Multipass(object):
+    """Base class of the Flask-Multipass extension.
 
     :param app: The flask application. If omitted, use :meth:`init_app`
                 to initialize the extension for you application.
@@ -41,28 +41,28 @@ class MultiAuth(object):
 
         :param app: The flask application
         """
-        if 'multiauth' in app.extensions:
+        if 'multipass' in app.extensions:
             raise RuntimeError('Flask application already initialized')
-        state = app.extensions['multiauth'] = _MultiAuthState(self, app)
+        state = app.extensions['multipass'] = _MultipassState(self, app)
         # TODO: write docs for the config (see flask-cache for a pretty example)
-        app.config.setdefault('MULTIAUTH_AUTH_PROVIDERS', {})
-        app.config.setdefault('MULTIAUTH_IDENTITY_PROVIDERS', {})
-        app.config.setdefault('MULTIAUTH_PROVIDER_MAP', {})
-        app.config.setdefault('MULTIAUTH_IDENTITY_INFO_KEYS', None)
-        app.config.setdefault('MULTIAUTH_LOGIN_SELECTOR_TEMPLATE', None)
-        app.config.setdefault('MULTIAUTH_LOGIN_FORM_TEMPLATE', None)
-        app.config.setdefault('MULTIAUTH_LOGIN_ENDPOINT', 'login')
-        app.config.setdefault('MULTIAUTH_LOGIN_URLS', ('/login/', '/login/<provider>'))
-        app.config.setdefault('MULTIAUTH_SUCCESS_ENDPOINT', 'index')
-        app.config.setdefault('MULTIAUTH_FAILURE_MESSAGE', 'Authentication failed: {error}')
-        app.config.setdefault('MULTIAUTH_FAILURE_CATEGORY', 'error')
-        app.config.setdefault('MULTIAUTH_ALL_MATCHING_IDENTITIES', False)
-        app.config.setdefault('MULTIAUTH_REQUIRE_IDENTITY', True)
+        app.config.setdefault('MULTIPASS_AUTH_PROVIDERS', {})
+        app.config.setdefault('MULTIPASS_IDENTITY_PROVIDERS', {})
+        app.config.setdefault('MULTIPASS_PROVIDER_MAP', {})
+        app.config.setdefault('MULTIPASS_IDENTITY_INFO_KEYS', None)
+        app.config.setdefault('MULTIPASS_LOGIN_SELECTOR_TEMPLATE', None)
+        app.config.setdefault('MULTIPASS_LOGIN_FORM_TEMPLATE', None)
+        app.config.setdefault('MULTIPASS_LOGIN_ENDPOINT', 'login')
+        app.config.setdefault('MULTIPASS_LOGIN_URLS', ('/login/', '/login/<provider>'))
+        app.config.setdefault('MULTIPASS_SUCCESS_ENDPOINT', 'index')
+        app.config.setdefault('MULTIPASS_FAILURE_MESSAGE', 'Authentication failed: {error}')
+        app.config.setdefault('MULTIPASS_FAILURE_CATEGORY', 'error')
+        app.config.setdefault('MULTIPASS_ALL_MATCHING_IDENTITIES', False)
+        app.config.setdefault('MULTIPASS_REQUIRE_IDENTITY', True)
         with app.app_context():
             self._create_login_rule()
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
             state.identity_providers = ImmutableDict(self._create_providers('IDENTITY', IdentityProvider))
-            state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIAUTH_PROVIDER_MAP']))
+            state.provider_map = ImmutableDict(get_canonical_provider_map(current_app.config['MULTIPASS_PROVIDER_MAP']))
             validate_provider_map(state)
 
     @property
@@ -144,7 +144,7 @@ class MultiAuth(object):
         :param clear_session: If true, the Flask session is cleared.
         :return: A Flask respnse
         """
-        auth_provider = self.auth_providers.get(session.get('_multiauth_login_provider'))
+        auth_provider = self.auth_providers.get(session.get('_multipass_login_provider'))
         response = auth_provider.process_logout(return_url) if auth_provider else None
         if clear_session:
             session.clear()
@@ -161,15 +161,15 @@ class MultiAuth(object):
         """
         assert self.identity_callback is not None, \
             'No identity callback has been registered. Register one using ' \
-            'Register one using the MultiAuth.identity_handler decorator.'
+            'Register one using the Multipass.identity_handler decorator.'
         return self.identity_callback(identity_info)
 
     def handle_auth_success(self, auth_info):
         """Called after a successful authentication
 
         This method calls :meth:`login_finished` with the found
-        identity.  If ``MULTIAUTH_ALL_MATCHING_IDENTITIES`` is set, it
-        will pass a list of identities.  If ``MULTIAUTH_REQUIRE_IDENTITY``
+        identity.  If ``MULTIPASS_ALL_MATCHING_IDENTITIES`` is set, it
+        will pass a list of identities.  If ``MULTIPASS_REQUIRE_IDENTITY``
         is set, :exc:`.IdentityRetrievalFailed` will be raised if no
         identities were found, otherwise ``None`` or and empty list
         will be passed.
@@ -188,12 +188,12 @@ class MultiAuth(object):
             if identity_info is None:
                 continue
             identities.append(identity_info)
-            if not current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
+            if not current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
                 break
-        if not identities and current_app.config['MULTIAUTH_REQUIRE_IDENTITY']:
+        if not identities and current_app.config['MULTIPASS_REQUIRE_IDENTITY']:
             raise IdentityRetrievalFailed("No identity found")
-        session['_multiauth_login_provider'] = auth_info.provider.name
-        if current_app.config['MULTIAUTH_ALL_MATCHING_IDENTITIES']:
+        session['_multipass_login_provider'] = auth_info.provider.name
+        if current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
             response = self.login_finished(identities)
         else:
             response = self.login_finished(identities[0] if identities else None)
@@ -206,20 +206,20 @@ class MultiAuth(object):
         :param redirect_to_login: Returns a redirect response to the
                                   login page.
         """
-        session['_multiauth_auth_failed'] = True
-        flash(current_app.config['MULTIAUTH_FAILURE_MESSAGE'].format(error=text_type(exc)),
-              current_app.config['MULTIAUTH_FAILURE_CATEGORY'])
+        session['_multipass_auth_failed'] = True
+        flash(current_app.config['MULTIPASS_FAILURE_MESSAGE'].format(error=text_type(exc)),
+              current_app.config['MULTIPASS_FAILURE_CATEGORY'])
         if redirect_to_login:
-            return redirect(url_for(current_app.config['MULTIAUTH_LOGIN_ENDPOINT']))
+            return redirect(url_for(current_app.config['MULTIPASS_LOGIN_ENDPOINT']))
 
     def render_template(self, template_key, **kwargs):
         """Renders a template configured in the app config
 
         :param template_key: The template key to insert in the config
-                             option name ``MULTIAUTH_*_TEMPLATE``
+                             option name ``MULTIPASS_*_TEMPLATE``
         :param kwargs: The variables passed to the template/
         """
-        key = 'MULTIAUTH_{}_TEMPLATE'.format(template_key)
+        key = 'MULTIPASS_{}_TEMPLATE'.format(template_key)
         template = current_app.config[key]
         if template is None:
             raise RuntimeError('Config option missing: ' + key)
@@ -255,25 +255,25 @@ class MultiAuth(object):
         self.login_check_callback = callback
         return callback
 
-    def refresh_identity(self, identifier, multiauth_data):
+    def refresh_identity(self, identifier, multipass_data):
         """Retrieves user identity information for an existing identity
 
         :param identifier: The `identifier` from :class:`.IdentityInfo`
-        :param multiauth_data: The `multiauth_data` dict from
+        :param multipass_data: The `multipass_data` dict from
                                :class:`.IdentityInfo`
         :return: An :class:`.IdentityInfo` instance or ``None`` if the
                  identity does not exist anymore.
         """
-        if multiauth_data is None:
+        if multipass_data is None:
             raise ValueError('This identity cannot be refreshed')
-        provider_name = multiauth_data['_provider']
+        provider_name = multipass_data['_provider']
         try:
             provider = self.identity_providers[provider_name]
         except KeyError:
             raise IdentityRetrievalFailed('Provider does not exist: ' + provider_name)
         if not provider.supports_refresh:
             raise IdentityRetrievalFailed('Provider does not support refreshing: ' + provider_name)
-        return provider.refresh_identity(identifier, multiauth_data)
+        return provider.refresh_identity(identifier, multipass_data)
 
     def search_identities(self, providers=None, exact=False, **criteria):
         """Searches user identities matching certain criteria
@@ -338,13 +338,13 @@ class MultiAuth(object):
         """Instantiates all providers
 
         :param key: The key to insert into the config option name
-                    ``MULTIAUTH_*_PROVIDERS``
+                    ``MULTIPASS_*_PROVIDERS``
         :param base: The base class of the provider type.
         """
         registry = self.provider_registry[AuthProvider if key == 'AUTH' else IdentityProvider]
         providers = {}
         provider_classes = set()
-        for name, settings in iteritems(current_app.config['MULTIAUTH_{}_PROVIDERS'.format(key)]):
+        for name, settings in iteritems(current_app.config['MULTIPASS_{}_PROVIDERS'.format(key)]):
             settings = settings.copy()
             cls = resolve_provider_type(base, settings.pop('type'), registry)
             if not cls.multi_instance and cls in provider_classes:
@@ -355,8 +355,8 @@ class MultiAuth(object):
 
     def _create_login_rule(self):
         """Creates the login URL rule if necessary"""
-        endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
-        rules = current_app.config['MULTIAUTH_LOGIN_URLS']
+        endpoint = current_app.config['MULTIPASS_LOGIN_ENDPOINT']
+        rules = current_app.config['MULTIPASS_LOGIN_URLS']
         if rules is None:
             return
         for rule in rules:
@@ -366,8 +366,8 @@ class MultiAuth(object):
         """Saves the URL to redirect to after logging in."""
         next_url = request.args.get('next')
         if not next_url:
-            next_url = url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
-        session['_multiauth_next_url'] = next_url
+            next_url = url_for(current_app.config['MULTIPASS_SUCCESS_ENDPOINT'])
+        session['_multipass_next_url'] = next_url
 
     def _get_next_url(self):
         """Returns the saved URL to redirect to after logging in.
@@ -376,16 +376,16 @@ class MultiAuth(object):
         session afterwards.
         """
         try:
-            return session.pop('_multiauth_next_url')
+            return session.pop('_multipass_next_url')
         except KeyError:
-            return url_for(current_app.config['MULTIAUTH_SUCCESS_ENDPOINT'])
+            return url_for(current_app.config['MULTIPASS_SUCCESS_ENDPOINT'])
 
     def _login_selector(self):
         """Shows the login method (auth provider) selector"""
         providers = self.auth_providers
         next_url = request.args.get('next')
-        auth_failed = session.pop('_multiauth_auth_failed', False)
-        login_endpoint = current_app.config['MULTIAUTH_LOGIN_ENDPOINT']
+        auth_failed = session.pop('_multipass_auth_failed', False)
+        login_endpoint = current_app.config['MULTIPASS_LOGIN_ENDPOINT']
         if not auth_failed and len(providers) == 1:
             provider = next(iter(providers.values()))
             return redirect(url_for(login_endpoint, provider=provider.name, next=next_url))
@@ -406,20 +406,20 @@ class MultiAuth(object):
         if form.validate_on_submit():
             try:
                 response = provider.process_local_login(form.data)
-            except MultiAuthException as e:
+            except MultipassException as e:
                 self.handle_auth_error(e)
             else:
                 return response
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
 
-class _MultiAuthState(object):
-    def __init__(self, multiauth, app):
-        self.multiauth = multiauth
+class _MultipassState(object):
+    def __init__(self, multipass, app):
+        self.multipass = multipass
         self.app = app
         self.auth_providers = {}
         self.identity_providers = {}
         self.provider_map = {}
 
     def __repr__(self):
-        return '<MultiAuthState({}, {})>'.format(self.multiauth, self.app)
+        return '<MultipassState({}, {})>'.format(self.multipass, self.app)

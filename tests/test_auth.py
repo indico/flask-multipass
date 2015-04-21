@@ -1,14 +1,14 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
 import pytest
 
-from flask_multiauth import AuthProvider
+from flask_multipass import AuthProvider
 
 
 class LocalProvider(AuthProvider):

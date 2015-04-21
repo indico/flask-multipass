@@ -1,21 +1,21 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
 import sys
 
-import flask_multiauth
+import flask_multipass
 
 
 def pytest_configure(config):
     # Disable the support attr checks while testing
     attrs = ('AuthProvider', 'Group', 'IdentityProvider')
     for attr in attrs:
-        getattr(flask_multiauth, attr).__support_attrs__ = {}
+        getattr(flask_multipass, attr).__support_attrs__ = {}
 
 
 collect_ignore = []

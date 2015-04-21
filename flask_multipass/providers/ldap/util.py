@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import absolute_import
@@ -17,11 +17,11 @@ from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
 
-from flask_multiauth._compat import iteritems, itervalues, text_type
-from flask_multiauth.exceptions import MultiAuthException
-from flask_multiauth.providers.ldap.exceptions import LDAPServerError
-from flask_multiauth.providers.ldap.globals import _ldap_ctx_stack, current_ldap
-from flask_multiauth.util import convert_app_data
+from flask_multipass._compat import iteritems, itervalues, text_type
+from flask_multipass.exceptions import MultipassException
+from flask_multipass.providers.ldap.exceptions import LDAPServerError
+from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
+from flask_multipass.util import convert_app_data
 
 #: A context holding the LDAP connection and the LDAP provider settings.
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
@@ -31,15 +31,15 @@ conn_keys = {'uri', 'bind_dn', 'bind_password', 'tls', 'starttls'}
 
 @appcontext_tearing_down.connect
 def _clear_ldap_cache(*args, **kwargs):
-    if not has_app_context() or '_multiauth_ldap_connections' not in g:
+    if not has_app_context() or '_multipass_ldap_connections' not in g:
         return
-    for conn in itervalues(g._multiauth_ldap_connections):
+    for conn in itervalues(g._multipass_ldap_connections):
         try:
             conn.unbind_s()
         except ldap.LDAPError:
             # That's ugly but we couldn't care less about a failure while disconnecting
             pass
-    del g._multiauth_ldap_connections
+    del g._multipass_ldap_connections
 
 
 def _get_ldap_cache():
@@ -47,9 +47,9 @@ def _get_ldap_cache():
     if not has_app_context():
         return {}
     try:
-        return g._multiauth_ldap_connections
+        return g._multipass_ldap_connections
     except AttributeError:
-        g._multiauth_ldap_connections = cache = {}
+        g._multipass_ldap_connections = cache = {}
         return cache
 
 
@@ -82,19 +82,19 @@ def ldap_context(settings, use_cache=True):
         finally:
             assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
     except ldap.SERVER_DOWN:
-        raise MultiAuthException("The LDAP server is unreachable")
+        raise MultipassException("The LDAP server is unreachable")
     except ldap.INVALID_CREDENTIALS:
         raise ValueError("Invalid bind credentials")
     except ldap.SIZELIMIT_EXCEEDED:
-        raise MultiAuthException("Size limit exceeded (try setting a smaller page size)")
+        raise MultipassException("Size limit exceeded (try setting a smaller page size)")
     except ldap.TIMELIMIT_EXCEEDED:
-        raise MultiAuthException("The time limit for the operation has been exceeded.")
+        raise MultipassException("The time limit for the operation has been exceeded.")
     except ldap.TIMEOUT:
-        raise MultiAuthException("The operation timed out.")
+        raise MultipassException("The operation timed out.")
     except ldap.FILTER_ERROR:
         raise ValueError("The filter supplied to the operation is invalid. "
                          "(This is most likely due to a bad user or group filter.")
-    # TODO: handle a MultiAuth time out exception
+    # TODO: handle a Multipass time out exception
 
 
 def ldap_connect(settings, use_cache=True):

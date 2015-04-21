@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -12,8 +12,8 @@ from pkg_resources import iter_entry_points
 
 from flask import current_app
 
-from flask_multiauth._compat import iteritems, string_types, viewkeys, itervalues
-from flask_multiauth.exceptions import MultiAuthException
+from flask_multipass._compat import iteritems, string_types, viewkeys, itervalues
+from flask_multipass.exceptions import MultipassException
 
 
 def convert_app_data(app_data, mapping, key_filter=None):
@@ -79,17 +79,17 @@ def get_canonical_provider_map(provider_map):
 
 
 def get_state(app=None):
-    """Gets the application-specific multiauth data.
+    """Gets the application-specific multipass data.
 
     :param app: The Flask application. Defaults to the current app.
-    :rtype: flask_multiauth.core._MultiAuthState
+    :rtype: flask_multipass.core._MultipassState
     """
     if app is None:
         app = current_app
-    assert 'multiauth' in app.extensions, \
-        'The multiauth extension was not registered to the current application. ' \
+    assert 'multipass' in app.extensions, \
+        'The multipass extension was not registered to the current application. ' \
         'Please make sure to call init_app() first.'
-    return app.extensions['multiauth']
+    return app.extensions['multipass']
 
 
 def get_provider_base(cls):
@@ -99,8 +99,8 @@ def get_provider_base(cls):
                 :class:`.IdentityProvider`.
     :return: :class:`.AuthProvider` or :class:`.IdentityProvider`
     """
-    from flask_multiauth.auth import AuthProvider
-    from flask_multiauth.identity import IdentityProvider
+    from flask_multipass.auth import AuthProvider
+    from flask_multipass.identity import IdentityProvider
     if issubclass(cls, AuthProvider) and issubclass(cls, IdentityProvider):
         raise TypeError('Class inherits from both AuthProvider and IdentityProvider: ' + cls.__name__)
     elif issubclass(cls, AuthProvider):
@@ -114,15 +114,15 @@ def get_provider_base(cls):
 def login_view(func):
     """Decorates a Flask view function as an authentication view.
 
-    This catches multiauth-related exceptions and flashes a message and
+    This catches multipass-related exceptions and flashes a message and
     redirects back to the login page.
     """
     @wraps(func)
     def decorator(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except MultiAuthException as e:
-            return get_state().multiauth.handle_auth_error(e, True)
+        except MultipassException as e:
+            return get_state().multipass.handle_auth_error(e, True)
 
     return decorator
 
@@ -163,7 +163,7 @@ def resolve_provider_type(base, type_, registry=None):
 def validate_provider_map(state):
     """Validates the provider map
 
-    :param state: The :class:`._MultiAuthState` instance
+    :param state: The :class:`._MultipassState` instance
     """
     invalid_keys = viewkeys(state.auth_providers) - viewkeys(state.provider_map)
     if invalid_keys:

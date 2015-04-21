@@ -1,7 +1,7 @@
 [run]
 branch = true
-source = flask_multiauth
-omit = flask_multiauth/_compat.py
+source = flask_multipass
+omit = flask_multipass/_compat.py
 
 [report]
 exclude_lines =

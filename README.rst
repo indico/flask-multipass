@@ -1,13 +1,13 @@
-Flask-MultiAuth
+Flask-Multipass
 ===============
 
-.. image:: https://readthedocs.org/projects/flask-multiauth/badge/?version=latest
-    :target: https://flask-multiauth.readthedocs.org/
-.. image:: https://travis-ci.org/indico/flask-multiauth.svg
-    :target: https://travis-ci.org/indico/flask-multiauth
-.. image:: https://coveralls.io/repos/indico/flask-multiauth/badge.svg
-    :target: https://coveralls.io/r/indico/flask-multiauth
+.. image:: https://readthedocs.org/projects/flask-multipass/badge/?version=latest
+    :target: https://flask-multipass.readthedocs.org/
+.. image:: https://travis-ci.org/indico/flask-multipass.svg
+    :target: https://travis-ci.org/indico/flask-multipass
+.. image:: https://coveralls.io/repos/indico/flask-multipass/badge.svg
+    :target: https://coveralls.io/r/indico/flask-multipass
 
-Flask-MultiAuth is an extension that provides a user authentication
+Flask-Multipass is an extension that provides a user authentication
 system for Flask which can use multiple backends (such as local users,
 LDAP and OAuth) simultaneously.

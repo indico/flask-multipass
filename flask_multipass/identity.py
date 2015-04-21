@@ -1,22 +1,22 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
 
 from flask import current_app
 
-from flask_multiauth._compat import add_metaclass
-from flask_multiauth.util import SupportsMeta, convert_app_data
+from flask_multipass._compat import add_metaclass
+from flask_multipass.util import SupportsMeta, convert_app_data
 
 
 @add_metaclass(SupportsMeta)
 class IdentityProvider(object):
     """Provides the base for an identity provider.
 
-    :param multiauth: The Flask-MultiAuth instancee
+    :param multipass: The Flask-Multipass instance
     :param name: The name of this identity provider instance
     :param settings: The settings dictionary for this identity
                      provider instance
@@ -26,7 +26,7 @@ class IdentityProvider(object):
                          'supports_search': 'search_identities',
                          'supports_groups': ('get_group', 'search_groups', 'group_class')}
     #: The entry point to lookup providers (do not override this!)
-    _entry_point = 'flask_multiauth.identity_providers'
+    _entry_point = 'flask_multipass.identity_providers'
     #: If there may be multiple instances of this identity provider
     multi_instance = True
     #: If the provider supports refreshing identity information
@@ -39,11 +39,11 @@ class IdentityProvider(object):
     #: subclass of :class:`.Group`
     group_class = None
 
-    def __init__(self, multiauth, name, settings):
-        self.multiauth = multiauth
+    def __init__(self, multipass, name, settings):
+        self.multipass = multipass
         self.name = name
         self.settings = settings.copy()
-        self.settings.setdefault('identity_info_keys', current_app.config['MULTIAUTH_IDENTITY_INFO_KEYS'])
+        self.settings.setdefault('identity_info_keys', current_app.config['MULTIPASS_IDENTITY_INFO_KEYS'])
         self.settings.setdefault('mapping', {})
         self.title = self.settings.pop('title', self.name)
         search_enabled = self.settings.pop('search_enabled', self.supports_search)
@@ -61,7 +61,7 @@ class IdentityProvider(object):
         """
         raise NotImplementedError
 
-    def refresh_identity(self, identifier, multiauth_data):  # pragma: no cover
+    def refresh_identity(self, identifier, multipass_data):  # pragma: no cover
         """Retrieves identity information for an existing user identity
 
         This method returns identity information for an identity that
@@ -69,7 +69,7 @@ class IdentityProvider(object):
         data.
 
         :param identifier: The `identifier` from :class:`.IdentityInfo`
-        :param multiauth_data: The `multiauth_data` dict from
+        :param multipass_data: The `multipass_data` dict from
                                :class:`.IdentityInfo`
         """
         if self.supports_refresh:

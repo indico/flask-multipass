@@ -31,7 +31,7 @@ _my_ldap_config = {
     'ad_group_style': False,
 }
 
-MULTIAUTH_AUTH_PROVIDERS = {
+MULTIPASS_AUTH_PROVIDERS = {
     'test': {
         'type': 'static',
         'title': 'Insecure dummy auth',
@@ -62,7 +62,7 @@ MULTIAUTH_AUTH_PROVIDERS = {
     }
 }
 
-MULTIAUTH_IDENTITY_PROVIDERS = {
+MULTIPASS_IDENTITY_PROVIDERS = {
     'test': {
         'type': 'static',
         'identities': {
@@ -105,7 +105,7 @@ MULTIAUTH_IDENTITY_PROVIDERS = {
     }
 }
 
-MULTIAUTH_PROVIDER_MAP = {
+MULTIPASS_PROVIDER_MAP = {
     'local': 'local',
     'my_shibboleth': 'my_shibboleth',
     'my-ldap': 'my-ldap',
@@ -118,8 +118,8 @@ MULTIAUTH_PROVIDER_MAP = {
     ]
 }
 
-MULTIAUTH_LOGIN_FORM_TEMPLATE = 'login_form.html'
-MULTIAUTH_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
-MULTIAUTH_IDENTITY_INFO_KEYS = ['email', 'name', 'affiliation']
+MULTIPASS_LOGIN_FORM_TEMPLATE = 'login_form.html'
+MULTIPASS_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
+MULTIPASS_IDENTITY_INFO_KEYS = ['email', 'name', 'affiliation']
 WTF_CSRF_ENABLED = False
-SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multiauth.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multipass.db'

@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 import ast
@@ -30,15 +30,15 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-with open('flask_multiauth/__init__.py', 'rb') as f:
+with open('flask_multipass/__init__.py', 'rb') as f:
     version_line = re.search(r'__version__\s+=\s+(.*)', f.read().decode('utf-8')).group(1)
     version = str(ast.literal_eval(version_line))
 
 
 setup(
-    name='Flask-MultiAuth',
+    name='Flask-Multipass',
     version=version,
-    url='https://github.com/indico/flask-multiauth',
+    url='https://github.com/indico/flask-multipass',
     license='BSD',
     author='Indico Team',
     author_email='indico-team@cern.ch',
@@ -59,17 +59,17 @@ setup(
         'Programming Language :: Python :: 3.4'
     ],
     entry_points={
-        'flask_multiauth.auth_providers': {
-            'ldap = flask_multiauth.providers.ldap:LDAPAuthProvider',
-            'oauth = flask_multiauth.providers.oauth:OAuthAuthProvider',
-            'shibboleth = flask_multiauth.providers.shibboleth:ShibbolethAuthProvider',
-            'static = flask_multiauth.providers.static:StaticAuthProvider'
+        'flask_multipass.auth_providers': {
+            'ldap = flask_multipass.providers.ldap:LDAPAuthProvider',
+            'oauth = flask_multipass.providers.oauth:OAuthAuthProvider',
+            'shibboleth = flask_multipass.providers.shibboleth:ShibbolethAuthProvider',
+            'static = flask_multipass.providers.static:StaticAuthProvider'
         },
-        'flask_multiauth.identity_providers': {
-            'ldap = flask_multiauth.providers.ldap:LDAPIdentityProvider',
-            'oauth = flask_multiauth.providers.oauth:OAuthIdentityProvider',
-            'shibboleth = flask_multiauth.providers.shibboleth:ShibbolethIdentityProvider',
-            'static = flask_multiauth.providers.static:StaticIdentityProvider'
+        'flask_multipass.identity_providers': {
+            'ldap = flask_multipass.providers.ldap:LDAPIdentityProvider',
+            'oauth = flask_multipass.providers.oauth:OAuthIdentityProvider',
+            'shibboleth = flask_multipass.providers.shibboleth:ShibbolethIdentityProvider',
+            'static = flask_multipass.providers.static:StaticIdentityProvider'
         }
     }
 )

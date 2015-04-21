@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -12,12 +12,12 @@ from flask_wtf import Form
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multiauth._compat import iteritems
-from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo, IdentityInfo
-from flask_multiauth.exceptions import AuthenticationFailed
-from flask_multiauth.group import Group
-from flask_multiauth.identity import IdentityProvider
+from flask_multipass._compat import iteritems
+from flask_multipass.auth import AuthProvider
+from flask_multipass.data import AuthInfo, IdentityInfo
+from flask_multipass.exceptions import AuthenticationFailed
+from flask_multipass.group import Group
+from flask_multipass.identity import IdentityProvider
 
 
 class StaticLoginForm(Form):
@@ -48,7 +48,7 @@ class StaticAuthProvider(AuthProvider):
         if password != data['password']:
             raise AuthenticationFailed('Invalid password.')
         auth_info = AuthInfo(self, username=data['username'])
-        return self.multiauth.handle_auth_success(auth_info)
+        return self.multipass.handle_auth_success(auth_info)
 
 
 class StaticGroup(Group):
@@ -98,7 +98,7 @@ class StaticIdentityProvider(IdentityProvider):
         identifier = auth_info.data['username']
         return self._get_identity(identifier)
 
-    def refresh_identity(self, identifier, multiauth_data):
+    def refresh_identity(self, identifier, multipass_data):
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):

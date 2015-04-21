@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -9,12 +9,12 @@ from __future__ import unicode_literals
 import pytest
 from flask import Flask
 
-from flask_multiauth import IdentityProvider, MultiAuth
+from flask_multipass import IdentityProvider, Multipass
 
 
 def test_settings_copied():
     app = Flask('test')
-    MultiAuth(app)
+    Multipass(app)
     with app.app_context():
         settings = {'foo': 'bar'}
         provider = IdentityProvider(None, None, settings)
@@ -28,7 +28,7 @@ def test_settings_copied():
 ))
 def test_settings_title(settings, title):
     app = Flask('test')
-    MultiAuth(app)
+    Multipass(app)
     with app.app_context():
         provider = IdentityProvider(None, 'foo', settings)
         assert provider.title == title
@@ -41,7 +41,7 @@ def test_settings_title(settings, title):
 ))
 def test_map_search_criteria(criteria, mapping, result):
     app = Flask('test')
-    MultiAuth(app)
+    Multipass(app)
     with app.app_context():
         settings = {'mapping': mapping}
         provider = IdentityProvider(None, 'foo', settings)

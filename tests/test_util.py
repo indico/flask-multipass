@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -11,13 +11,13 @@ from pkg_resources import EntryPoint
 import pytest
 from flask import Flask
 
-from flask_multiauth import MultiAuth
-from flask_multiauth._compat import iteritems, add_metaclass
-from flask_multiauth.auth import AuthProvider
-from flask_multiauth.core import _MultiAuthState
-from flask_multiauth.exceptions import AuthenticationFailed
-from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import (classproperty, get_state, resolve_provider_type, convert_provider_data, login_view,
+from flask_multipass import Multipass
+from flask_multipass._compat import iteritems, add_metaclass
+from flask_multipass.auth import AuthProvider
+from flask_multipass.core import _MultipassState
+from flask_multipass.exceptions import AuthenticationFailed
+from flask_multipass.identity import IdentityProvider
+from flask_multipass.util import (classproperty, get_state, resolve_provider_type, convert_provider_data, login_view,
                                   get_canonical_provider_map, validate_provider_map, SupportsMeta, get_provider_base,
                                   convert_app_data)
 
@@ -46,9 +46,9 @@ def test_get_state_app_not_initialized():
 def test_get_state_explicit():
     app = Flask('test')
     app2 = Flask('test2')
-    multiauth = MultiAuth()
-    multiauth.init_app(app)
-    multiauth.init_app(app2)
+    multipass = Multipass()
+    multipass.init_app(app)
+    multipass.init_app(app2)
     # outside app ctx
     with pytest.raises(RuntimeError):
         assert get_state().app
@@ -61,10 +61,10 @@ def test_get_state_explicit():
 
 def test_get_state():
     app = Flask('test')
-    multiauth = MultiAuth(app)
+    multipass = Multipass(app)
     with app.app_context():
         state = get_state(app)
-        assert state.multiauth is multiauth
+        assert state.multipass is multipass
         assert state.app is app
         assert get_state(app) is state
 
@@ -143,7 +143,7 @@ def test_get_provider_base_invalid():
 
 
 def test_login_view(mocker):
-    handle_auth_error = mocker.patch.object(MultiAuth, 'handle_auth_error')
+    handle_auth_error = mocker.patch.object(Multipass, 'handle_auth_error')
     app = Flask('test')
     e = AuthenticationFailed()
 
@@ -162,7 +162,7 @@ def test_login_view(mocker):
     def fail():
         raise e
 
-    MultiAuth(app)
+    Multipass(app)
     with app.test_client() as c:
         c.get('/ok')
         assert not handle_auth_error.called
@@ -203,7 +203,7 @@ def mock_entry_point(monkeypatch):
             'unknown': []
         }[name]
 
-    monkeypatch.setattr('flask_multiauth.util.iter_entry_points', _mock_iter_entry_points)
+    monkeypatch.setattr('flask_multipass.util.iter_entry_points', _mock_iter_entry_points)
 
 
 def test_resolve_provider_type_class():
@@ -239,7 +239,7 @@ def test_resolve_provider_type():
     (True,  [],    ['b'], {'a': 'b'}),
 ))
 def test_validate_provider_map(valid, auth_providers, identity_providers, provider_map):
-    state = _MultiAuthState(None, None)
+    state = _MultipassState(None, None)
     state.auth_providers = {x: {} for x in auth_providers}
     state.identity_providers = {x: {} for x in identity_providers}
     state.provider_map = {a: [{'identity_provider': u}] for a, u in iteritems(provider_map)}

@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import pytest
 from mock import MagicMock
 
-from flask_multiauth import AuthInfo, IdentityInfo
+from flask_multipass import AuthInfo, IdentityInfo
 
 
 def test_authinfo():

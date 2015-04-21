@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Flask-MultiAuth documentation build configuration file, created by
+# Flask-Multipass documentation build configuration file, created by
 # sphinx-quickstart on Mon Mar 30 11:56:17 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -30,7 +30,7 @@ except ImportError:
 sys.path.insert(0, os.path.abspath('_themes'))
 
 # Mock away ldap
-for module in ('ldap', 'ldap.controls', 'ldap.filter', 'urlparse'):
+for module in ('ldap', 'ldap.controls', 'ldap.filter', 'ldap.ldapobject', 'urlparse'):
     sys.modules[module] = MagicMock()
 
 # -- General configuration ------------------------------------------------
@@ -61,7 +61,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Flask-MultiAuth'
+project = 'Flask-Multipass'
 copyright = '2015, CERN'
 author = 'Indico Team'
 
@@ -70,10 +70,10 @@ author = 'Indico Team'
 # built documents.
 import pkg_resources
 try:
-    release = pkg_resources.get_distribution('flask-multiauth').version
+    release = pkg_resources.get_distribution('flask-multipass').version
 except pkg_resources.DistributionNotFound:
     print('To build the documentation, The distribution information of')
-    print('Flask-MultiAuth has to be available.  Either install the package')
+    print('Flask-Multipass has to be available.  Either install the package')
     print('into your development environment or run "setup.py develop"')
     print('to setup the metadata.  A virtualenv is recommended!')
     sys.exit(1)
@@ -221,7 +221,7 @@ html_sidebars = {
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Flask-MultiAuthdoc'
+htmlhelp_basename = 'Flask-Multipassdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -242,10 +242,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-  (master_doc, 'Flask-MultiAuth.tex', 'Flask-MultiAuth Documentation',
-   'Indico Team', 'manual'),
-]
+latex_documents = [(master_doc, 'Flask-Multipass.tex', 'Flask-Multipass Documentation', 'Indico Team', 'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -273,7 +270,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'flask-multiauth', 'Flask-MultiAuth Documentation',
+    (master_doc, 'flask-multipass', 'Flask-Multipass Documentation',
      [author], 1)
 ]
 
@@ -286,11 +283,8 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
-  (master_doc, 'Flask-MultiAuth', 'Flask-MultiAuth Documentation',
-   author, 'Flask-MultiAuth', 'One line description of project.',
-   'Miscellaneous'),
-]
+texinfo_documents = [(master_doc, 'Flask-Multipass', 'Flask-Multipass Documentation', author, 'Flask-Multipass',
+                      'One line description of project.', 'Miscellaneous')]
 
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []

@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -13,10 +13,10 @@ import ldap
 import pytest
 from mock import call, MagicMock
 
-from flask_multiauth.exceptions import MultiAuthException
-from flask_multiauth.util import convert_app_data
-from flask_multiauth.providers.ldap.globals import current_ldap
-from flask_multiauth.providers.ldap.util import build_search_filter, find_one, ldap_context, to_unicode, LDAPContext
+from flask_multipass.exceptions import MultipassException
+from flask_multipass.util import convert_app_data
+from flask_multipass.providers.ldap.globals import current_ldap
+from flask_multipass.providers.ldap.util import build_search_filter, find_one, ldap_context, to_unicode, LDAPContext
 
 
 @pytest.mark.parametrize(('criteria', 'type_filter', 'mapping', 'exact', 'expected'), (
@@ -44,7 +44,7 @@ from flask_multiauth.providers.ldap.util import build_search_filter, find_one, l
 def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact, expected):
     def _convert_app_data(*args, **kwargs):
         return OrderedDict(sorted(convert_app_data(*args, **kwargs).items()))
-    monkeypatch.setattr('flask_multiauth.providers.ldap.util.convert_app_data', _convert_app_data)
+    monkeypatch.setattr('flask_multipass.providers.ldap.util.convert_app_data', _convert_app_data)
     assert build_search_filter(criteria, type_filter, mapping, exact) == expected
 
 
@@ -109,8 +109,8 @@ def test_to_unicode(data, expected):
      ((ldap.OPT_REFERRALS, 0), (ldap.OPT_X_TLS, ldap.OPT_X_TLS_NEVER))),
 ))
 def test_ldap_context(mocker, settings, options):
-    warn = mocker.patch('flask_multiauth.providers.ldap.util.warn')
-    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
+    warn = mocker.patch('flask_multipass.providers.ldap.util.warn')
+    ldap_initialize = mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
     ldap_conn = MagicMock()
     ldap_initialize.return_value = ldap_conn
     with ldap_context(settings) as ldap_ctx:
@@ -130,13 +130,13 @@ def test_ldap_context(mocker, settings, options):
 
 
 @pytest.mark.parametrize(('method', 'triggered_exception', 'caught_exception', 'message'), (
-    ('search_s', ldap.SERVER_DOWN, MultiAuthException, 'The LDAP server is unreachable'),
+    ('search_s', ldap.SERVER_DOWN, MultipassException, 'The LDAP server is unreachable'),
     ('simple_bind_s', ldap.INVALID_CREDENTIALS, ValueError, 'Invalid bind credentials'),
-    ('simple_bind_s', ldap.SIZELIMIT_EXCEEDED, MultiAuthException,
+    ('simple_bind_s', ldap.SIZELIMIT_EXCEEDED, MultipassException,
      'Size limit exceeded (try setting a smaller page size)'),
-    ('simple_bind_s', ldap.TIMELIMIT_EXCEEDED, MultiAuthException,
+    ('simple_bind_s', ldap.TIMELIMIT_EXCEEDED, MultipassException,
      'The time limit for the operation has been exceeded.'),
-    ('simple_bind_s', ldap.TIMEOUT, MultiAuthException, 'The operation timed out.'),
+    ('simple_bind_s', ldap.TIMEOUT, MultipassException, 'The operation timed out.'),
     ('simple_bind_s', ldap.FILTER_ERROR, ValueError,
      'The filter supplied to the operation is invalid. (This is most likely due to a bad user or group filter.'),
 ))
@@ -149,7 +149,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
         'starttls': True
     }
 
-    ldap_initialize = mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject')
+    ldap_initialize = mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
     ldap_conn = MagicMock()
     getattr(ldap_conn, method).side_effect = triggered_exception
     ldap_initialize.return_value = ldap_conn
@@ -185,7 +185,7 @@ def test_find_one(mocker, base_dn, search_filter, data, expected):
 
     ldap_search = MagicMock(return_value=data)
     ldap_conn = MagicMock(search_ext_s=ldap_search)
-    mocker.patch('flask_multiauth.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
+    mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_conn)
 
     with ldap_context(settings):
         assert find_one(base_dn, search_filter) == expected

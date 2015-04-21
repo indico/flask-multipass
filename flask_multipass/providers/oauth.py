@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -9,11 +9,11 @@ from __future__ import unicode_literals
 import flask_oauthlib.client
 from flask import current_app, url_for
 
-from flask_multiauth.auth import AuthProvider
-from flask_multiauth.data import AuthInfo, IdentityInfo
-from flask_multiauth.exceptions import AuthenticationFailed, IdentityRetrievalFailed
-from flask_multiauth.identity import IdentityProvider
-from flask_multiauth.util import classproperty, login_view
+from flask_multipass.auth import AuthProvider
+from flask_multipass.data import AuthInfo, IdentityInfo
+from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFailed
+from flask_multipass.identity import IdentityProvider
+from flask_multipass.util import classproperty, login_view
 
 
 _oauth_settings = ('base_url', 'request_token_url', 'access_token_url', 'authorize_url',
@@ -28,7 +28,7 @@ class OAuth(flask_oauthlib.client.OAuth):
     Flask-OAuthlib for something else.
     """
 
-    state_key = flask_oauthlib.client.OAuth.state_key + '.flaskmultiauth'
+    state_key = flask_oauthlib.client.OAuth.state_key + '.flaskmultipass'
 
     @classproperty
     @classmethod
@@ -56,9 +56,9 @@ class OAuthAuthProvider(AuthProvider):
         self.settings.setdefault('callback_uri', '/oauth/{}'.format(self.name))
         self.settings.setdefault('oauth', {})
         self.settings.setdefault('token_field', 'access_token')
-        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
+        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultipass', register=False,
                                                    **self.settings['oauth'])
-        self.authorized_endpoint = '_flaskmultiauth_oauth_' + self.name
+        self.authorized_endpoint = '_flaskmultipass_oauth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
                                  self._authorize_callback, methods=('GET', 'POST'))
 
@@ -75,7 +75,7 @@ class OAuthAuthProvider(AuthProvider):
         if self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
             raise AuthenticationFailed(error)
-        return self.multiauth.handle_auth_success(self._make_auth_info(resp))
+        return self.multipass.handle_auth_success(self._make_auth_info(resp))
 
 
 class OAuthIdentityProvider(IdentityProvider):
@@ -95,7 +95,7 @@ class OAuthIdentityProvider(IdentityProvider):
         self.settings.setdefault('endpoint', None)
         self.settings.setdefault('oauth', {})
         self.settings.setdefault('identifier_field', None)
-        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultiauth', register=False,
+        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultipass', register=False,
                                                    **self.settings['oauth'])
 
     def _get_identity(self, token):
@@ -105,11 +105,11 @@ class OAuthIdentityProvider(IdentityProvider):
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
-        multiauth_data = {'oauth_token': token}
-        return IdentityInfo(self, identifier, multiauth_data, **resp.data)
+        multipass_data = {'oauth_token': token}
+        return IdentityInfo(self, identifier, multipass_data, **resp.data)
 
     def get_identity_from_auth(self, auth_info):
         return self._get_identity(auth_info.data['token'])
 
-    def refresh_identity(self, identifier, multiauth_data):
-        return self._get_identity(multiauth_data['oauth_token'])
+    def refresh_identity(self, identifier, multipass_data):
+        return self._get_identity(multipass_data['oauth_token'])

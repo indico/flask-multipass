@@ -1,7 +1,7 @@
-# This file is part of Flask-MultiAuth.
+# This file is part of Flask-Multipass.
 # Copyright (C) 2015 CERN
 #
-# Flask-MultiAuth is free software; you can redistribute it
+# Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
 from __future__ import unicode_literals
@@ -10,39 +10,39 @@ import pytest
 from flask import Flask, request, session
 from mock import Mock
 
-from flask_multiauth import MultiAuth, AuthProvider, AuthenticationFailed
+from flask_multipass import Multipass, AuthProvider, AuthenticationFailed
 
 
 def test_init_app_twice():
-    multiauth = MultiAuth()
+    multipass = Multipass()
     app = Flask('test')
-    multiauth.init_app(app)
+    multipass.init_app(app)
     with pytest.raises(RuntimeError):
-        multiauth.init_app(app)
+        multipass.init_app(app)
 
 
 def test_init_app_late():
     app = Flask('text')
-    multiauth = MultiAuth()
-    multiauth.init_app(app)
-    assert app.extensions['multiauth'].multiauth is multiauth
+    multipass = Multipass()
+    multipass.init_app(app)
+    assert app.extensions['multipass'].multipass is multipass
 
 
 def test_init_app_immediately():
     app = Flask('test')
-    multiauth = MultiAuth(app)
-    assert app.extensions['multiauth'].multiauth is multiauth
+    multipass = Multipass(app)
+    assert app.extensions['multipass'].multipass is multipass
 
 
 def test_multiple_apps():
     apps = Flask('test'), Flask('test')
-    multiauth = MultiAuth()
+    multipass = Multipass()
     for app in apps:
-        multiauth.init_app(app)
+        multipass.init_app(app)
     # The separate loop here is on purpose as the extension needs to
     # be present on all apps after initializing them
     for app in apps:
-        assert app.extensions['multiauth'].multiauth is multiauth
+        assert app.extensions['multipass'].multipass is multipass
 
 
 class FooProvider(AuthProvider):
@@ -55,47 +55,47 @@ class UniqueProvider(AuthProvider):
 
 def test_initialize_providers():
     app = Flask('test')
-    app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
+    app.config['MULTIPASS_AUTH_PROVIDERS'] = {
         'test': {'type': 'foo', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
-    multiauth = MultiAuth()
-    multiauth.register_provider(FooProvider, 'foo')
-    multiauth.register_provider(UniqueProvider, 'unique')
+    multipass = Multipass()
+    multipass.register_provider(FooProvider, 'foo')
+    multipass.register_provider(UniqueProvider, 'unique')
     with app.app_context():
-        auth_providers = multiauth._create_providers('AUTH', AuthProvider)
+        auth_providers = multipass._create_providers('AUTH', AuthProvider)
         assert auth_providers['test'].settings == {'foo': 'bar'}
         assert auth_providers['test2'].settings == {'hello': 'world'}
 
 
 def test_initialize_providers_unique():
     app = Flask('test')
-    app.config['MULTIAUTH_AUTH_PROVIDERS'] = {
+    app.config['MULTIPASS_AUTH_PROVIDERS'] = {
         'test': {'type': 'unique', 'foo': 'bar'},
         'test2': {'type': 'unique', 'hello': 'world'},
     }
-    multiauth = MultiAuth()
-    multiauth.register_provider(FooProvider, 'foo')
-    multiauth.register_provider(UniqueProvider, 'unique')
+    multipass = Multipass()
+    multipass.register_provider(FooProvider, 'foo')
+    multipass.register_provider(UniqueProvider, 'unique')
     with pytest.raises(RuntimeError):
-        multiauth.init_app(app)
+        multipass.init_app(app)
 
 
 def test_create_login_rule(mocker):
-    process_login = mocker.patch.object(MultiAuth, 'process_login')
+    process_login = mocker.patch.object(Multipass, 'process_login')
     app = Flask('test')
-    MultiAuth(app)
+    Multipass(app)
     with app.test_client() as c:
-        for url in app.config['MULTIAUTH_LOGIN_URLS']:
+        for url in app.config['MULTIPASS_LOGIN_URLS']:
             c.get(url)
     assert process_login.call_count == 2
 
 
 def test_create_login_rule_disabled(mocker):
-    process_login = mocker.patch.object(MultiAuth, 'process_login')
+    process_login = mocker.patch.object(Multipass, 'process_login')
     app = Flask('test')
-    app.config['MULTIAUTH_LOGIN_URLS'] = None
-    MultiAuth(app)
+    app.config['MULTIPASS_LOGIN_URLS'] = None
+    Multipass(app)
     with app.test_client() as c:
         for url in ('/login/', '/login/<provider>'):
             assert c.get(url).status_code == 404
@@ -103,15 +103,15 @@ def test_create_login_rule_disabled(mocker):
 
 
 def test_render_template(mocker):
-    render_template = mocker.patch('flask_multiauth.core.render_template')
+    render_template = mocker.patch('flask_multipass.core.render_template')
     app = Flask('test')
-    app.config['MULTIAUTH_FOO_TEMPLATE'] = None
-    app.config['MULTIAUTH_BAR_TEMPLATE'] = 'bar.html'
-    multiauth = MultiAuth(app)
+    app.config['MULTIPASS_FOO_TEMPLATE'] = None
+    app.config['MULTIPASS_BAR_TEMPLATE'] = 'bar.html'
+    multipass = Multipass(app)
     with app.app_context():
         with pytest.raises(RuntimeError):
-            multiauth.render_template('FOO', foo='bar')
-        multiauth.render_template('BAR', foo='bar')
+            multipass.render_template('FOO', foo='bar')
+        multipass.render_template('BAR', foo='bar')
         render_template.assert_called_with('bar.html', foo='bar')
 
 
@@ -119,69 +119,69 @@ def test_next_url():
     app = Flask('test')
     app.add_url_rule('/success', 'success')
     app.config['SECRET_KEY'] = 'testing'
-    app.config['MULTIAUTH_SUCCESS_ENDPOINT'] = 'success'
-    multiauth = MultiAuth(app)
+    app.config['MULTIPASS_SUCCESS_ENDPOINT'] = 'success'
+    multipass = Multipass(app)
     with app.test_request_context():
         # default url - not in session
-        assert multiauth._get_next_url() == '/success'
-        multiauth._set_next_url()
+        assert multipass._get_next_url() == '/success'
+        multipass._set_next_url()
         # default url - in session
-        assert multiauth._get_next_url() == '/success'
+        assert multipass._get_next_url() == '/success'
         request.args = {'next': '/private'}
         # next url specified, but not in session yet
-        assert multiauth._get_next_url() == '/success'
-        multiauth._set_next_url()
+        assert multipass._get_next_url() == '/success'
+        multipass._set_next_url()
         # removed from session after retrieving it once
-        assert multiauth._get_next_url() == '/private'
-        assert multiauth._get_next_url() == '/success'
+        assert multipass._get_next_url() == '/private'
+        assert multipass._get_next_url() == '/success'
 
 
 def test_login_finished():
-    multiauth = MultiAuth()
+    multipass = Multipass()
     with pytest.raises(AssertionError):
-        multiauth.login_finished(None)
+        multipass.login_finished(None)
     callback = Mock()
-    multiauth.identity_handler(callback)
-    multiauth.login_finished('foo')
+    multipass.identity_handler(callback)
+    multipass.login_finished('foo')
     callback.assert_called_with('foo')
 
 
 def test_login_finished_returns():
-    multiauth = MultiAuth()
-    multiauth.identity_handler(Mock(return_value='bar'))
-    assert multiauth.login_finished('foo') == 'bar'
+    multipass = Multipass()
+    multipass.identity_handler(Mock(return_value='bar'))
+    assert multipass.login_finished('foo') == 'bar'
 
 
 def test_identity_handler():
-    multiauth = MultiAuth()
+    multipass = Multipass()
     callback = Mock()
-    assert multiauth.identity_handler(callback) is callback
+    assert multipass.identity_handler(callback) is callback
 
 
 def test_login_check():
-    multiauth = MultiAuth()
+    multipass = Multipass()
     callback = Mock()
-    assert multiauth.login_check(callback) is callback
+    assert multipass.login_check(callback) is callback
 
 
 def test_handle_auth_error(mocker):
-    flash = mocker.patch('flask_multiauth.core.flash')
+    flash = mocker.patch('flask_multipass.core.flash')
     app = Flask('test')
     app.config['SECRET_KEY'] = 'testing'
-    multiauth = MultiAuth(app)
+    multipass = Multipass(app)
     with app.test_request_context():
-        multiauth.handle_auth_error(AuthenticationFailed())
+        multipass.handle_auth_error(AuthenticationFailed())
         assert flash.called
-        assert session['_multiauth_auth_failed']
+        assert session['_multipass_auth_failed']
 
 
 def test_handle_auth_error_with_redirect(mocker):
-    flash = mocker.patch('flask_multiauth.core.flash')
-    redirect = mocker.patch('flask_multiauth.core.redirect')
+    flash = mocker.patch('flask_multipass.core.flash')
+    redirect = mocker.patch('flask_multipass.core.redirect')
     app = Flask('test')
     app.config['SECRET_KEY'] = 'testing'
-    multiauth = MultiAuth(app)
+    multipass = Multipass(app)
     with app.test_request_context():
-        multiauth.handle_auth_error(AuthenticationFailed(), redirect_to_login=True)
+        multipass.handle_auth_error(AuthenticationFailed(), redirect_to_login=True)
         assert flash.called
-        redirect.assert_called_with(app.config['MULTIAUTH_LOGIN_URLS'][0])
+        redirect.assert_called_with(app.config['MULTIPASS_LOGIN_URLS'][0])
