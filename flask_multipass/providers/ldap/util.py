@@ -129,15 +129,21 @@ def ldap_connect(settings, use_cache=True):
             return conn
 
     uri_info = urlparse(settings['uri'])
+    use_ldaps = uri_info.scheme == 'ldaps'
     credentials = (settings['bind_dn'], settings['bind_password'])
     ldap_connection = ReconnectLDAPObject(settings['uri'])
     ldap_connection.protocol_version = ldap.VERSION3
     ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
-    ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if settings['tls'] else ldap.OPT_X_TLS_NEVER)
-    if uri_info.scheme != 'ldaps' and settings['starttls']:
-        ldap_connection.start_tls_s()
-    elif settings['starttls']:
+    ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if use_ldaps else ldap.OPT_X_TLS_NEVER)
+    ldap_connection.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                               ldap.OPT_X_TLS_DEMAND if settings['verify_cert'] else ldap.OPT_X_TLS_ALLOW)
+    # force the creation of a new TLS context. This must be the last TLS option.
+    # see: http://stackoverflow.com/a/27713355/298479
+    ldap_connection.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+    if use_ldaps and settings['starttls']:
         warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
+    elif settings['starttls']:
+        ldap_connection.start_tls_s()
     # TODO: allow anonymous bind
     ldap_connection.simple_bind_s(*credentials)
     if use_cache:

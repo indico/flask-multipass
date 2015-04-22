@@ -94,7 +94,7 @@ def search(base_dn, search_filter, attributes):
         msg_id = connection.search_ext(base_dn, SCOPE_SUBTREE, filterstr=search_filter, attrlist=attributes,
                                        serverctrls=[page_ctrl], timeout=settings['timeout'])
         try:
-            _, r_data, __, server_ctrls = connection.result3(msg_id)
+            _, r_data, __, server_ctrls = connection.result3(msg_id, timeout=settings['timeout'])
         except NO_SUCH_OBJECT:
             break
 

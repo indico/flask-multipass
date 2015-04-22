@@ -37,7 +37,7 @@ class LDAPProviderMixin(object):
 
     def set_defaults(self):
         self.ldap_settings.setdefault('timeout', 30)
-        self.ldap_settings.setdefault('tls', True)
+        self.ldap_settings.setdefault('verify_cert', True)
         self.ldap_settings.setdefault('starttls', False)
         self.ldap_settings.setdefault('page_size', 1000)
         self.ldap_settings.setdefault('uid', 'uid')
