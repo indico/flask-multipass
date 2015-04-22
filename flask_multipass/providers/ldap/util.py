@@ -12,7 +12,7 @@ from urlparse import urlparse
 from warnings import warn
 
 import ldap
-from flask import appcontext_tearing_down, g, has_app_context
+from flask import appcontext_tearing_down, g, has_app_context, current_app
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
@@ -82,8 +82,12 @@ def ldap_context(settings, use_cache=True):
         finally:
             assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
     except ldap.SERVER_DOWN:
+        if has_app_context() and current_app.debug:
+            raise
         raise MultipassException("The LDAP server is unreachable")
     except ldap.INVALID_CREDENTIALS:
+        if has_app_context() and current_app.debug:
+            raise
         raise ValueError("Invalid bind credentials")
     except ldap.SIZELIMIT_EXCEEDED:
         raise MultipassException("Size limit exceeded (try setting a smaller page size)")
@@ -94,7 +98,6 @@ def ldap_context(settings, use_cache=True):
     except ldap.FILTER_ERROR:
         raise ValueError("The filter supplied to the operation is invalid. "
                          "(This is most likely due to a bad user or group filter.")
-    # TODO: handle a Multipass time out exception
 
 
 def ldap_connect(settings, use_cache=True):
