@@ -54,7 +54,7 @@ def get_user_by_id(uid, attributes=None):
     """
     if not uid:
         raise IdentityRetrievalFailed("No identifier specified")
-    user_filter = build_user_search_filter({current_ldap.settings['uid']: uid}, exact=True)
+    user_filter = build_user_search_filter({current_ldap.settings['uid']: {uid}}, exact=True)
     return find_one(current_ldap.settings['user_base'], user_filter, attributes=attributes)
 
 
@@ -70,7 +70,7 @@ def get_group_by_id(gid, attributes=None):
     """
     if not gid:
         raise GroupRetrievalFailed("No identifier specified")
-    group_filter = build_group_search_filter({current_ldap.settings['gid']: gid}, exact=True)
+    group_filter = build_group_search_filter({current_ldap.settings['gid']: {gid}}, exact=True)
     return find_one(current_ldap.settings['group_base'], group_filter, attributes=attributes)
 
 

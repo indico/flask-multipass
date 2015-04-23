@@ -22,24 +22,36 @@ from flask_multipass.providers.ldap.util import build_search_filter, find_one, l
 @pytest.mark.parametrize(('criteria', 'type_filter', 'mapping', 'exact', 'expected'), (
     ({}, '', None, True, None),
     ({}, '', '(|(objectClass=Person)(objectCategory=user))', True, None),
-    ({'givenName': 'Alain', 'sn': "D'Issoir"}, '', None, True, "(&(givenName=Alain)(sn=D'Issoir))"),
-    ({'givenName': 'Alain', 'last_name': "D'Issoir"}, '', {'last_name': 'sn'}, True,
+    ({'givenName': ['Alain'], 'sn': ["D'Issoir"]}, '', None, True, "(&(givenName=Alain)(sn=D'Issoir))"),
+    ({'givenName': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'last_name': 'sn'}, True,
      "(&(givenName=Alain)(sn=D'Issoir))"),
-    ({'first_name': 'Alain', 'last_name': "D'Issoir"}, '', {'first_name': 'givenName', 'last_name': 'sn'}, True,
+    ({'first_name': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'first_name': 'givenName', 'last_name': 'sn'}, True,
      "(&(givenName=Alain)(sn=D'Issoir))"),
-    ({'first_name': 'Alain', 'last_name': "D'Issoir"}, '(|(objectClass=Person)(objectCategory=user))',
+    ({'first_name': ['Alain'], 'last_name': ["D'Issoir"]}, '(|(objectClass=Person)(objectCategory=user))',
      {'first_name': 'givenName', 'last_name': 'sn'}, True,
      "(&(givenName=Alain)(sn=D'Issoir)(|(objectClass=Person)(objectCategory=user)))"),
     ({}, '', None, False, None),
     ({}, '', '(|(objectClass=Person)(objectCategory=user))', False, None),
-    ({'givenName': 'Alain', 'sn': "D'Issoir"}, '', None, False, "(&(givenName=*Alain*)(sn=*D'Issoir*))"),
-    ({'givenName': 'Alain', 'last_name': "D'Issoir"}, '', {'last_name': 'sn'}, False,
+    ({'givenName': ['Alain'], 'sn': ["D'Issoir"]}, '', None, False, "(&(givenName=*Alain*)(sn=*D'Issoir*))"),
+    ({'givenName': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'last_name': 'sn'}, False,
      "(&(givenName=*Alain*)(sn=*D'Issoir*))"),
-    ({'first_name': 'Alain', 'last_name': "D'Issoir"}, '', {'first_name': 'givenName', 'last_name': 'sn'}, False,
+    ({'first_name': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'first_name': 'givenName', 'last_name': 'sn'}, False,
      "(&(givenName=*Alain*)(sn=*D'Issoir*))"),
-    ({'first_name': 'Alain', 'last_name': "D'Issoir"}, '(|(objectClass=Person)(objectCategory=user))',
+    ({'first_name': ['Alain'], 'last_name': ["D'Issoir"]}, '(|(objectClass=Person)(objectCategory=user))',
      {'first_name': 'givenName', 'last_name': 'sn'}, False,
-     "(&(givenName=*Alain*)(sn=*D'Issoir*)(|(objectClass=Person)(objectCategory=user)))")
+     "(&(givenName=*Alain*)(sn=*D'Issoir*)(|(objectClass=Person)(objectCategory=user)))"),
+    ({'email': ['alaindissoir@mail.com']}, '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, False,
+     "(&(mail=*alaindissoir@mail.com*)(|(objectClass=Person)(objectCategory=user)))"),
+    ({'email': ['alaindissoir@mail.com']}, '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, True,
+     "(&(mail=alaindissoir@mail.com)(|(objectClass=Person)(objectCategory=user)))"),
+    ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
+     '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, False,
+     "(&(|(mail=*alaindissoir@mail.com*)(mail=*alain@dissoir.com*)(mail=*alaindi@mail.com*))"
+     "(|(objectClass=Person)(objectCategory=user)))"),
+    ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
+     '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, True,
+     "(&(|(mail=alaindissoir@mail.com)(mail=alain@dissoir.com)(mail=alaindi@mail.com))"
+     "(|(objectClass=Person)(objectCategory=user)))")
 ))
 def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact, expected):
     def _convert_app_data(*args, **kwargs):

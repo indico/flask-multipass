@@ -282,9 +282,19 @@ class Multipass(object):
                           specified, all providers are searched.
         :param exact: If criteria need to match exactly, i.e. no
                       substring matches are performed.
-        :param criteria: The criteria to search for.
+        :param criteria: The criteria to search for. A criterion can
+                         have a list, tuple or set as value if there are
+                         many values for the same criterion.
         :return: An iterable of matching user identities.
         """
+        for k, v in iteritems(criteria):
+            if isinstance(v, (list, tuple)):
+                criteria[k] = v = set(v)
+            elif not isinstance(v, set):
+                criteria[k] = v = {v}
+            if any(not x for x in v):
+                raise ValueError('Empty search criterion: ' + k)
+
         for provider in itervalues(self.identity_providers):
             if providers is not None and provider.name not in providers:
                 continue

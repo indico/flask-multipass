@@ -104,8 +104,8 @@ class StaticIdentityProvider(IdentityProvider):
     def search_identities(self, criteria, exact=False):
         compare = operator.eq if exact else operator.contains
         for identifier, user in iteritems(self.settings['identities']):
-            for key, value in iteritems(criteria):
-                if not compare(user[key], value):
+            for key, values in iteritems(criteria):
+                if not any(compare(user[key], v) for v in values):
                     break
             else:
                 yield IdentityInfo(self, identifier, **user)

@@ -103,11 +103,11 @@ class LDAPGroup(Group):
             group_dns = self._iter_group()
             group_dn = next(group_dns)
             while group_dn:
-                user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
+                user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: {group_dn}}, exact=True)
                 for _, user_data in self.provider._search_users(user_filter):
                     yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0],
                                        **to_unicode(user_data))
-                group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: group_dn}, exact=True)
+                group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: {group_dn}}, exact=True)
                 subgroups = list(self.provider._search_groups(group_filter))
                 group_dn = group_dns.send(subgroups)
 
@@ -183,7 +183,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
 
     def search_groups(self, name, exact=False):
         with ldap_context(self.ldap_settings):
-            search_filter = build_group_search_filter({self.ldap_settings['gid']: name}, exact=exact)
+            search_filter = build_group_search_filter({self.ldap_settings['gid']: {name}}, exact=exact)
             if not search_filter:
                 raise GroupRetrievalFailed("Unable to generate search filter from criteria")
             for group_dn, group_data in self._search_groups(search_filter):

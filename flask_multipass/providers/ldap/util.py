@@ -176,22 +176,32 @@ def find_one(base_dn, search_filter, attributes=None):
     return next(((dn, data) for dn, data in entry if dn), (None, None))
 
 
+def _build_assert_template(value, exact):
+    assert_template = '(%s=%s)' if exact else '(%s=*%s*)'
+    if len(value) == 1:
+        return assert_template
+    else:
+        return '(|{})'.format(assert_template * len(value))
+
+
 def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     """Builds a valid LDAP search filter for retrieving entries.
 
-    :param criteria: dict -- Criteria to be `AND`ed together to build
-                     the filter.
+    :param criteria: dict -- Criteria to be ANDed together to build the
+                     filter, if a criterion has many values they will
+                     be ORed together.
     :param mapping: dict -- Mapping from criteria to LDAP attributes
     :param exact: bool -- Match attributes values exactly if ``True``,
                   othewise perform substring matching.
     :return: str -- Valid LDAP search filter.
     """
+
     assertions = convert_app_data(criteria, mapping or {})
-    assertions = [(k, v) for k, v in iteritems(assertions) if k and v]
+    assert_templates = [_build_assert_template(value, exact) for _, value in iteritems(assertions)]
+    assertions = [(k, v) for k, values in iteritems(assertions) if k and values for v in values]
     if not assertions:
         return None
-    assert_template = '(%s=%s)' if exact else '(%s=*%s*)'
-    filter_template = '(&{}{})'.format(assert_template * len(assertions), type_filter)
+    filter_template = '(&{}{})'.format("".join(assert_templates), type_filter)
     return filter_format(filter_template, (item for assertion in assertions for item in assertion))
 
 
