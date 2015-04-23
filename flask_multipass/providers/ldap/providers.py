@@ -6,6 +6,8 @@
 
 from __future__ import absolute_import
 
+from warnings import warn
+
 from flask_wtf import Form
 from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
@@ -24,6 +26,11 @@ from flask_multipass.providers.ldap.operations import (build_user_search_filter,
                                                        search)
 from flask_multipass.providers.ldap.util import ldap_context, to_unicode
 
+try:
+    import certifi
+except ImportError:
+    certifi = None
+
 
 class LoginForm(Form):
     username = StringField('Username', [DataRequired()])
@@ -38,10 +45,13 @@ class LDAPProviderMixin(object):
     def set_defaults(self):
         self.ldap_settings.setdefault('timeout', 30)
         self.ldap_settings.setdefault('verify_cert', True)
+        self.ldap_settings.setdefault('cert_file', certifi.where() if certifi else None)
         self.ldap_settings.setdefault('starttls', False)
         self.ldap_settings.setdefault('page_size', 1000)
         self.ldap_settings.setdefault('uid', 'uid')
         self.ldap_settings.setdefault('user_filter', '(objectClass=person)')
+        if not self.ldap_settings['cert_file'] and self.ldap_settings['verify_cert']:
+            warn("You should install certifi or provide a certificate file in order to verify the LDAP certificate.")
 
 
 class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):

@@ -17,6 +17,8 @@ _my_ldap_config = {
     'bind_password': 'p455w0rd',
     'timeout': 30,
     'verify_cert': True,
+    # optional: if not present, uses certifi's CA bundle (if installed)
+    'cert_file': 'path/to/server/cert',
     'starttls': False,
     'page_size': 1000,
 
