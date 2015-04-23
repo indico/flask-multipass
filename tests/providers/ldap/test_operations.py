@@ -33,6 +33,7 @@ def test_get_group_by_id_handles_none_id():
       'bind_dn': 'uid=admin,DC=example,DC=com',
       'bind_password': 'LemotdepassedeLDAP',
       'verify_cert': True,
+      'cert_file': ' /etc/ssl/certs/ca-certificates.crt',
       'starttls': True,
       'timeout': 10,
       'page_size': 3},
@@ -79,6 +80,7 @@ def test_search(mocker, settings, base_dn, search_filter, attributes, mock_data,
       'bind_dn': 'uid=admin,DC=example,DC=com',
       'bind_password': 'LemotdepassedeLDAP',
       'verify_cert': True,
+      'cert_file': ' /etc/ssl/certs/ca-certificates.crt',
       'starttls': True,
       'timeout': 10,
       'page_size': 3},
@@ -133,6 +135,7 @@ def test_get_token_groups_from_user_dn(mocker, user_dn, mock_data, expected):
         'bind_dn': 'uid=admin,DC=example,DC=com',
         'bind_password': 'LemotdepassedeLDAP',
         'verify_cert': True,
+        'cert_file': ' /etc/ssl/certs/ca-certificates.crt',
         'starttls': True,
         'timeout': 10
     }
