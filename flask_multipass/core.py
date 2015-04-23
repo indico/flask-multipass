@@ -81,6 +81,14 @@ class Multipass(object):
         return get_state().auth_providers
 
     @property
+    def single_auth_provider(self):
+        """The auth provider in case there is only one.
+
+        This returns ``None`` if there are multiple auth providers.
+        """
+        return next(iter(self.auth_providers.values())) if len(self.auth_providers) == 1 else None
+
+    @property
     def identity_providers(self):
         """Returns a read-only dict of the active identity providers"""
         return get_state().identity_providers
@@ -111,10 +119,16 @@ class Multipass(object):
         """Redirects to whatever page should be displayed after login"""
         return redirect(self._get_next_url())
 
+    def set_next_url(self):
+        """Saves the URL to redirect to after logging in."""
+        next_url = request.args.get('next')
+        if next_url:
+            session['_multipass_next_url'] = next_url
+
     def process_login(self, provider=None):
         """Handles the login process
 
-        This needs to be registered in the Flask routing system and
+        This should be registered in the Flask routing system and
         accept GET and POST requests on two URLs, one of them
         containing the ``<provider>`` placeholder. When executed with
         no provider, the login selector page will be shown unless there
@@ -124,7 +138,7 @@ class Multipass(object):
         :param provider: The provider named used to log in.
         """
         if self.login_check_callback and self.login_check_callback():
-            self._set_next_url()
+            self.set_next_url()
             return self.redirect_success()
 
         if provider is None:
@@ -382,18 +396,12 @@ class Multipass(object):
         for rule in rules:
             current_app.add_url_rule(rule, endpoint, self.process_login, methods=('GET', 'POST'))
 
-    def _set_next_url(self):
-        """Saves the URL to redirect to after logging in."""
-        next_url = request.args.get('next')
-        if not next_url:
-            next_url = url_for(current_app.config['MULTIPASS_SUCCESS_ENDPOINT'])
-        session['_multipass_next_url'] = next_url
-
     def _get_next_url(self):
         """Returns the saved URL to redirect to after logging in.
 
         This only works once, as the saved URL is removed from the
-        session afterwards.
+        session afterwards.  If no url is saved, the default success
+        URL is used.
         """
         try:
             return session.pop('_multipass_next_url')
@@ -402,33 +410,46 @@ class Multipass(object):
 
     def _login_selector(self):
         """Shows the login method (auth provider) selector"""
-        providers = self.auth_providers
         next_url = request.args.get('next')
         auth_failed = session.pop('_multipass_auth_failed', False)
         login_endpoint = current_app.config['MULTIPASS_LOGIN_ENDPOINT']
-        if not auth_failed and len(providers) == 1:
-            provider = next(iter(providers.values()))
-            return redirect(url_for(login_endpoint, provider=provider.name, next=next_url))
+        if not auth_failed and self.single_auth_provider:
+            return redirect(url_for(login_endpoint, provider=self.single_auth_provider.name, next=next_url))
         else:
             return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url,
                                         auth_failed=auth_failed, login_endpoint=login_endpoint)
 
     def _login_external(self, provider):
         """Starts the external login process"""
-        self._set_next_url()
+        self.set_next_url()
         return provider.initiate_external_login()
+
+    def handle_login_form(self, provider, data):
+        """Handles the submitted and validated login form
+
+        This returns a response in case of a successful login.
+        In case of an error, it is handled internally and the
+        application should show the login form again.
+
+        :param provider: The provider used for logging in.
+        :param data: The form's data dictionary.
+        :return: A flask response or ``None`` in case of an error.
+        """
+        try:
+            response = provider.process_local_login(data)
+        except MultipassException as e:
+            self.handle_auth_error(e)
+        else:
+            return response
 
     def _login_form(self, provider):
         """Starts the local form-based login process"""
         form = provider.login_form()
         if not form.is_submitted():
-            self._set_next_url()
+            self.set_next_url()
         if form.validate_on_submit():
-            try:
-                response = provider.process_local_login(form.data)
-            except MultipassException as e:
-                self.handle_auth_error(e)
-            else:
+            response = self.handle_login_form(provider, form.data)
+            if response:
                 return response
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
