@@ -124,13 +124,13 @@ def test_next_url():
     with app.test_request_context():
         # default url - not in session
         assert multipass._get_next_url() == '/success'
-        multipass._set_next_url()
+        multipass.set_next_url()
         # default url - in session
         assert multipass._get_next_url() == '/success'
         request.args = {'next': '/private'}
         # next url specified, but not in session yet
         assert multipass._get_next_url() == '/success'
-        multipass._set_next_url()
+        multipass.set_next_url()
         # removed from session after retrieving it once
         assert multipass._get_next_url() == '/private'
         assert multipass._get_next_url() == '/success'
