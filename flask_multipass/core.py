@@ -18,6 +18,16 @@ from flask_multipass.util import (get_state, resolve_provider_type, get_canonica
                                   get_provider_base)
 
 
+# If SQLAlchemy is available, handle its AssociationCollection as a
+# multi-value type for search criteria
+try:
+    from sqlalchemy.ext.associationproxy import _AssociationCollection
+except ImportError:
+    multi_value_types = (list, tuple)
+else:
+    multi_value_types = (list, tuple, _AssociationCollection)
+
+
 class Multipass(object):
     """Base class of the Flask-Multipass extension.
 
@@ -288,7 +298,7 @@ class Multipass(object):
         :return: An iterable of matching user identities.
         """
         for k, v in iteritems(criteria):
-            if isinstance(v, (list, tuple)):
+            if isinstance(v, multi_value_types):
                 criteria[k] = v = set(v)
             elif not isinstance(v, set):
                 criteria[k] = v = {v}
