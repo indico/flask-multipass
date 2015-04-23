@@ -456,3 +456,106 @@ def test_has_member_unkown_user(mocker, settings):
 
     with pytest.raises(IdentityRetrievalFailed):
         group.has_member('unkown_user')
+
+
+@pytest.mark.parametrize(('required_settings', 'expected_settings'), (
+    ({'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com'},
+     {'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'timeout': 30,
+      'verify_cert': True,
+      'cert_file': '/default/ca-certs-file',
+      'starttls': False,
+      'page_size': 1000,
+      'uid': 'uid',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'user_filter': '(objectClass=person)'},),
+    ({'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'timeout': 25,
+      'verify_cert': False,
+      'cert_file': '/custom/ca-certs-file'},
+     {'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'timeout': 25,
+      'verify_cert': False,
+      'cert_file': '/custom/ca-certs-file',
+      'starttls': False,
+      'page_size': 1000,
+      'uid': 'uid',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'user_filter': '(objectClass=person)'})
+))
+def test_default_authp_settings(mocker, required_settings, expected_settings):
+    certifi = mocker.patch('flask_multipass.providers.ldap.providers.certifi')
+    certifi.where.return_value = '/default/ca-certs-file'
+    multipass = MagicMock()
+    authp = LDAPAuthProvider(multipass, 'LDAP test provider', {'ldap': required_settings})
+    assert authp.ldap_settings == expected_settings
+
+
+@pytest.mark.parametrize(('required_settings', 'expected_settings'), (
+    ({'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'group_base': 'OU=Groups,OU=Required,DC=example,DC=com'},
+     {'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'timeout': 30,
+      'verify_cert': True,
+      'cert_file': '/default/ca-certs-file',
+      'starttls': False,
+      'page_size': 1000,
+      'uid': 'uid',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'user_filter': '(objectClass=person)',
+      'gid': 'cn',
+      'group_base': 'OU=Groups,OU=Required,DC=example,DC=com',
+      'group_filter': '(objectClass=groupOfNames)',
+      'member_of_attr': 'memberOf',
+      'ad_group_style': False}),
+    ({'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'group_base': 'OU=Groups,OU=Required,DC=example,DC=com',
+      'timeout': 25,
+      'verify_cert': True,
+      'cert_file': '/custom/ca-certs-file',
+      'group_filter': '(|(objectClass=groupOfNames)(objectClass=custom))',
+      'member_of_attr': 'member_of',
+      'ad_group_style': True},
+     {'uri': 'ldaps://required.uri',
+      'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
+      'bind_password': 'required_password',
+      'timeout': 25,
+      'verify_cert': True,
+      'cert_file': '/custom/ca-certs-file',
+      'starttls': False,
+      'page_size': 1000,
+      'uid': 'uid',
+      'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
+      'user_filter': '(objectClass=person)',
+      'gid': 'cn',
+      'group_base': 'OU=Groups,OU=Required,DC=example,DC=com',
+      'group_filter': '(|(objectClass=groupOfNames)(objectClass=custom))',
+      'member_of_attr': 'member_of',
+      'ad_group_style': True})
+))
+def test_default_idp_settings(mocker, required_settings, expected_settings):
+    certifi = mocker.patch('flask_multipass.providers.ldap.providers.certifi')
+    certifi.where.return_value = '/default/ca-certs-file'
+    app = Flask('test')
+    multipass = Multipass(app)
+    with app.app_context():
+        idp = LDAPIdentityProvider(multipass, 'LDAP test idp', {'ldap': required_settings})
+    assert idp.ldap_settings == expected_settings
