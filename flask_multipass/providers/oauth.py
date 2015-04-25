@@ -6,8 +6,10 @@
 
 from __future__ import unicode_literals
 
+from uuid import uuid4
+
 import flask_oauthlib.client
-from flask import current_app, url_for
+from flask import current_app, url_for, session, request
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
@@ -64,13 +66,17 @@ class OAuthAuthProvider(AuthProvider):
 
     def initiate_external_login(self):
         redirect_uri = url_for(self.authorized_endpoint, _external=True)
-        return self.oauth_app.authorize(callback=redirect_uri)
+        session['_multipass_oauth_' + self.name] = token = str(uuid4())
+        return self.oauth_app.authorize(callback=redirect_uri, state=token)
 
     def _make_auth_info(self, resp):
         return AuthInfo(self, token=resp[self.settings['token_field']])
 
     @login_view
     def _authorize_callback(self):
+        token = session.pop('_multipass_oauth_' + self.name, None)
+        if not token or token != request.args.get('state'):
+            raise AuthenticationFailed('Invalid session state')
         resp = self.oauth_app.authorized_response() or {}
         if self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
