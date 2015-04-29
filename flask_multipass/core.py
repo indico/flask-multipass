@@ -299,6 +299,25 @@ class Multipass(object):
             raise IdentityRetrievalFailed('Provider does not support refreshing: ' + provider_name)
         return provider.refresh_identity(identifier, multipass_data)
 
+    def get_identity(self, provider, identifier):
+        """Retrieves user identity information from a provider.
+
+        This method is similar to :meth:`refresh_identity` but does
+        not require `multiauth_data`.
+
+        :param identifier: The unique user identifier used by the
+                           provider.
+        :return: An :class:`.IdentityInfo` instance or ``None`` if the
+                 identity does not exist.
+        """
+        try:
+            provider = self.identity_providers[provider]
+        except KeyError:
+            raise IdentityRetrievalFailed('Provider does not exist: ' + provider)
+        if not provider.supports_get:
+            raise IdentityRetrievalFailed('Provider does not support getting identities: ' + provider.name)
+        return provider.get_identity(identifier)
+
     def search_identities(self, providers=None, exact=False, **criteria):
         """Searches user identities matching certain criteria
 

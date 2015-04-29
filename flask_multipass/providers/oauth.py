@@ -93,6 +93,9 @@ class OAuthIdentityProvider(IdentityProvider):
 
     #: If the provider supports refreshing identity information
     supports_refresh = True
+    #: If the provider supports getting identity information based from
+    #: an identifier
+    supports_get = False
 
     def __init__(self, *args, **kwargs):
         super(OAuthIdentityProvider, self).__init__(*args, **kwargs)

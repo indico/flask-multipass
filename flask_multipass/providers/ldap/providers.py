@@ -176,6 +176,9 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def refresh_identity(self, identifier, multipass_data):  # pragma: no cover
         return self._get_identity(identifier)
 
+    def get_identity(self, identifier):  # pragma: no cover
+        return self._get_identity(identifier)
+
     def search_identities(self, criteria, exact=False):
         with ldap_context(self.ldap_settings):
             search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)

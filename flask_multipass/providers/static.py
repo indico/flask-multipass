@@ -102,6 +102,9 @@ class StaticIdentityProvider(IdentityProvider):
     def refresh_identity(self, identifier, multipass_data):
         return self._get_identity(identifier)
 
+    def get_identity(self, identifier):
+        return self._get_identity(identifier)
+
     def search_identities(self, criteria, exact=False):
         for identifier, user in iteritems(self.settings['identities']):
             for key, values in iteritems(criteria):

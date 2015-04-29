@@ -23,6 +23,7 @@ class IdentityProvider(object):
     """
 
     __support_attrs__ = {'supports_refresh': 'refresh_identity',
+                         'supports_get': 'get_identity',
                          'supports_search': 'search_identities',
                          'supports_groups': ('get_group', 'search_groups', 'group_class')}
     #: The entry point to lookup providers (do not override this!)
@@ -31,6 +32,9 @@ class IdentityProvider(object):
     multi_instance = True
     #: If the provider supports refreshing identity information
     supports_refresh = False
+    #: If the provider supports getting identity information based from
+    #: an identifier
+    supports_get = True
     #: If the provider supports searching identities
     supports_search = False
     #: If the provider also provides groups and membership information
@@ -74,6 +78,22 @@ class IdentityProvider(object):
         """
         if self.supports_refresh:
             raise NotImplementedError
+
+    def get_identity(self, identifier):  # pragma: no cover
+        """Retrieves identity information.
+
+        This method is similar to :meth:`refresh_identity` but does
+        not require `multiauth_data`
+
+        :param identifier: The unique user identifier used by the
+                           provider.
+        :return: An :class:`.IdentityInfo` instance or ``None`` if the
+                 identity does not exist.
+        """
+        if self.supports_get:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not support getting an identity based on the identifier')
 
     def search_identities(self, criteria, exact=False):  # pragma: no cover
         """Searches user identities matching certain criteria

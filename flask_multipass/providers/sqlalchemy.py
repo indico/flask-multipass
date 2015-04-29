@@ -82,6 +82,9 @@ class SQLAlchemyIdentityProviderBase(IdentityProvider):
     identity_user_relationship = None
     #: The Flask-SQLAlchemy model representing a user.
     user_model = None
+    #: Getting an identity based on the identifier does not make lots
+    #: of sense for identities coming from the local database.
+    supports_get = False
 
     def get_identity_from_auth(self, auth_info):
         cls = type(self)
