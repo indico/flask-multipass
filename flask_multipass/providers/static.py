@@ -6,6 +6,7 @@
 
 from __future__ import unicode_literals
 
+import itertools
 import operator
 
 from flask_wtf import Form
@@ -102,10 +103,13 @@ class StaticIdentityProvider(IdentityProvider):
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):
-        compare = operator.eq if exact else operator.contains
         for identifier, user in iteritems(self.settings['identities']):
             for key, values in iteritems(criteria):
-                if not any(compare(user[key], v) for v in values):
+                # same logic as multidict
+                user_values = set(user[key]) if isinstance(user[key], (tuple, list)) else {user[key]}
+                if exact and not user_values & set(values):
+                    break
+                elif not exact and not any(sv in uv for sv, uv in itertools.product(values, user_values)):
                     break
             else:
                 yield IdentityInfo(self, identifier, **user)
