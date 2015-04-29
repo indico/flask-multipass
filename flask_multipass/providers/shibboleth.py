@@ -61,6 +61,10 @@ class ShibbolethIdentityProvider(IdentityProvider):
     The type name to instantiate this provider is *shibboleth*.
     """
 
+    #: If the provider supports getting identity information based from
+    #: an identifier
+    supports_get = False
+
     def __init__(self, *args, **kwargs):
         super(ShibbolethIdentityProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('identifier_field', 'ADFS_LOGIN')
