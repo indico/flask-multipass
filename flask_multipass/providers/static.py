@@ -109,8 +109,11 @@ class StaticIdentityProvider(IdentityProvider):
         for identifier, user in iteritems(self.settings['identities']):
             for key, values in iteritems(criteria):
                 # same logic as multidict
-                user_values = set(user[key]) if isinstance(user[key], (tuple, list)) else {user[key]}
-                if exact and not user_values & set(values):
+                user_value = user.get(key)
+                user_values = set(user_value) if isinstance(user_value, (tuple, list)) else {user_value}
+                if not any(user_values):
+                    break
+                elif exact and not user_values & set(values):
                     break
                 elif not exact and not any(sv in uv for sv, uv in itertools.product(values, user_values)):
                     break
