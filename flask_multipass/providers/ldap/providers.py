@@ -130,7 +130,7 @@ class LDAPGroup(Group):
         with ldap_context(self.ldap_settings):
             user_dn, user_data = get_user_by_id(user_identifier, attributes=[self.ldap_settings['member_of_attr']])
             if not user_dn:
-                raise IdentityRetrievalFailed('No such user: ' + user_identifier)
+                return False
             if self.ldap_settings['ad_group_style']:
                 group_dn, group_data = get_group_by_id(self.name, attributes=['objectSid'])
                 group_sids = group_data.get('objectSid')

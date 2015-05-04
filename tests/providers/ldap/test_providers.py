@@ -444,7 +444,7 @@ def test_has_member_bad_identifier(mocker, settings):
         'uid': 'uid',
         'member_of_attr': 'member_of'}}
 ))
-def test_has_member_unkown_user(mocker, settings):
+def test_has_member_unknown_user(mocker, settings):
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multipass.providers.ldap.providers.get_user_by_id',
                  return_value=(None, {'cn': ['Configuration']}))
@@ -454,8 +454,7 @@ def test_has_member_unkown_user(mocker, settings):
         idp = LDAPIdentityProvider(multipass, 'LDAP test idp', settings)
     group = LDAPGroup(idp, 'LDAP test group', 'group_dn')
 
-    with pytest.raises(IdentityRetrievalFailed):
-        group.has_member('unkown_user')
+    assert not group.has_member('unknown_user')
 
 
 @pytest.mark.parametrize(('required_settings', 'expected_settings'), (
