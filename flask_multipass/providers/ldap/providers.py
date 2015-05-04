@@ -13,6 +13,7 @@ from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
+from flask_multipass._compat import iteritems
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
@@ -52,6 +53,10 @@ class LDAPProviderMixin(object):
         self.ldap_settings.setdefault('user_filter', '(objectClass=person)')
         if not self.ldap_settings['cert_file'] and self.ldap_settings['verify_cert']:
             warn("You should install certifi or provide a certificate file in order to verify the LDAP certificate.")
+        # Convert LDAP settings to bytes since python-ldap chokes on unicode strings
+        for key, value in iteritems(self.ldap_settings):
+            if isinstance(value, unicode):
+                self.ldap_settings[key] = bytes(value)
 
 
 class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
