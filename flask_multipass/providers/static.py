@@ -30,7 +30,7 @@ class StaticAuthProvider(AuthProvider):
     """Provides authentication against a static list
 
     This provider should NEVER be use in any production system.
-    It serves mainly as a simply dummy/example for development.
+    It serves mainly as a simple dummy/example for development.
 
     The type name to instantiate this provider is *static*.
     """
@@ -70,7 +70,7 @@ class StaticIdentityProvider(IdentityProvider):
     """Provides identity information from a static list.
 
     This provider should NEVER be use in any production system.
-    It serves mainly as a simply dummy/example for development.
+    It serves mainly as a simple dummy/example for development.
 
     The type name to instantiate this provider is *static*.
     """
