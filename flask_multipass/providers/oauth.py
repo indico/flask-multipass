@@ -18,11 +18,6 @@ from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import classproperty, login_view
 
 
-_oauth_settings = ('base_url', 'request_token_url', 'access_token_url', 'authorize_url',
-                   'consumer_key', 'consumer_secret',
-                   'request_token_params', 'request_token_method', 'access_token_params', 'access_token_method')
-
-
 class OAuth(flask_oauthlib.client.OAuth):
     """A Flask-OAuthlib client that lives in its own namespace.
 
