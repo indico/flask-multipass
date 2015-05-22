@@ -131,7 +131,8 @@ todo_include_todos = False
 html_theme_path = ['_themes']
 html_theme = 'flask'
 html_theme_options = {
-    'index_logo_height': '40px'
+    'index_logo_height': '120px',
+    'index_logo': 'flask-multipass-long.png'
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -173,7 +174,7 @@ html_static_path = ['_static']
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
     'index': ['sidebarintro.html', 'sourcelink.html', 'searchbox.html'],
-    '**': ['localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']
+    '**': ['sidebarlogo.html', 'localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']
 }
 
 # Additional templates that should be rendered to pages, maps page names to
