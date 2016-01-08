@@ -87,7 +87,6 @@ def test_to_unicode(data, expected):
       'cert_file': '/etc/ssl/certs/ca-certificates.crt',
       'starttls': True},
      ((ldap.OPT_REFERRALS, 0), (ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND),
-      (ldap.OPT_X_TLS_CACERTFILE, '/etc/ssl/certs/ca-certificates.crt'),
       (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0))),
     ({'uri': 'ldaps://ldap.example.com:636',
       'bind_dn': 'uid=admin,DC=example,DC=com',
@@ -102,10 +101,8 @@ def test_to_unicode(data, expected):
       'bind_dn': 'uid=admin,DC=example,DC=com',
       'bind_password': 'LemotdepassedeLDAP',
       'verify_cert': False,
-      'cert_file': '/etc/ssl/certs/ca-certificates.crt',
       'starttls': False},
      ((ldap.OPT_REFERRALS, 0), (ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND),
-      (ldap.OPT_X_TLS_CACERTFILE, '/etc/ssl/certs/ca-certificates.crt'),
       (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0))),
     ({'uri': 'ldap://ldap.example.com:636',
       'bind_dn': 'uid=admin,DC=example,DC=com',
@@ -123,7 +120,6 @@ def test_to_unicode(data, expected):
       'cert_file': '/etc/ssl/certs/ca-certificates.crt',
       'starttls': True},
      ((ldap.OPT_REFERRALS, 0), (ldap.OPT_X_TLS, ldap.OPT_X_TLS_NEVER),
-      (ldap.OPT_X_TLS_CACERTFILE, '/etc/ssl/certs/ca-certificates.crt'),
       (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0))),
     ({'uri': 'ldap://ldap.example.com:636',
       'bind_dn': 'uid=admin,DC=example,DC=com',
@@ -138,10 +134,8 @@ def test_to_unicode(data, expected):
       'bind_dn': 'uid=admin,DC=example,DC=com',
       'bind_password': 'LemotdepassedeLDAP',
       'verify_cert': False,
-      'cert_file': '/etc/ssl/certs/ca-certificates.crt',
       'starttls': False},
      ((ldap.OPT_REFERRALS, 0), (ldap.OPT_X_TLS, ldap.OPT_X_TLS_NEVER),
-      (ldap.OPT_X_TLS_CACERTFILE, '/etc/ssl/certs/ca-certificates.crt'),
       (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0)))
 ))
 def test_ldap_context(mocker, settings, options):
