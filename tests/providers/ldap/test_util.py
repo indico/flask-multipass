@@ -151,7 +151,7 @@ def test_ldap_context(mocker, settings, options):
             if urlparse(settings['uri']).scheme == 'ldaps':
                 warn.assert_called_once_with('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)')
             else:
-                ldap_conn.start_tls_s.assert_called_once()
+                ldap_conn.start_tls_s.assert_called_once_with()
         ldap_conn.simple_bind_s.assert_called_once_with(settings['bind_dn'], settings['bind_password'])
         assert current_ldap == ldap_ctx, 'The LDAP context has not been set as the current one'
         assert current_ldap == LDAPContext(connection=ldap_conn, settings=settings)
