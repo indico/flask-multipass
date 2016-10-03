@@ -49,4 +49,7 @@ def add_metaclass(metaclass):
 try:
     from flask_wtf import FlaskForm
 except ImportError:
-    from flask_wtf import Form as FlaskForm
+    try:
+        from flask_wtf import Form as FlaskForm
+    except ImportError:
+        FlaskForm = None
