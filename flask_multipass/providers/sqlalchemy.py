@@ -6,16 +6,15 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from flask_wtf import Form
 from sqlalchemy import inspect
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
 from flask_multipass import AuthProvider, IdentityProvider, NoSuchUser, InvalidCredentials, AuthInfo, IdentityInfo
-from flask_multipass._compat import string_types
+from flask_multipass._compat import string_types, FlaskForm
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     identifier = StringField('Username', [DataRequired()])
     password = PasswordField('Password', [DataRequired()])
 

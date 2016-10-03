@@ -8,12 +8,11 @@ from __future__ import absolute_import
 
 from warnings import warn
 
-from flask_wtf import Form
 from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multipass._compat import iteritems
+from flask_multipass._compat import iteritems, FlaskForm
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
@@ -33,7 +32,7 @@ except ImportError:
     certifi = None
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = StringField('Username', [DataRequired()])
     password = PasswordField('Password', [DataRequired()])
 

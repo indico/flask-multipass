@@ -9,11 +9,10 @@ from __future__ import unicode_literals
 import itertools
 import operator
 
-from flask_wtf import Form
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multipass._compat import iteritems
+from flask_multipass._compat import iteritems, FlaskForm
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import AuthenticationFailed
@@ -21,7 +20,7 @@ from flask_multipass.group import Group
 from flask_multipass.identity import IdentityProvider
 
 
-class StaticLoginForm(Form):
+class StaticLoginForm(FlaskForm):
     username = StringField('Username', [DataRequired()])
     password = PasswordField('Password', [DataRequired()])
 
