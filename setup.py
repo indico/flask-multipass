@@ -42,7 +42,7 @@ setup(
     license='BSD',
     author='Indico Team',
     author_email='indico-team@cern.ch',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     zip_safe=False,
     include_package_data=True,
     platforms='any',
