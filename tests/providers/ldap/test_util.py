@@ -11,7 +11,11 @@ from urlparse import urlparse
 
 import ldap
 import pytest
-from mock import call, MagicMock
+
+try:
+    from mock import call, MagicMock
+except ImportError:
+    from unittest.mock import call, MagicMock
 
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.util import convert_app_data

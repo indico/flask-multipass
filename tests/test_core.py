@@ -8,7 +8,10 @@ from __future__ import unicode_literals
 
 import pytest
 from flask import Flask, request, session
-from mock import Mock
+try:
+    from mock import Mock
+except ImportError:
+    from unittest.mock import Mock
 
 from flask_multipass import Multipass, AuthProvider, AuthenticationFailed
 

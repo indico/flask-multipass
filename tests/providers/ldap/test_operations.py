@@ -8,7 +8,11 @@ from __future__ import unicode_literals
 
 import pytest
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE
-from mock import MagicMock
+try:
+    from mock import MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
+
 
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
 from flask_multipass.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,

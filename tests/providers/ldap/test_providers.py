@@ -9,7 +9,10 @@ from __future__ import unicode_literals
 import pytest
 from flask import Flask
 from ldap import INVALID_CREDENTIALS
-from mock import MagicMock
+try:
+    from mock import MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
 
 from flask_multipass import Multipass
 from flask_multipass.exceptions import IdentityRetrievalFailed, InvalidCredentials, NoSuchUser

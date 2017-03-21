@@ -7,7 +7,10 @@
 from __future__ import unicode_literals
 
 import pytest
-from mock import MagicMock
+try:
+    from mock import MagicMock
+except ImportError:
+    from unittest.mock import MagicMock
 
 from flask_multipass import AuthInfo, IdentityInfo
 
