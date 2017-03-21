@@ -9,30 +9,15 @@ import re
 import sys
 
 from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
-
-
-class PyTest(TestCommand):
-    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errno = pytest.main(self.pytest_args)
-        sys.exit(errno)
 
 
 with open('flask_multipass/__init__.py', 'rb') as f:
     version_line = re.search(r'__version__\s+=\s+(.*)', f.read().decode('utf-8')).group(1)
     version = str(ast.literal_eval(version_line))
+
+
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 
 setup(
@@ -50,8 +35,8 @@ setup(
         'Flask>=0.10.1',  # TODO: check the oldest version we can work with
         'blinker'
     ],
+    setup_requires=pytest_runner,
     tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
-    cmdclass={'test': PyTest},
     classifiers=[
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.7',
