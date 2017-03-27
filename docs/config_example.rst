@@ -1,0 +1,131 @@
+Configuration example
+---------------------
+
+Here you can see example objects that can be used for configuration (don't use in a real application)
+
+``'test_auth_provider'`` is dummy example of local auth provider, its linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``.
+
+In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pairs of username (Pig) and password (pig123), those are used for authentication by Multipass. In ``identities`` settings of ``'test_identity_provider'`` we assign info keys dictionary to usernames. In this example, the usernames are used as unique identifier for users.
+
+``'github'``, ``'my_shibboleth'`` and ``'my-ldap'`` are examples of external providers. 
+
+.. code-block:: python
+
+	_github_oauth_config = {
+	    'consumer_key': '',  # put your key here
+	    'consumer_secret': '',  # put your secret here
+	    'request_token_params': {'scope': 'user:email'},
+	    'base_url': 'https://api.github.com',
+	    'request_token_url': None,
+	    'access_token_method': 'POST',
+	    'access_token_url': 'https://github.com/login/oauth/access_token',
+	    'authorize_url': 'https://github.com/login/oauth/authorize'
+	}
+
+	_my_ldap_config = {
+	    'uri': 'ldaps://ldap.example.com:636',
+	    'bind_dn': 'uid=admin,DC=example,DC=com',
+	    'bind_password': 'p455w0rd',
+	    'timeout': 30,
+	    'verify_cert': True,
+	    # optional: if not present, uses certifi's CA bundle (if installed)
+	    'cert_file': 'path/to/server/cert',
+	    'starttls': False,
+	    'page_size': 1000,
+
+	    'uid': 'uid',
+	    'user_base': 'OU=Users,DC=example,DC=com',
+	    'user_filter': '(objectCategory=person)',
+
+	    'gid': 'cn',
+	    'group_base': 'OU=Organizational Units,DC=example,DC=com',
+	    'group_filter': '(objectCategory=groupOfNames)',
+	    'member_of_attr': 'memberOf',
+	    'ad_group_style': False,
+	}
+
+	MULTIPASS_AUTH_PROVIDERS = {
+	    'test_auth_provider': {
+		'type': 'test',
+		'title': 'Insecure dummy auth',
+		'identities': {
+		    'Pig': 'pig123',
+		    'Bunny': 'bunny123'
+		}
+	    },
+	    'github': {
+		'type': 'oauth',
+		'title': 'GitHub',
+		'oauth': _github_oauth_config
+	    },
+	    'my-ldap': {
+		'type': 'ldap',
+		'title': 'My Organization LDAP',
+		'ldap': _my_ldap_config,
+	    },
+	    'sso': {
+		'type': 'shibboleth',
+		'title': 'SSO',
+		'callback_uri': '/shibboleth/sso',
+		'logout_uri': 'https://sso.example.com/logout'
+	    }
+	}
+
+	MULTIPASS_IDENTITY_PROVIDERS = {
+	    'test_identity_provider': {
+		'type': 'test',
+		'identities': {
+		    'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
+		    'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
+		},
+		'groups': {
+		    'Admins': ['Pig'],
+		    'Everybody': ['Pig', 'Bunny'],
+		}
+	    },
+	    'github': {
+		'type': 'oauth',
+		'oauth': _github_oauth_config,
+		'endpoint': '/user',
+		'identifier_field': 'id',
+		'mapping': {
+		    'affiliation': 'company'
+		}
+	    },
+	    'my-ldap': {
+		'type': 'ldap',
+		'ldap': _my_ldap_config,
+		'mapping': {
+		    'name': 'givenName',
+		    'email': 'mail',
+		    'affiliation': 'company'
+		}
+	    },
+	    'my_shibboleth': {
+		'type': 'shibboleth',
+		'mapping': {
+		    'email': 'ADFS_EMAIL',
+		    'name': 'ADFS_FIRSTNAME',
+		    'affiliation': 'ADFS_HOMEINSTITUTE'
+		}
+	    }
+	}
+
+	MULTIPASS_PROVIDER_MAP = {
+	    'test_auth_provider': 'test_identity_provider',
+	    'my-ldap': 'my-ldap',
+	    'my_shibboleth': 'my_shibboleth',
+		# You can also be explicit (only needed for more complex links)
+	    'github': [
+		{
+		    'identity_provider': 'github'
+		}
+	    ]
+	}
+
+	MULTIPASS_LOGIN_FORM_TEMPLATE = 'login_form.html'
+	MULTIPASS_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
+	MULTIPASS_IDENTITY_INFO_KEYS = ['email', 'name', 'affiliation']
+	WTF_CSRF_ENABLED = False
+	SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multipass.db'
+

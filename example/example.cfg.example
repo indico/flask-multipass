@@ -34,12 +34,12 @@ _my_ldap_config = {
 }
 
 MULTIPASS_AUTH_PROVIDERS = {
-    'test': {
-        'type': 'static',
+    'test_auth_provider': {
+        'type': 'test',
         'title': 'Insecure dummy auth',
         'identities': {
-            'Test': '123',
-            'Foo': 'bar'
+            'Pig': 'pig123',
+            'Bunny': 'bunny123'
         }
     },
     'github': {
@@ -52,10 +52,6 @@ MULTIPASS_AUTH_PROVIDERS = {
         'title': 'My Organization LDAP',
         'ldap': _my_ldap_config,
     },
-    'local': {
-        'type': 'example_local',
-        'title': 'Local Accounts'
-    },
     'sso': {
         'type': 'shibboleth',
         'title': 'SSO',
@@ -65,15 +61,15 @@ MULTIPASS_AUTH_PROVIDERS = {
 }
 
 MULTIPASS_IDENTITY_PROVIDERS = {
-    'test': {
-        'type': 'static',
+    'test_identity_provider': {
+        'type': 'test',
         'identities': {
-            'Test': {'email': 'test@example.com', 'name': 'Guinea Pig'},
-            'Somebody': {'email': 'somebody@example.com', 'name': 'Some Body'}
+            'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
+		    'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
         },
         'groups': {
-            'Admins': ['Test'],
-            'Everybody': ['Test', 'Somebody'],
+            'Admins': ['Pig'],
+            'Everybody': ['Pig', 'Bunny'],
         }
     },
     'github': {
@@ -85,17 +81,6 @@ MULTIPASS_IDENTITY_PROVIDERS = {
             'affiliation': 'company'
         }
     },
-    'local': {
-        'type': 'example_local'
-    },
-    'my_shibboleth': {
-        'type': 'shibboleth',
-        'mapping': {
-            'email': 'ADFS_EMAIL',
-            'name': 'ADFS_FIRSTNAME',
-            'affiliation': 'ADFS_HOMEINSTITUTE'
-        }
-    },
     'my-ldap': {
         'type': 'ldap',
         'ldap': _my_ldap_config,
@@ -104,15 +89,22 @@ MULTIPASS_IDENTITY_PROVIDERS = {
             'email': 'mail',
             'affiliation': 'company'
         }
+    },
+    'my_shibboleth': {
+        'type': 'shibboleth',
+        'mapping': {
+            'email': 'ADFS_EMAIL',
+            'name': 'ADFS_FIRSTNAME',
+            'affiliation': 'ADFS_HOMEINSTITUTE'
+        }
     }
 }
 
 MULTIPASS_PROVIDER_MAP = {
-    'local': 'local',
-    'my_shibboleth': 'my_shibboleth',
+    'test_auth_provider': 'test_identity_provider',
     'my-ldap': 'my-ldap',
-    'test': 'test',
-    # You can also be explicit (only needed for more complex links)
+    'my_shibboleth': 'my_shibboleth',
+        # You can also be explicit (only needed for more complex links)
     'github': [
         {
             'identity_provider': 'github'

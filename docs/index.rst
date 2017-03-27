@@ -17,3 +17,4 @@ Contents
 
    api
    changelog
+   my_documentation
