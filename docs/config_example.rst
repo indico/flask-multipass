@@ -1,9 +1,15 @@
 Configuration example
 ---------------------
 
+This configuration can be added to your flask configuration file that you use when initialzing flask application. However, you can configure multipass also directly from application for example:
+
+.. code-block:: python
+
+	app.config['MULTIPASS_LOGIN_URLS'] = {'/my_login/', '/my_login/<provider>'}
+
 Here you can see example objects that can be used for configuration (don't use in a real application)
 
-``'test_auth_provider'`` is dummy example of local auth provider, its linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``.
+``'test_auth_provider'`` is a dummy example of local auth provider, it's linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``.
 
 In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pairs of username (Pig) and password (pig123), those are used for authentication by Multipass. In ``identities`` settings of ``'test_identity_provider'`` we assign info keys dictionary to usernames. In this example, the usernames are used as unique identifier for users.
 
