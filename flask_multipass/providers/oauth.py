@@ -73,7 +73,10 @@ class OAuthAuthProvider(AuthProvider):
         if not token or token != request.args.get('state'):
             raise AuthenticationFailed('Invalid session state')
         resp = self.oauth_app.authorized_response() or {}
-        if self.settings['token_field'] not in resp:
+        if isinstance(resp, flask_oauthlib.client.OAuthException):
+            error_details = {'msg': resp.message, 'type': resp.type, 'data': resp.data}
+            raise AuthenticationFailed('OAuth error', details=error_details)
+        elif self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
             raise AuthenticationFailed(error)
         return self.multipass.handle_auth_success(self._make_auth_info(resp))

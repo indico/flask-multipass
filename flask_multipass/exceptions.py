@@ -10,6 +10,11 @@ from __future__ import unicode_literals
 class MultipassException(Exception):
     """Base class for Multipass exceptions"""
 
+    def __init__(self, message=None, details=None):
+        args = (message,) if message else ()
+        Exception.__init__(self, *args)
+        self.details = details
+
 
 class AuthenticationFailed(MultipassException):
     """
