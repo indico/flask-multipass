@@ -59,19 +59,35 @@ class OAuthAuthProvider(AuthProvider):
         current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
                                  self._authorize_callback, methods=('GET', 'POST'))
 
+    def _get_redirect_uri(self):
+        return url_for(self.authorized_endpoint, _external=True)
+
     def initiate_external_login(self):
-        redirect_uri = url_for(self.authorized_endpoint, _external=True)
-        session['_multipass_oauth_' + self.name] = token = str(uuid4())
-        return self.oauth_app.authorize(callback=redirect_uri, state=token)
+        token = str(uuid4())
+        session.setdefault('_multipass_oauth_csrf_' + self.name, set()).add(token)
+        session.modified = True
+        return self.oauth_app.authorize(callback=self._get_redirect_uri(), state=token)
 
     def _make_auth_info(self, resp):
         return AuthInfo(self, token=resp[self.settings['token_field']])
 
     @login_view
     def _authorize_callback(self):
-        token = session.pop('_multipass_oauth_' + self.name, None)
-        if not token or token != request.args.get('state'):
+        session_key = '_multipass_oauth_csrf_' + self.name
+        tokens = session.get(session_key, set())
+        req_token = request.args.get('state')
+        if not req_token or req_token not in tokens:
             raise AuthenticationFailed('Invalid session state')
+        tokens.remove(req_token)
+        if tokens:
+            session.modified = True
+        else:
+            del session[session_key]
+        # XXX: When people have multiple oauth logins at the same time, e.g.
+        # after restarting their browser and being redirected to SSO pages
+        # the first successful one will remove the redirect uri from the
+        # session so we need to restore it in case it's not set.
+        session.setdefault('{}_oauthredir'.format(self.oauth_app.name), self._get_redirect_uri())
         resp = self.oauth_app.authorized_response() or {}
         if isinstance(resp, flask_oauthlib.client.OAuthException):
             error_details = {'msg': resp.message, 'type': resp.type, 'data': resp.data}
