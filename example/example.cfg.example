@@ -35,7 +35,7 @@ _my_ldap_config = {
 
 MULTIPASS_AUTH_PROVIDERS = {
     'test_auth_provider': {
-        'type': 'test',
+        'type': 'static',
         'title': 'Insecure dummy auth',
         'identities': {
             'Pig': 'pig123',
@@ -47,11 +47,6 @@ MULTIPASS_AUTH_PROVIDERS = {
         'title': 'GitHub',
         'oauth': _github_oauth_config
     },
-    'my-ldap': {
-        'type': 'ldap',
-        'title': 'My Organization LDAP',
-        'ldap': _my_ldap_config,
-    },
     'sso': {
         'type': 'shibboleth',
         'title': 'SSO',
@@ -62,7 +57,7 @@ MULTIPASS_AUTH_PROVIDERS = {
 
 MULTIPASS_IDENTITY_PROVIDERS = {
     'test_identity_provider': {
-        'type': 'test',
+        'type': 'static',
         'identities': {
             'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
 		    'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
@@ -81,15 +76,6 @@ MULTIPASS_IDENTITY_PROVIDERS = {
             'affiliation': 'company'
         }
     },
-    'my-ldap': {
-        'type': 'ldap',
-        'ldap': _my_ldap_config,
-        'mapping': {
-            'name': 'givenName',
-            'email': 'mail',
-            'affiliation': 'company'
-        }
-    },
     'my_shibboleth': {
         'type': 'shibboleth',
         'mapping': {
@@ -102,8 +88,7 @@ MULTIPASS_IDENTITY_PROVIDERS = {
 
 MULTIPASS_PROVIDER_MAP = {
     'test_auth_provider': 'test_identity_provider',
-    'my-ldap': 'my-ldap',
-    'my_shibboleth': 'my_shibboleth',
+    'sso': 'my_shibboleth',
         # You can also be explicit (only needed for more complex links)
     'github': [
         {

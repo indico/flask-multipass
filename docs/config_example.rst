@@ -1,19 +1,20 @@
-Configuration example
----------------------
 
-This configuration can be added to your flask configuration file that you use when initialzing flask application. However, you can configure multipass also directly from application for example:
+.. _config_example:
+
+Configuration example
+=====================
+
+This configuration can be added to your Flask configuration file that you use when initializing flask application. However, you can configure Multipass also directly through application object for example:
 
 .. code-block:: python
 
 	app.config['MULTIPASS_LOGIN_URLS'] = {'/my_login/', '/my_login/<provider>'}
 
-Here you can see example objects that can be used for configuration (don't use in a real application)
+Here you can see an example configuration for an application using both external and local providers.
 
-``'test_auth_provider'`` is a dummy example of local auth provider, it's linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``.
+``'test_auth_provider'`` is a dummy example of a local authentication provider, it's linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``. You can read more about the configuration of local providers here: :ref:`local_providers`
 
-In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pairs of username (Pig) and password (pig123), those are used for authentication by Multipass. In ``identities`` settings of ``'test_identity_provider'`` we assign info keys dictionary to usernames. In this example, the usernames are used as unique identifier for users.
-
-``'github'``, ``'my_shibboleth'`` and ``'my-ldap'`` are examples of external providers. 
+``'github'``, ``'my_shibboleth'`` and ``'my-ldap'`` are examples of external providers. More on configuration of external providers:  :ref:`external_providers` 
 
 .. code-block:: python
 
@@ -52,7 +53,7 @@ In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pair
 
 	MULTIPASS_AUTH_PROVIDERS = {
 	    'test_auth_provider': {
-		'type': 'test',
+		'type': 'static',
 		'title': 'Insecure dummy auth',
 		'identities': {
 		    'Pig': 'pig123',
@@ -79,7 +80,7 @@ In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pair
 
 	MULTIPASS_IDENTITY_PROVIDERS = {
 	    'test_identity_provider': {
-		'type': 'test',
+		'type': 'static',
 		'identities': {
 		    'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
 		    'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
@@ -95,6 +96,7 @@ In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pair
 		'endpoint': '/user',
 		'identifier_field': 'id',
 		'mapping': {
+		    'user_name': 'login',
 		    'affiliation': 'company'
 		}
 	    },
@@ -131,7 +133,5 @@ In ``identities`` settings of ``'test_auth_provider'`` we specify key-value pair
 
 	MULTIPASS_LOGIN_FORM_TEMPLATE = 'login_form.html'
 	MULTIPASS_LOGIN_SELECTOR_TEMPLATE = 'login_selector.html'
+	MULTIPASS_LOGIN_URLS = {'/my_login/', '/my_login/<provider>'}
 	MULTIPASS_IDENTITY_INFO_KEYS = ['email', 'name', 'affiliation']
-	WTF_CSRF_ENABLED = False
-	SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/multipass.db'
-
