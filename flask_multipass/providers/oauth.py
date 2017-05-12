@@ -62,10 +62,12 @@ class OAuthAuthProvider(AuthProvider):
     def _get_redirect_uri(self):
         return url_for(self.authorized_endpoint, _external=True)
 
+    @property
+    def _session_key(self):
+        return '_multipass_oauth_csrf_' + self.name
+
     def initiate_external_login(self):
-        token = str(uuid4())
-        session.setdefault('_multipass_oauth_csrf_' + self.name, set()).add(token)
-        session.modified = True
+        token = session.setdefault(self._session_key, str(uuid4()))
         return self.oauth_app.authorize(callback=self._get_redirect_uri(), state=token)
 
     def _make_auth_info(self, resp):
@@ -73,16 +75,11 @@ class OAuthAuthProvider(AuthProvider):
 
     @login_view
     def _authorize_callback(self):
-        session_key = '_multipass_oauth_csrf_' + self.name
-        tokens = session.get(session_key, set())
+        session_token = session.get(self._session_key, None)
         req_token = request.args.get('state')
-        if not req_token or req_token not in tokens:
-            raise AuthenticationFailed('Invalid session state')
-        tokens.remove(req_token)
-        if tokens:
-            session.modified = True
-        else:
-            del session[session_key]
+        if not req_token or not session_token or session_token != req_token:
+            raise AuthenticationFailed('Invalid session state',
+                                       details={'req_token': req_token, 'session_token': session_token})
         # XXX: When people have multiple oauth logins at the same time, e.g.
         # after restarting their browser and being redirected to SSO pages
         # the first successful one will remove the redirect uri from the
