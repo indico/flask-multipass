@@ -7,3 +7,4 @@ flask_oauthlib
 flask_wtf
 flask_sqlalchemy
 wtforms
+flask_sphinx_themes

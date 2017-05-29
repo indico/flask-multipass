@@ -286,38 +286,3 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [(master_doc, 'Flask-Multipass', 'Flask-Multipass Documentation', author, 'Flask-Multipass',
                       'One line description of project.', 'Miscellaneous')]
-
-# Documents to append as an appendix to all manuals.
-#texinfo_appendices = []
-
-# If false, no module index is generated.
-#texinfo_domain_indices = True
-
-# How to display URL addresses: 'footnote', 'no', or 'inline'.
-#texinfo_show_urls = 'footnote'
-
-# If true, do not generate a @detailmenu in the "Top" node's menu.
-#texinfo_no_detailmenu = False
-
-
-intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None),
-    'flask': ('http://flask.pocoo.org/docs/', None),
-    'flaskwtf': ('https://flask-wtf.readthedocs.org/en/latest/', None),
-}
-
-autodoc_member_order = 'bysource'
-pygments_style = 'flask_theme_support.FlaskyStyle'
-# fall back if theme is not there
-try:
-    __import__('flask_theme_support')
-except ImportError:
-    print('-' * 74)
-    print('Warning: Flask themes unavailable. Building with default theme')
-    print('If you want the Flask themes, run this command and build again:')
-    print()
-    print(' git submodule update --init')
-    print('-' * 74)
-    pygments_style = 'tango'
-    html_theme = 'classic'
-    html_theme_options = {}
