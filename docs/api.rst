@@ -7,6 +7,7 @@ Core
 .. automodule:: flask_multipass.core
    :members:
 
+.. _auth_providers:
 
 Authentication Providers
 ------------------------
@@ -23,8 +24,9 @@ Authentication Providers
 .. autoclass:: flask_multipass.providers.sqlalchemy.SQLAlchemyAuthProviderBase
    :members:
 
+.. _identity_providers:
 
-User Identity Providers
+Identity Providers
 -----------------------
 .. automodule:: flask_multipass.identity
    :members:
