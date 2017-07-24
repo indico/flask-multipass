@@ -15,7 +15,7 @@ install:
   - '[[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]] && pip install flask-wtf python-ldap || :'
 script:
   - python setup.py develop
-  - py.test --pep8
+  - pytest --pep8
 after_success:
   - coveralls
 notifications:
