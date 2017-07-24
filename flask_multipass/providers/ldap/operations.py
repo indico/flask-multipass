@@ -61,11 +61,11 @@ def get_user_by_id(uid, attributes=None):
 def get_group_by_id(gid, attributes=None):
     """Retrieves a user's data from LDAP, given its identifier.
 
-    :param uid: str -- the identifier of the user
-    :param attributes: list -- Attributes to be retrieved for the user.
+    :param gid: str -- the identifier of the group
+    :param attributes: list -- Attributes to be retrieved for the group.
                        If ``None``, all attributes will be retrieved.
     :raises GroupRetrievalFailed: If the identifier is falsely.
-    :return: A tuple containing the `dn` of the user as ``str`` and the
+    :return: A tuple containing the `dn` of the group as ``str`` and the
              found attributes in a ``dict``.
     """
     if not gid:
