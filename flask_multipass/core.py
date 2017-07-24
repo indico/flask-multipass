@@ -215,7 +215,7 @@ class Multipass(object):
             if not current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
                 break
         if not identities and current_app.config['MULTIPASS_REQUIRE_IDENTITY']:
-            raise IdentityRetrievalFailed("No identity found")
+            raise IdentityRetrievalFailed("No identity found", provider=auth_info.provider)
         session['_multipass_login_provider'] = auth_info.provider.name
         if current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
             response = self.login_finished(identities)
@@ -296,7 +296,7 @@ class Multipass(object):
         except KeyError:
             raise IdentityRetrievalFailed('Provider does not exist: ' + provider_name)
         if not provider.supports_refresh:
-            raise IdentityRetrievalFailed('Provider does not support refreshing: ' + provider_name)
+            raise IdentityRetrievalFailed('Provider does not support refreshing: ' + provider_name, provider=provider)
         return provider.refresh_identity(identifier, multipass_data)
 
     def get_identity(self, provider, identifier):
@@ -315,7 +315,8 @@ class Multipass(object):
         except KeyError:
             raise IdentityRetrievalFailed('Provider does not exist: ' + provider)
         if not provider.supports_get:
-            raise IdentityRetrievalFailed('Provider does not support getting identities: ' + provider.name)
+            raise IdentityRetrievalFailed('Provider does not support getting identities: ' + provider.name,
+                                          provider=provider)
         return provider.get_identity(identifier)
 
     def search_identities(self, providers=None, exact=False, **criteria):

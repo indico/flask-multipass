@@ -78,8 +78,9 @@ class OAuthAuthProvider(AuthProvider):
         session_token = session.get(self._session_key, None)
         req_token = request.args.get('state')
         if not req_token or not session_token or session_token != req_token:
-            raise AuthenticationFailed('Invalid session state',
-                                       details={'req_token': req_token, 'session_token': session_token})
+            raise OAuthInvalidSessionState('Invalid session state',
+                                           details={'req_token': req_token, 'session_token': session_token},
+                                           provider=self)
         # XXX: When people have multiple oauth logins at the same time, e.g.
         # after restarting their browser and being redirected to SSO pages
         # the first successful one will remove the redirect uri from the
@@ -88,10 +89,10 @@ class OAuthAuthProvider(AuthProvider):
         resp = self.oauth_app.authorized_response() or {}
         if isinstance(resp, flask_oauthlib.client.OAuthException):
             error_details = {'msg': resp.message, 'type': resp.type, 'data': resp.data}
-            raise AuthenticationFailed('OAuth error', details=error_details)
+            raise AuthenticationFailed('OAuth error', details=error_details, provider=self)
         elif self.settings['token_field'] not in resp:
             error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
-            raise AuthenticationFailed(error)
+            raise AuthenticationFailed(error, provider=self)
         return self.multipass.handle_auth_success(self._make_auth_info(resp))
 
 
@@ -121,7 +122,7 @@ class OAuthIdentityProvider(IdentityProvider):
     def _get_identity(self, token):
         resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=(token, None))
         if resp.status not in self.settings['valid_statuses']:
-            raise IdentityRetrievalFailed('Could not retrieve identity data')
+            raise IdentityRetrievalFailed('Could not retrieve identity data', provider=self)
         elif resp.status == 404:
             return None
         identifier = resp.data[self.settings['identifier_field']]
@@ -133,3 +134,11 @@ class OAuthIdentityProvider(IdentityProvider):
 
     def refresh_identity(self, identifier, multipass_data):
         return self._get_identity(multipass_data['oauth_token'])
+
+
+class OAuthInvalidSessionState(AuthenticationFailed):
+    """Invalid CSRF token during OAuth.
+
+    This usually happens when people start the OAuth process and then
+    close their browser or just wait a long time before finishing it.
+    """

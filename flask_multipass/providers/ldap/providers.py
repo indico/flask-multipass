@@ -76,10 +76,10 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
             try:
                 user_dn, user_data = get_user_by_id(username, attributes=[self.ldap_settings['uid']])
                 if not user_dn:
-                    raise NoSuchUser
+                    raise NoSuchUser(provider=self)
                 current_ldap.connection.simple_bind_s(user_dn, password)
             except INVALID_CREDENTIALS:
-                raise InvalidCredentials
+                raise InvalidCredentials(provider=self)
         auth_info = AuthInfo(self, identifier=user_data[self.ldap_settings['uid']][0])
         return self.multipass.handle_auth_success(auth_info)
 
@@ -187,7 +187,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         with ldap_context(self.ldap_settings):
             search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)
             if not search_filter:
-                raise IdentityRetrievalFailed("Unable to generate search filter from criteria")
+                raise IdentityRetrievalFailed("Unable to generate search filter from criteria", provider=self)
             for _, user_data in self._search_users(search_filter):
                 yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **to_unicode(user_data))
 
@@ -202,6 +202,6 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         with ldap_context(self.ldap_settings):
             search_filter = build_group_search_filter({self.ldap_settings['gid']: {name}}, exact=exact)
             if not search_filter:
-                raise GroupRetrievalFailed("Unable to generate search filter from criteria")
+                raise GroupRetrievalFailed("Unable to generate search filter from criteria", provider=self)
             for group_dn, group_data in self._search_groups(search_filter):
                 yield self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn)

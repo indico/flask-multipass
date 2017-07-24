@@ -15,7 +15,7 @@ from wtforms.validators import DataRequired
 from flask_multipass._compat import iteritems, FlaskForm
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
-from flask_multipass.exceptions import AuthenticationFailed
+from flask_multipass.exceptions import NoSuchUser, InvalidCredentials
 from flask_multipass.group import Group
 from flask_multipass.identity import IdentityProvider
 
@@ -44,9 +44,9 @@ class StaticAuthProvider(AuthProvider):
         username = data['username']
         password = self.settings['identities'].get(username)
         if password is None:
-            raise AuthenticationFailed('No such user')
+            raise NoSuchUser(provider=self)
         if password != data['password']:
-            raise AuthenticationFailed('Invalid password.')
+            raise InvalidCredentials(provider=self)
         auth_info = AuthInfo(self, username=data['username'])
         return self.multipass.handle_auth_success(auth_info)
 

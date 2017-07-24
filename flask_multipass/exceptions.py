@@ -10,10 +10,11 @@ from __future__ import unicode_literals
 class MultipassException(Exception):
     """Base class for Multipass exceptions"""
 
-    def __init__(self, message=None, details=None):
+    def __init__(self, message=None, details=None, provider=None):
         args = (message,) if message else ()
         Exception.__init__(self, *args)
         self.details = details
+        self.provider = provider
 
 
 class AuthenticationFailed(MultipassException):
@@ -27,15 +28,15 @@ class AuthenticationFailed(MultipassException):
 class NoSuchUser(AuthenticationFailed):
     """Indicates a user does not exist when attempting to authenticate."""
 
-    def __init__(self):
-        AuthenticationFailed.__init__(self, 'No such user')
+    def __init__(self, details=None, provider=None):
+        AuthenticationFailed.__init__(self, 'No such user', details=details, provider=provider)
 
 
 class InvalidCredentials(AuthenticationFailed):
     """Indicates a failure to authenticate using the given credentials."""
 
-    def __init__(self):
-        AuthenticationFailed.__init__(self, 'Invalid credentials')
+    def __init__(self, details=None, provider=None):
+        AuthenticationFailed.__init__(self, 'Invalid credentials', details=details, provider=provider)
 
 
 class IdentityRetrievalFailed(MultipassException):

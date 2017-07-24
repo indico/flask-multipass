@@ -31,7 +31,7 @@ class ShibbolethAuthProvider(AuthProvider):
         super(ShibbolethAuthProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('attrs_prefix', 'ADFS_')
         if not self.settings.get('callback_uri'):
-            raise MultipassException("`callback_uri` must be specified in the provider settings")
+            raise MultipassException("`callback_uri` must be specified in the provider settings", provider=self)
         self.shibboleth_endpoint = '_flaskmultipass_shibboleth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.shibboleth_endpoint,
                                  self._shibboleth_callback, methods=('GET', 'POST'))
@@ -48,7 +48,7 @@ class ShibbolethAuthProvider(AuthProvider):
     def _shibboleth_callback(self):
         attributes = {k: v for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
         if not attributes:
-            raise AuthenticationFailed("No valid data received")
+            raise AuthenticationFailed("No valid data received", provider=self)
         return self.multipass.handle_auth_success(AuthInfo(self, **attributes))
 
 
@@ -72,5 +72,5 @@ class ShibbolethIdentityProvider(IdentityProvider):
     def get_identity_from_auth(self, auth_info):
         identifier = auth_info.data.get(self.settings['identifier_field'])
         if not identifier:
-            raise IdentityRetrievalFailed('Identifier missing in shibboleth response')
+            raise IdentityRetrievalFailed('Identifier missing in shibboleth response', provider=self)
         return IdentityInfo(self, identifier=identifier, **auth_info.data)
