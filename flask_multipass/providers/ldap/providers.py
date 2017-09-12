@@ -24,7 +24,7 @@ from flask_multipass.providers.ldap.globals import current_ldap
 from flask_multipass.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
                                                        get_user_by_id, get_group_by_id, get_token_groups_from_user_dn,
                                                        search)
-from flask_multipass.providers.ldap.util import ldap_context, to_unicode
+from flask_multipass.providers.ldap.util import ldap_context, to_unicode, to_bytes_recursive
 
 try:
     import certifi
@@ -53,9 +53,7 @@ class LDAPProviderMixin(object):
         if not self.ldap_settings['cert_file'] and self.ldap_settings['verify_cert']:
             warn("You should install certifi or provide a certificate file in order to verify the LDAP certificate.")
         # Convert LDAP settings to bytes since python-ldap chokes on unicode strings
-        for key, value in iteritems(self.ldap_settings):
-            if isinstance(value, unicode):
-                self.ldap_settings[key] = bytes(value)
+        self.settings['ldap'] = to_bytes_recursive(self.settings['ldap'])
 
 
 class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
@@ -154,10 +152,11 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def __init__(self, *args, **kwargs):
         super(LDAPIdentityProvider, self).__init__(*args, **kwargs)
         self.set_defaults()
-        self.ldap_settings.setdefault('gid', 'cn')
-        self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')
-        self.ldap_settings.setdefault('member_of_attr', 'memberOf')
-        self.ldap_settings.setdefault('ad_group_style', False)
+        self.ldap_settings.setdefault(b'gid', b'cn')
+        self.ldap_settings.setdefault(b'group_filter', b'(objectClass=groupOfNames)')
+        self.ldap_settings.setdefault(b'member_of_attr', b'memberOf')
+        self.ldap_settings.setdefault(b'ad_group_style', False)
+        self.settings['mapping'] = to_bytes_recursive(self.settings['mapping'])
         self._attributes = convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
         self._attributes.append(self.ldap_settings['uid'])
 
