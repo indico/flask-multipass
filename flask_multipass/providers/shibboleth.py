@@ -10,12 +10,16 @@ import urllib
 
 from flask import request, current_app, url_for, redirect
 
-from flask_multipass._compat import iteritems
+from flask_multipass._compat import iteritems, PY2
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import MultipassException, AuthenticationFailed, IdentityRetrievalFailed
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import login_view
+
+
+def _to_unicode(s):
+    return s.decode('utf-8') if PY2 and isinstance(s, unicode) else s
 
 
 class ShibbolethAuthProvider(AuthProvider):
@@ -46,7 +50,8 @@ class ShibbolethAuthProvider(AuthProvider):
 
     @login_view
     def _shibboleth_callback(self):
-        attributes = {k: v for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
+        attributes = {k: _to_unicode(v)
+                      for k, v in iteritems(request.environ) if k.startswith(self.settings['attrs_prefix'])}
         if not attributes:
             raise AuthenticationFailed("No valid data received", provider=self)
         return self.multipass.handle_auth_success(AuthInfo(self, **attributes))

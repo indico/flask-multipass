@@ -8,6 +8,7 @@ import operator
 import sys
 
 if sys.version_info[0] > 2:
+    PY2 = False
     text_type = str
     string_types = str,
     viewkeys = operator.methodcaller('keys')
@@ -18,6 +19,7 @@ if sys.version_info[0] > 2:
     def itervalues(arg, **kwargs):
         return iter(arg.values(**kwargs))
 else:
+    PY2 = True
     text_type = unicode
     string_types = basestring,
     viewkeys = operator.methodcaller('viewkeys')
