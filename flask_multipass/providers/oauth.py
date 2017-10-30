@@ -86,7 +86,13 @@ class OAuthAuthProvider(AuthProvider):
         # the first successful one will remove the redirect uri from the
         # session so we need to restore it in case it's not set.
         session.setdefault('{}_oauthredir'.format(self.oauth_app.name), self._get_redirect_uri())
-        resp = self.oauth_app.authorized_response() or {}
+        try:
+            resp = self.oauth_app.authorized_response() or {}
+        except flask_oauthlib.client.OAuthException as exc:
+            # older flask-oauthlib versions return the exception instead of
+            # letting it propagate like a normal exception, so we handle both
+            # the properly raised exception and the legacy case.
+            resp = exc
         if isinstance(resp, flask_oauthlib.client.OAuthException):
             error_details = {'msg': resp.message, 'type': resp.type, 'data': resp.data}
             raise AuthenticationFailed('OAuth error', details=error_details, provider=self)
