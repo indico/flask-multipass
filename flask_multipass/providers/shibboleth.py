@@ -19,7 +19,7 @@ from flask_multipass.util import login_view
 
 
 def _to_unicode(s):
-    return s.decode('utf-8') if PY2 and isinstance(s, unicode) else s
+    return s.decode('utf-8') if PY2 and isinstance(s, str) else s
 
 
 class ShibbolethAuthProvider(AuthProvider):
