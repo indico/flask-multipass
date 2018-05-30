@@ -14,7 +14,7 @@ Here you can see an example configuration for an application using both external
 
 ``'test_auth_provider'`` is a dummy example of a local authentication provider, it's linked to the ``'test_identity_provider'`` as specified in ``MULTIPASS_PROVIDER_MAP``. You can read more about the configuration of local providers here: :ref:`local_providers`
 
-``'github'``, ``'my_shibboleth'`` and ``'my-ldap'`` are examples of external providers. More on configuration of external providers:  :ref:`external_providers` 
+``'github'``, ``'my_shibboleth'`` and ``'my-ldap'`` are examples of external providers. More on configuration of external providers:  :ref:`external_providers`
 
 .. code-block:: python
 
@@ -74,7 +74,12 @@ Here you can see an example configuration for an application using both external
 		'type': 'shibboleth',
 		'title': 'SSO',
 		'callback_uri': '/shibboleth/sso',
-		'logout_uri': 'https://sso.example.com/logout'
+		'logout_uri': 'https://sso.example.com/logout',
+		# optional: defaults to 'ADFS_'
+		'attrs_prefix': 'ADFS_',
+		# optional: if True, gets the fields from the request headers instead,
+		# defaults to False
+		'use_headers': False
 	    }
 	}
 
