@@ -42,6 +42,10 @@ class Identity(db.Model):
     password = db.Column(db.String)
     user = db.relationship(User, backref='identities')
 
+    @property
+    def provider_impl(self):
+        return multipass.identity_providers[self.provider]
+
 
 class LocalAuthProvider(SQLAlchemyAuthProviderBase):
     identity_model = Identity

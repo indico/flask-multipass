@@ -39,6 +39,8 @@ class IdentityProvider(object):
     supports_search = False
     #: If the provider also provides groups and membership information
     supports_groups = False
+    #: If the provider supports getting the list of groups an identity belongs to
+    supports_get_identity_groups = False
     #: The class that represents groups from this provider. Must be a
     #: subclass of :class:`.Group`
     group_class = None
@@ -94,6 +96,18 @@ class IdentityProvider(object):
             raise NotImplementedError
         else:
             raise RuntimeError('This provider does not support getting an identity based on the identifier')
+
+    def get_identity_groups(self, identifier):  # pragma: no cover
+        """Retrieves the list of groups a user identity belongs to
+
+        :param identifier: The unique user identifier used by the
+                           provider.
+        :return: A set of groups
+        """
+        if self.supports_get_identity_groups:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not support getting the list of groups for an identity')
 
     def search_identities(self, criteria, exact=False):  # pragma: no cover
         """Searches user identities matching certain criteria

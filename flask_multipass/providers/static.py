@@ -80,6 +80,8 @@ class StaticIdentityProvider(IdentityProvider):
     supports_search = True
     #: If the provider also provides groups and membership information
     supports_groups = True
+    #: If the provider supports getting the list of groups an identity belongs to
+    supports_get_identity_groups = True
     #: The class that represents groups from this provider
     group_class = StaticGroup
 
@@ -118,6 +120,14 @@ class StaticIdentityProvider(IdentityProvider):
                     break
             else:
                 yield IdentityInfo(self, identifier, **user)
+
+    def get_identity_groups(self, identifier):
+        groups = set()
+        for group_name in self.settings['groups']:
+            group = self.get_group(group_name)
+            if identifier in group:
+                groups.add(group)
+        return groups
 
     def get_group(self, name):
         if name not in self.settings['groups']:

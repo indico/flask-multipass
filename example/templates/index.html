@@ -14,8 +14,13 @@
         <h3>User identities</h3>
         <ul>
             {% for identity in g.user.identities %}
+                {% set groups = (identity.provider_impl.supports_get_identity_groups and
+                                 identity.provider_impl.get_identity_groups(identity.identifier)) %}
                 <li>
                     {{ identity.provider }}: {{ identity.identifier }}
+                    {% if groups %}
+                        [{{ groups|sort(attribute='name')|join(', ', attribute='name') }}]
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
