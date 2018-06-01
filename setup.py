@@ -24,10 +24,12 @@ setup(
     name='Flask-Multipass',
     version=version,
     url='https://github.com/indico/flask-multipass',
+    description='A pluggable solution for multi-backend authentication with Flask',
     license='BSD',
     author='Indico Team',
     author_email='indico-team@cern.ch',
     packages=find_packages(exclude=['tests']),
+    long_description=open('README.rst', 'r').read(),
     zip_safe=False,
     include_package_data=True,
     install_requires=[
