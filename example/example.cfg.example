@@ -60,7 +60,7 @@ MULTIPASS_IDENTITY_PROVIDERS = {
         'type': 'static',
         'identities': {
             'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
-		    'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
+            'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
         },
         'groups': {
             'Admins': ['Pig'],
@@ -89,7 +89,7 @@ MULTIPASS_IDENTITY_PROVIDERS = {
 MULTIPASS_PROVIDER_MAP = {
     'test_auth_provider': 'test_identity_provider',
     'sso': 'my_shibboleth',
-        # You can also be explicit (only needed for more complex links)
+    # You can also be explicit (only needed for more complex links)
     'github': [
         {
             'identity_provider': 'github'
