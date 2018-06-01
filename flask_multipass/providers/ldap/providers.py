@@ -160,6 +160,10 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         self._attributes = convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
         self._attributes.append(self.ldap_settings['uid'])
 
+    @property
+    def supports_get_identity_groups(self):
+        return self.ldap_settings['ad_group_style']
+
     def _get_identity(self, identifier):
         with ldap_context(self.ldap_settings):
             user_dn, user_data = get_user_by_id(identifier, self._attributes)
@@ -189,6 +193,22 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
                 raise IdentityRetrievalFailed("Unable to generate search filter from criteria", provider=self)
             for _, user_data in self._search_users(search_filter):
                 yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **to_unicode(user_data))
+
+    def get_identity_groups(self, identifier):
+        groups = set()
+        with ldap_context(self.ldap_settings):
+            user_dn, user_data = get_user_by_id(identifier, self._attributes)
+            if not user_dn:
+                return set()
+            if self.ldap_settings['ad_group_style']:
+                for sid in get_token_groups_from_user_dn(user_dn):
+                    search_filter = build_group_search_filter({'objectSid': {sid}}, exact=True)
+                    for group_dn, group_data in self._search_groups(search_filter):
+                        groups.add(self.group_class(self, group_data.get(self.ldap_settings['gid'])[0], group_dn))
+            else:
+                # OpenLDAP does not have a way to get all groups for a user including nested ones
+                raise NotImplementedError('Only available for active directory')
+        return groups
 
     def get_group(self, name):
         with ldap_context(self.ldap_settings):
