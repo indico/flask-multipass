@@ -19,7 +19,7 @@ It was developed at CERN and is currently used in production by `Indico <https:/
 
 There are bult-in authentication and identity providers for:
 
- * `Static (hardcode) credentials <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/static.py>`_
+ * `Static (hardcoded) credentials <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/static.py>`_
  * `Local (SQLAlchemy DB) authentication <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/sqlalchemy.py>`_
  * `OAuth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/oauth.py>`_
  * `Shibboleth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/shibboleth.py>`_
