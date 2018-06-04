@@ -1,8 +1,7 @@
 Flask-Multipass
 ===============
 
-.. image:: https://raw.githubusercontent.com/indico/flask-multipass/master/artwork/flask-multipass.svg?sanitize=true
-    :width: 200px
+.. image:: https://raw.githubusercontent.com/indico/flask-multipass/master/artwork/flask-multipass.png
 
 .. image:: https://readthedocs.org/projects/flask-multipass/badge/?version=latest
     :target: https://flask-multipass.readthedocs.org/
