@@ -22,7 +22,7 @@ There are bult-in authentication and identity providers for:
  * `Local (SQLAlchemy DB) authentication <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/sqlalchemy.py>`_
  * `OAuth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/oauth.py>`_
  * `Shibboleth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/shibboleth.py>`_
- * `LDAP <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/shibboleth.py>`_
+ * `LDAP <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/ldap/providers.py>`_
 
 Those can be used simultaneously and interchangeably (e.g. authenticate with OAuth and search users with LDAP).
 
