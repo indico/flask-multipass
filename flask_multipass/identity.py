@@ -25,7 +25,8 @@ class IdentityProvider(object):
     __support_attrs__ = {'supports_refresh': 'refresh_identity',
                          'supports_get': 'get_identity',
                          'supports_search': 'search_identities',
-                         'supports_groups': ('get_group', 'search_groups', 'group_class')}
+                         'supports_groups': ('get_group', 'search_groups', 'group_class'),
+                         'supports_get_identity_groups': 'get_identity_groups'}
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multipass.identity_providers'
     #: If there may be multiple instances of this identity provider
