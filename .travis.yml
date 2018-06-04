@@ -10,7 +10,7 @@ env:
   - DEPS=release
   - DEPS=devel
 install:
-  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/flask.git || :'
+  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/flask.git || :'
   - pip install -U pytest pytest-cov pytest-mock pytest-pep8 coveralls
   - '[[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]] && pip install flask-wtf python-ldap || :'
 script:
