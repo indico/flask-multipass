@@ -40,7 +40,7 @@ class ShibbolethAuthProvider(AuthProvider):
         super(ShibbolethAuthProvider, self).__init__(*args, **kwargs)
         # convert everything to lowercase (headers/WSGI vars are case-insensitive)
         self.attrs_prefix = self.settings.setdefault('attrs_prefix', 'ADFS_').lower()
-        self.attrs = [attr.lower() for attr in self.settings.get('attrs')]
+        self.attrs = [attr.lower() for attr in self.settings.get('attrs', [])] or None
         if not self.settings.get('callback_uri'):
             raise MultipassException("`callback_uri` must be specified in the provider settings", provider=self)
         self.from_headers = self.settings.get('from_headers', False)
