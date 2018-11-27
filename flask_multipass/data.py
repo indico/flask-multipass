@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 from werkzeug.datastructures import MultiDict
 
-from flask_multipass._compat import text_type
+from flask_multipass._compat import bytes_type, text_type
 from flask_multipass.util import convert_provider_data
 
 
@@ -64,7 +64,7 @@ class IdentityInfo(object):
 
     def __init__(self, provider, identifier, multipass_data=None, **data):
         self.provider = provider
-        self.identifier = text_type(identifier)
+        self.identifier = identifier.decode('utf-8') if isinstance(identifier, bytes_type) else text_type(identifier)
         if not provider.supports_refresh:
             assert multipass_data is None
             self.multipass_data = None
