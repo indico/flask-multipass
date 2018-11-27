@@ -9,6 +9,7 @@ import sys
 
 if sys.version_info[0] > 2:
     PY2 = False
+    bytes_type = bytes
     text_type = str
     string_types = str,
     viewkeys = operator.methodcaller('keys')
@@ -20,6 +21,7 @@ if sys.version_info[0] > 2:
         return iter(arg.values(**kwargs))
 else:
     PY2 = True
+    bytes_type = str
     text_type = unicode
     string_types = basestring,
     viewkeys = operator.methodcaller('viewkeys')
