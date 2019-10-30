@@ -36,6 +36,9 @@ setup(
         'Flask>=0.10.1',  # TODO: check the oldest version we can work with
         'blinker'
     ],
+    extras_require={
+        'oidc': ['authlib', 'requests'],
+    },
     setup_requires=pytest_runner,
     tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
     classifiers=[
@@ -49,12 +52,14 @@ setup(
         'flask_multipass.auth_providers': {
             'ldap = flask_multipass.providers.ldap:LDAPAuthProvider',
             'oauth = flask_multipass.providers.oauth:OAuthAuthProvider',
+            'oidc = flask_multipass.providers.oidc:OIDCAuthProvider',
             'shibboleth = flask_multipass.providers.shibboleth:ShibbolethAuthProvider',
             'static = flask_multipass.providers.static:StaticAuthProvider'
         },
         'flask_multipass.identity_providers': {
             'ldap = flask_multipass.providers.ldap:LDAPIdentityProvider',
             'oauth = flask_multipass.providers.oauth:OAuthIdentityProvider',
+            'oidc = flask_multipass.providers.oidc:OIDCIdentityProvider',
             'shibboleth = flask_multipass.providers.shibboleth:ShibbolethIdentityProvider',
             'static = flask_multipass.providers.static:StaticIdentityProvider'
         }
