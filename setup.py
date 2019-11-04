@@ -37,7 +37,10 @@ setup(
         'blinker'
     ],
     extras_require={
+        'ldap': ['python-ldap'],
+        'oauth': ['flask_oauthlib'],  # XXX probably we need a specific version. or just switch to authlib...
         'oidc': ['authlib', 'requests'],
+        'sqlalchemy': ['sqlalchemy', 'wtforms'],
     },
     setup_requires=pytest_runner,
     tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
