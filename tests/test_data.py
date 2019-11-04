@@ -12,13 +12,18 @@ try:
 except ImportError:
     from unittest.mock import MagicMock
 
-from flask_multipass import AuthInfo, IdentityInfo
+from flask_multipass import AuthInfo, AuthProvider, IdentityInfo, Multipass
 
 
-def test_authinfo():
+@pytest.fixture(name='dummy_auth_provider')
+def dummy_auth_provider_fixture():
+    return AuthProvider(Multipass(), 'dummy', {})
+
+
+def test_authinfo(dummy_auth_provider):
     with pytest.raises(ValueError):
-        AuthInfo(None)
-    ai = AuthInfo(None, foo='bar')
+        AuthInfo(dummy_auth_provider)
+    ai = AuthInfo(dummy_auth_provider, foo='bar')
     assert ai.data == {'foo': 'bar'}
 
 
@@ -26,16 +31,16 @@ def test_authinfo():
     ({},             {'foo': 'bar', 'meow': 1337}),
     ({'oof': 'foo'}, {'oof': 'bar', 'meow': 1337}),
 ))
-def test_authinfo_map(mapping, output_data):
-    ai = AuthInfo(None, foo='bar', meow=1337)
+def test_authinfo_map(dummy_auth_provider, mapping, output_data):
+    ai = AuthInfo(dummy_auth_provider, foo='bar', meow=1337)
     original_data = ai.data.copy()
     ai2 = ai.map(mapping)
     assert ai2.data == output_data
     assert ai.data == original_data
 
 
-def test_authinfo_map_invalid():
-    ai = AuthInfo(None, foo='bar')
+def test_authinfo_map_invalid(dummy_auth_provider):
+    ai = AuthInfo(dummy_auth_provider, foo='bar')
     with pytest.raises(KeyError):
         ai.map({'foo': 'nop'})
 

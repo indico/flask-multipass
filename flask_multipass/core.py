@@ -211,6 +211,10 @@ class Multipass(object):
             identity_info = provider.get_identity_from_auth(auth_info.map(mapping))
             if identity_info is None:
                 continue
+            if identity_info.secure_login is None:
+                # if no information about login security has been set by the identity
+                # provider, copy whatever the auth provider may have
+                identity_info.secure_login = auth_info.secure_login
             identities.append(identity_info)
             if not current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
                 break
