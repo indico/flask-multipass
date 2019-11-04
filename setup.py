@@ -38,7 +38,7 @@ setup(
     ],
     extras_require={
         'ldap': ['python-ldap'],
-        'oauth': ['flask_oauthlib'],  # XXX probably we need a specific version. or just switch to authlib...
+        'oauth': ['authlib', 'requests'],
         'oidc': ['authlib', 'requests'],
         'sqlalchemy': ['sqlalchemy', 'wtforms'],
     },
