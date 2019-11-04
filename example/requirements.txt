@@ -1,4 +1,4 @@
-flask-oauthlib
+authlib
 flask-sqlalchemy
 flask-wtf
 python-ldap

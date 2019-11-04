@@ -6,40 +6,15 @@
 
 from __future__ import unicode_literals
 
-from uuid import uuid4
-
-import flask_oauthlib.client
-from flask import current_app, url_for, session, request
+from authlib.common.errors import AuthlibBaseError
+from authlib.flask.client.oauth import RemoteApp
+from flask import current_app, url_for, request
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFailed
 from flask_multipass.identity import IdentityProvider
-from flask_multipass.util import classproperty, login_view
-
-
-class OAuth(flask_oauthlib.client.OAuth):
-    """A Flask-OAuthlib client that lives in its own namespace.
-
-    This avoids collisions in case the main application also uses
-    Flask-OAuthlib for something else.
-    """
-
-    state_key = flask_oauthlib.client.OAuth.state_key + '.flaskmultipass'
-
-    @classproperty
-    @classmethod
-    def instance(cls):
-        """Gets the OAuth instance from the current app.
-
-        If necessary, a new instance of this extension is registered
-        on the app.
-        """
-        oauth = current_app.extensions.get(cls.state_key)
-        if oauth is None:
-            oauth = cls(current_app)
-            oauth.init_app(current_app)
-        return oauth
+from flask_multipass.util import login_view
 
 
 class OAuthAuthProvider(AuthProvider):
@@ -51,10 +26,8 @@ class OAuthAuthProvider(AuthProvider):
     def __init__(self, *args, **kwargs):
         super(OAuthAuthProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('callback_uri', '/oauth/{}'.format(self.name))
-        self.settings.setdefault('oauth', {})
-        self.settings.setdefault('token_field', 'access_token')
-        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultipass', register=False,
-                                                   **self.settings['oauth'])
+        oauth_settings = self.settings.setdefault('oauth', {})
+        self.oauth_app = RemoteApp(self.name + '_flaskmultipass', **oauth_settings)
         self.authorized_endpoint = '_flaskmultipass_oauth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
                                  self._authorize_callback, methods=('GET', 'POST'))
@@ -62,44 +35,19 @@ class OAuthAuthProvider(AuthProvider):
     def _get_redirect_uri(self):
         return url_for(self.authorized_endpoint, _external=True)
 
-    @property
-    def _session_key(self):
-        return '_multipass_oauth_csrf_' + self.name
-
     def initiate_external_login(self):
-        token = session.setdefault(self._session_key, str(uuid4()))
-        return self.oauth_app.authorize(callback=self._get_redirect_uri(), state=token)
-
-    def _make_auth_info(self, resp):
-        return AuthInfo(self, token=resp[self.settings['token_field']])
+        return self.oauth_app.authorize_redirect(self._get_redirect_uri())
 
     @login_view
     def _authorize_callback(self):
-        session_token = session.get(self._session_key, None)
-        req_token = request.args.get('state')
-        if not req_token or not session_token or session_token != req_token:
-            raise OAuthInvalidSessionState('Invalid session state',
-                                           details={'req_token': req_token, 'session_token': session_token},
-                                           provider=self)
-        # XXX: When people have multiple oauth logins at the same time, e.g.
-        # after restarting their browser and being redirected to SSO pages
-        # the first successful one will remove the redirect uri from the
-        # session so we need to restore it in case it's not set.
-        session.setdefault('{}_oauthredir'.format(self.oauth_app.name), self._get_redirect_uri())
-        try:
-            resp = self.oauth_app.authorized_response() or {}
-        except flask_oauthlib.client.OAuthException as exc:
-            # older flask-oauthlib versions return the exception instead of
-            # letting it propagate like a normal exception, so we handle both
-            # the properly raised exception and the legacy case.
-            resp = exc
-        if isinstance(resp, flask_oauthlib.client.OAuthException):
-            error_details = {'msg': resp.message, 'type': resp.type, 'data': resp.data}
-            raise AuthenticationFailed('OAuth error', details=error_details, provider=self)
-        elif self.settings['token_field'] not in resp:
-            error = resp.get('error_description', resp.get('error', 'Received no oauth token'))
+        error = request.args.get('error')
+        if error:
             raise AuthenticationFailed(error, provider=self)
-        return self.multipass.handle_auth_success(self._make_auth_info(resp))
+        try:
+            token = self.oauth_app.authorize_access_token()
+            return self.multipass.handle_auth_success(AuthInfo(self, token=token))
+        except AuthlibBaseError as exc:
+            raise AuthenticationFailed(str(exc), provider=self)
 
 
 class OAuthIdentityProvider(IdentityProvider):
@@ -120,20 +68,20 @@ class OAuthIdentityProvider(IdentityProvider):
         self.settings.setdefault('method', 'GET')
         self.settings.setdefault('valid_statuses', {200, 404})
         self.settings.setdefault('endpoint', None)
-        self.settings.setdefault('oauth', {})
+        oauth_settings = self.settings.setdefault('oauth', {})
         self.settings.setdefault('identifier_field', None)
-        self.oauth_app = OAuth.instance.remote_app(self.name + '_flaskmultipass', register=False,
-                                                   **self.settings['oauth'])
+        self.oauth_app = RemoteApp(self.name + '_flaskmultipass', **oauth_settings)
 
     def _get_identity(self, token):
-        resp = self.oauth_app.request(self.settings['endpoint'], method=self.settings['method'], token=(token, None))
-        if resp.status not in self.settings['valid_statuses']:
+        resp = self.oauth_app.request(self.settings['method'], self.settings['endpoint'], token=token)
+        if resp.status_code not in self.settings['valid_statuses']:
             raise IdentityRetrievalFailed('Could not retrieve identity data', provider=self)
-        elif resp.status == 404:
+        elif resp.status_code == 404:
             return None
-        identifier = resp.data[self.settings['identifier_field']]
+        data = resp.json()
+        identifier = data[self.settings['identifier_field']]
         multipass_data = {'oauth_token': token}
-        return IdentityInfo(self, identifier, multipass_data, **resp.data)
+        return IdentityInfo(self, identifier, multipass_data, **data)
 
     def get_identity_from_auth(self, auth_info):
         return self._get_identity(auth_info.data['token'])

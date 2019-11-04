@@ -3,7 +3,6 @@
 # Strong dependencies are already listed in setup.py
 
 flask
-flask_oauthlib
 flask_wtf
 flask_sqlalchemy
 wtforms
