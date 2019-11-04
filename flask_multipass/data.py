@@ -17,16 +17,27 @@ class AuthInfo(object):
 
     :param provider: The authentication provider instance providing
                      the data.
+    :param secure_login: A bool indicating whether the login was secure,
+                         with the interpretation of "secure" being up to
+                         the application and auth provider, but generally
+                         this is meant to be set if multiple factors have
+                         been used. Must be left as ``None`` in case no
+                         information about how secure the login was i
+                         available.
     :param data: Any data the authentication provider wants to pass on
                  to identity providers. This data must allow any
                  connected identity provider to uniquely identify a user.
     """
 
-    def __init__(self, provider, **data):
+    def __init__(self, provider, secure_login=None, **data):
         self.provider = provider
+        self.secure_login = secure_login
         self.data = data
         if not data:
             raise ValueError('data cannot be empty')
+        is_secure_login = provider.settings.get('is_secure_login')
+        if is_secure_login is not None:
+            self.secure_login = is_secure_login(self)
 
     def map(self, mapping):
         """Creates a new instance with transformed data keys
@@ -43,7 +54,8 @@ class AuthInfo(object):
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
-        return '<AuthInfo({}, {})>'.format(self.provider, data)
+        secure = ', secure={}'.format(self.secure_login) if self.secure_login is not None else ''
+        return '<AuthInfo({}, {}{})>'.format(self.provider, data, secure)
 
 
 class IdentityInfo(object):
@@ -58,12 +70,21 @@ class IdentityInfo(object):
                            identity information for the same user,
                            without him authenticating again by keeping a
                            long-lived token.
+    :param secure_login: A bool indicating whether the login was secure,
+                         with the interpretation of "secure" being up to
+                         the application and auth provider, but generally
+                         this is meant to be set if multiple factors have
+                         been used. Must be left as ``None`` in case the
+                         object has not been created during a login process
+                         or if no information about how secure the login was
+                         is available.
     :param data: Any data the identity provider wants to pass on the
                  application.
     """
 
-    def __init__(self, provider, identifier, multipass_data=None, **data):
+    def __init__(self, provider, identifier, multipass_data=None, secure_login=None, **data):
         self.provider = provider
+        self.secure_login = secure_login
         self.identifier = identifier.decode('utf-8') if isinstance(identifier, bytes_type) else text_type(identifier)
         if not provider.supports_refresh:
             assert multipass_data is None
@@ -75,4 +96,5 @@ class IdentityInfo(object):
 
     def __repr__(self):
         data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
-        return '<IdentityInfo({}, {}, {})>'.format(self.provider, self.identifier, data or None)
+        secure = ', secure={}'.format(self.secure_login) if self.secure_login is not None else ''
+        return '<IdentityInfo({}, {}, {}{})>'.format(self.provider, self.identifier, data or None, secure)
