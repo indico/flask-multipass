@@ -45,10 +45,9 @@ class OIDCAuthProvider(AuthProvider):
         oidc_settings.setdefault('logout_url', None)
         oidc_settings.setdefault('jwks_url', None)
         oidc_settings.setdefault('jwks', None)  # used as a cache, but could also be pre-populated
-        oidc_settings.setdefault('client_kwargs', {
-            'token_endpoint_auth_method': 'client_secret_post',
-            'scope': 'openid'
-        })
+        client_kwargs = oidc_settings.setdefault('client_kwargs', {})
+        scopes = set(client_kwargs.get('scope', '').split()) | {'openid'}
+        client_kwargs['scope'] = ' '.join(sorted(scopes))
         self.oauth_app = RemoteApp(self.name + '_flaskmultipass',
                                    client_id=oidc_settings['client_id'],
                                    client_secret=oidc_settings['client_secret'],
