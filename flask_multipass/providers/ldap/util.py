@@ -8,7 +8,6 @@ from __future__ import absolute_import
 
 from collections import namedtuple
 from contextlib import contextmanager
-from urlparse import urlparse
 from warnings import warn
 
 import ldap
@@ -17,7 +16,7 @@ from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
 
-from flask_multipass._compat import iteritems, itervalues, text_type
+from flask_multipass._compat import iteritems, itervalues, text_type, urlparse
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap

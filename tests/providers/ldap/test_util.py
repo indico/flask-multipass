@@ -7,7 +7,6 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
-from urlparse import urlparse
 
 import ldap
 import pytest
@@ -17,6 +16,7 @@ try:
 except ImportError:
     from unittest.mock import call, MagicMock
 
+from flask_multipass._compat import urlparse
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.util import convert_app_data
 from flask_multipass.providers.ldap.globals import current_ldap
