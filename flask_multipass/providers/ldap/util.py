@@ -221,7 +221,12 @@ def get_page_cookie(server_ctrls):
 
 
 def to_unicode(data):
-    return {text_type(k): [x.decode('utf-8', 'replace') for x in v] for k, v in iteritems(data)}
+    if isinstance(data, text_type):
+        return data
+    elif isinstance(data, bytes):
+        return data.decode('utf-8', 'replace')
+    else:
+        return {text_type(k): [to_unicode(x) for x in v] for k, v in iteritems(data)}
 
 
 def to_bytes_recursive(obj):
