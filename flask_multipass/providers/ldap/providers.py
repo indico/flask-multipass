@@ -157,7 +157,8 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         self.ldap_settings.setdefault(b'member_of_attr', b'memberOf')
         self.ldap_settings.setdefault(b'ad_group_style', False)
         self.settings['mapping'] = to_bytes_recursive(self.settings['mapping'])
-        self._attributes = convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values()
+        self._attributes = list(
+            convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values())
         self._attributes.append(self.ldap_settings['uid'])
 
     @property
