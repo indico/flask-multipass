@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE, SCOPE_SUBTREE
 from ldap.controls import SimplePagedResultsControl
 
+from flask_multipass._compat import text_type
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
 from flask_multipass.providers.ldap.globals import current_ldap
 from flask_multipass.providers.ldap.util import build_search_filter, find_one, get_page_cookie
@@ -89,7 +90,7 @@ def search(base_dn, search_filter, attributes):
     """
     connection, settings = current_ldap
     page_ctrl = SimplePagedResultsControl(True, size=settings['page_size'], cookie='')
-    if isinstance(search_filter, unicode):
+    if isinstance(search_filter, text_type):
         search_filter = search_filter.encode('utf-8')
 
     while True:

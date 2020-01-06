@@ -226,14 +226,14 @@ def to_unicode(data):
 
 def to_bytes_recursive(obj):
     if isinstance(obj, dict):
-        return dict((bytes(k), to_bytes_recursive(v)) for k, v in iteritems(obj))
+        return {to_bytes_recursive(k): to_bytes_recursive(v) for k, v in iteritems(obj)}
     elif isinstance(obj, list):
-        return map(to_bytes_recursive, obj)
+        return [to_bytes_recursive(x) for x in obj]
     elif isinstance(obj, set):
         return {to_bytes_recursive(x) for x in obj}
     elif isinstance(obj, tuple):
         return tuple(to_bytes_recursive(x) for x in obj)
-    elif isinstance(obj, unicode):
-        return bytes(obj)
+    elif isinstance(obj, text_type):
+        return obj.encode('utf-8')
     else:
         return obj
