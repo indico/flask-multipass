@@ -192,7 +192,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
     with pytest.raises(caught_exception) as excinfo:
         with ldap_context(settings):
             current_ldap.connection.search_s('dc=example,dc=com', ldap.SCOPE_SUBTREE)
-    assert excinfo.value.message == message
+    assert str(excinfo.value) == message
 
 
 @pytest.mark.parametrize(('base_dn', 'search_filter', 'data', 'expected'), (
