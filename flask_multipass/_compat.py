@@ -7,7 +7,6 @@
 import operator
 import sys
 
-from werkzeug.urls import url_parse
 
 if sys.version_info[0] > 2:
     PY2 = False

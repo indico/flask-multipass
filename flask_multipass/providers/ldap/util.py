@@ -15,8 +15,9 @@ from flask import appcontext_tearing_down, g, has_app_context, current_app
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
+from werkzeug.urls import url_parse
 
-from flask_multipass._compat import iteritems, itervalues, text_type, url_parse
+from flask_multipass._compat import iteritems, itervalues, text_type
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap

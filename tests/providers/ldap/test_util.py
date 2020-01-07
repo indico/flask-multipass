@@ -10,13 +10,13 @@ from collections import OrderedDict
 
 import ldap
 import pytest
+from werkzeug.urls import url_parse
 
 try:
     from mock import call, MagicMock
 except ImportError:
     from unittest.mock import call, MagicMock
 
-from flask_multipass._compat import url_parse
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.util import convert_app_data
 from flask_multipass.providers.ldap.globals import current_ldap
