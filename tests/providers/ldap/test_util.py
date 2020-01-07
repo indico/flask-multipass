@@ -16,7 +16,7 @@ try:
 except ImportError:
     from unittest.mock import call, MagicMock
 
-from flask_multipass._compat import urlparse
+from flask_multipass._compat import url_parse
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.util import convert_app_data
 from flask_multipass.providers.ldap.globals import current_ldap
@@ -152,7 +152,7 @@ def test_ldap_context(mocker, settings, options):
         assert ldap_conn.protocol_version == ldap.VERSION3, 'LDAP v3 has not been set'
         assert ldap_conn.set_option.mock_calls == [call.set_option(*args) for args in options], 'Not all options set'
         if settings['starttls']:
-            if urlparse(settings['uri']).scheme == 'ldaps':
+            if url_parse(settings['uri']).scheme == 'ldaps':
                 warn.assert_called_once_with('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)')
             else:
                 ldap_conn.start_tls_s.assert_called_once_with()

@@ -7,8 +7,9 @@
 import operator
 import sys
 
+from werkzeug.urls import url_parse
+
 if sys.version_info[0] > 2:
-    from urllib.parse import urlparse
     PY2 = False
     bytes_type = bytes
     text_type = str
@@ -21,7 +22,6 @@ if sys.version_info[0] > 2:
     def itervalues(arg, **kwargs):
         return iter(arg.values(**kwargs))
 else:
-    from urlparse import urlparse
     PY2 = True
     bytes_type = str
     text_type = unicode

@@ -16,7 +16,7 @@ from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
 
-from flask_multipass._compat import iteritems, itervalues, text_type, urlparse
+from flask_multipass._compat import iteritems, itervalues, text_type, url_parse
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
@@ -130,7 +130,7 @@ def ldap_connect(settings, use_cache=True):
         if conn is not None:
             return conn
 
-    uri_info = urlparse(settings['uri'])
+    uri_info = url_parse(settings['uri'])
     use_ldaps = uri_info.scheme == 'ldaps'
     credentials = (settings['bind_dn'], settings['bind_password'])
     ldap_connection = ReconnectLDAPObject(settings['uri'])

@@ -125,7 +125,7 @@ class LDAPGroup(Group):
                 try:
                     group_dn = group_dns.send(subgroups)
                 except StopIteration:
-                    return
+                    break
 
     def has_member(self, user_identifier):
         with ldap_context(self.ldap_settings):
