@@ -11,8 +11,8 @@ env:
 install:
   - pip install -U pip setuptools
   - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/flask.git || :'
-  - pip install -U pytest pytest-cov pytest-mock pytest-pep8 coveralls
-  - '[[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]] && pip install flask-wtf python-ldap || :'
+  - pip install -U pytest pytest-cov pytest-mock pytest-pep8 coveralls python-ldap
+  - '[[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]] && pip install flask-wtf || :'
   - pip install -e .
 script:
   - pytest --pep8
