@@ -38,8 +38,8 @@ setup(
     ],
     extras_require={
         'ldap': ['python-ldap'],
-        'oauth': ['authlib', 'requests'],
-        'oidc': ['authlib', 'requests'],
+        'oauth': ['authlib>=0.13', 'requests'],
+        'oidc': ['authlib>=0.13', 'requests'],
         'sqlalchemy': ['sqlalchemy', 'wtforms'],
     },
     setup_requires=pytest_runner,

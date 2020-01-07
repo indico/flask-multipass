@@ -7,7 +7,7 @@
 from __future__ import unicode_literals
 
 from authlib.common.errors import AuthlibBaseError
-from authlib.flask.client.oauth import RemoteApp
+from authlib.integrations.flask_client import RemoteApp
 from flask import current_app, url_for, request
 
 from flask_multipass.auth import AuthProvider

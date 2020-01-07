@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import requests
 from authlib.common.errors import AuthlibBaseError
 from authlib.common.security import generate_token
-from authlib.flask.client.oauth import RemoteApp
+from authlib.integrations.flask_client import RemoteApp
 from authlib.jose import jwk, jwt
 from authlib.oidc.core import CodeIDToken, ImplicitIDToken, UserInfo
 from flask import current_app, redirect, request, session, url_for
