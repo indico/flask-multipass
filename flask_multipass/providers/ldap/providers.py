@@ -122,7 +122,10 @@ class LDAPGroup(Group):
                                        **to_unicode(user_data))
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: {group_dn}}, exact=True)
                 subgroups = list(self.provider._search_groups(group_filter))
-                group_dn = group_dns.send(subgroups)
+                try:
+                    group_dn = group_dns.send(subgroups)
+                except StopIteration:
+                    return
 
     def has_member(self, user_identifier):
         with ldap_context(self.ldap_settings):
