@@ -12,7 +12,7 @@ from ldap import INVALID_CREDENTIALS
 from wtforms.fields import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-from flask_multipass._compat import FlaskForm
+from flask_multipass._compat import FlaskForm, PY2
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
 from flask_multipass.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
@@ -53,7 +53,8 @@ class LDAPProviderMixin(object):
         if not self.ldap_settings['cert_file'] and self.ldap_settings['verify_cert']:
             warn("You should install certifi or provide a certificate file in order to verify the LDAP certificate.")
         # Convert LDAP settings to bytes since python-ldap chokes on unicode strings
-        self.settings['ldap'] = to_bytes_recursive(self.settings['ldap'])
+        if PY2:
+            self.settings['ldap'] = to_bytes_recursive(self.settings['ldap'])
 
 
 class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
@@ -152,10 +153,10 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def __init__(self, *args, **kwargs):
         super(LDAPIdentityProvider, self).__init__(*args, **kwargs)
         self.set_defaults()
-        self.ldap_settings.setdefault(b'gid', b'cn')
-        self.ldap_settings.setdefault(b'group_filter', b'(objectClass=groupOfNames)')
-        self.ldap_settings.setdefault(b'member_of_attr', b'memberOf')
-        self.ldap_settings.setdefault(b'ad_group_style', False)
+        self.ldap_settings.setdefault('gid', 'cn')
+        self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')
+        self.ldap_settings.setdefault('member_of_attr', 'memberOf')
+        self.ldap_settings.setdefault('ad_group_style', False)
         self.settings['mapping'] = to_bytes_recursive(self.settings['mapping'])
         self._attributes = list(
             convert_app_data(self.settings['mapping'], {}, self.settings['identity_info_keys']).values())
