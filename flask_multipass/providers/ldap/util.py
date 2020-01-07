@@ -8,7 +8,6 @@ from __future__ import absolute_import
 
 from collections import namedtuple
 from contextlib import contextmanager
-from urlparse import urlparse
 from warnings import warn
 
 import ldap
@@ -16,8 +15,9 @@ from flask import appcontext_tearing_down, g, has_app_context, current_app
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import filter_format
 from ldap.ldapobject import ReconnectLDAPObject
+from werkzeug.urls import url_parse
 
-from flask_multipass._compat import iteritems, itervalues, text_type
+from flask_multipass._compat import iteritems, itervalues
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
@@ -131,10 +131,10 @@ def ldap_connect(settings, use_cache=True):
         if conn is not None:
             return conn
 
-    uri_info = urlparse(settings['uri'])
+    uri_info = url_parse(settings['uri'])
     use_ldaps = uri_info.scheme == 'ldaps'
     credentials = (settings['bind_dn'], settings['bind_password'])
-    ldap_connection = ReconnectLDAPObject(settings['uri'])
+    ldap_connection = ReconnectLDAPObject(settings['uri'], bytes_mode=False)
     ldap_connection.protocol_version = ldap.VERSION3
     ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
     ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if use_ldaps else ldap.OPT_X_TLS_NEVER)
@@ -222,19 +222,15 @@ def get_page_cookie(server_ctrls):
 
 
 def to_unicode(data):
-    return {text_type(k): [x.decode('utf-8', 'replace') for x in v] for k, v in iteritems(data)}
-
-
-def to_bytes_recursive(obj):
-    if isinstance(obj, dict):
-        return dict((bytes(k), to_bytes_recursive(v)) for k, v in iteritems(obj))
-    elif isinstance(obj, list):
-        return map(to_bytes_recursive, obj)
-    elif isinstance(obj, set):
-        return {to_bytes_recursive(x) for x in obj}
-    elif isinstance(obj, tuple):
-        return tuple(to_bytes_recursive(x) for x in obj)
-    elif isinstance(obj, unicode):
-        return bytes(obj)
+    if isinstance(data, bytes):
+        return data.decode('utf-8', 'replace')
+    elif isinstance(data, dict):
+        return {to_unicode(k): to_unicode(v) for k, v in iteritems(data)}
+    elif isinstance(data, list):
+        return [to_unicode(x) for x in data]
+    elif isinstance(data, set):
+        return {to_unicode(x) for x in data}
+    elif isinstance(data, tuple):
+        return tuple(to_unicode(x) for x in data)
     else:
-        return obj
+        return data

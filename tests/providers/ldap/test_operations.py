@@ -23,13 +23,13 @@ from flask_multipass.providers.ldap.util import ldap_context
 def test_get_user_by_id_handles_none_id():
     with pytest.raises(IdentityRetrievalFailed) as excinfo:
         get_user_by_id(None)
-    assert excinfo.value.message == 'No identifier specified'
+    assert str(excinfo.value) == 'No identifier specified'
 
 
 def test_get_group_by_id_handles_none_id():
     with pytest.raises(GroupRetrievalFailed) as excinfo:
         get_group_by_id(None)
-    assert excinfo.value.message == 'No identifier specified'
+    assert str(excinfo.value) == 'No identifier specified'
 
 
 @pytest.mark.parametrize(('settings', 'base_dn', 'search_filter', 'attributes', 'mock_data', 'expected'), (

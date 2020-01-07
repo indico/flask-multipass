@@ -89,8 +89,6 @@ def search(base_dn, search_filter, attributes):
     """
     connection, settings = current_ldap
     page_ctrl = SimplePagedResultsControl(True, size=settings['page_size'], cookie='')
-    if isinstance(search_filter, unicode):
-        search_filter = search_filter.encode('utf-8')
 
     while True:
         msg_id = connection.search_ext(base_dn, SCOPE_SUBTREE, filterstr=search_filter, attrlist=attributes,

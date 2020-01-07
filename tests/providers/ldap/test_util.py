@@ -7,10 +7,10 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
-from urlparse import urlparse
 
 import ldap
 import pytest
+from werkzeug.urls import url_parse
 
 try:
     from mock import call, MagicMock
@@ -152,7 +152,7 @@ def test_ldap_context(mocker, settings, options):
         assert ldap_conn.protocol_version == ldap.VERSION3, 'LDAP v3 has not been set'
         assert ldap_conn.set_option.mock_calls == [call.set_option(*args) for args in options], 'Not all options set'
         if settings['starttls']:
-            if urlparse(settings['uri']).scheme == 'ldaps':
+            if url_parse(settings['uri']).scheme == 'ldaps':
                 warn.assert_called_once_with('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)')
             else:
                 ldap_conn.start_tls_s.assert_called_once_with()
@@ -192,7 +192,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
     with pytest.raises(caught_exception) as excinfo:
         with ldap_context(settings):
             current_ldap.connection.search_s('dc=example,dc=com', ldap.SCOPE_SUBTREE)
-    assert excinfo.value.message == message
+    assert str(excinfo.value) == message
 
 
 @pytest.mark.parametrize(('base_dn', 'search_filter', 'data', 'expected'), (

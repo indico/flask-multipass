@@ -16,8 +16,3 @@ def pytest_configure(config):
     attrs = ('AuthProvider', 'Group', 'IdentityProvider')
     for attr in attrs:
         getattr(flask_multipass, attr).__support_attrs__ = {}
-
-
-collect_ignore = []
-if sys.version_info[0] > 2:
-    collect_ignore.append('providers/ldap/')
