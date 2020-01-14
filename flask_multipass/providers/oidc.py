@@ -10,6 +10,7 @@ import requests
 from authlib.common.errors import AuthlibBaseError
 from authlib.common.security import generate_token
 from authlib.integrations.flask_client import RemoteApp
+from authlib.integrations.requests_client import OAuth1Session, OAuth2Session
 from authlib.jose import jwk, jwt
 from authlib.oidc.core import CodeIDToken, ImplicitIDToken, UserInfo
 from flask import current_app, redirect, request, session, url_for
@@ -53,7 +54,9 @@ class OIDCAuthProvider(AuthProvider):
                                    client_secret=oidc_settings['client_secret'],
                                    authorize_url=oidc_settings['authorize_url'],
                                    access_token_url=oidc_settings['access_token_url'],
-                                   client_kwargs=oidc_settings['client_kwargs'])
+                                   client_kwargs=oidc_settings['client_kwargs'],
+                                   oauth1_client_cls=OAuth1Session,
+                                   oauth2_client_cls=OAuth2Session)
         self.authorized_endpoint = '_flaskmultipass_oidc_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
                                  self._authorize_callback, methods=('GET', 'POST'))
@@ -65,13 +68,8 @@ class OIDCAuthProvider(AuthProvider):
     def _get_redirect_uri(self):
         return url_for(self.authorized_endpoint, _external=True)
 
-    @property
-    def _session_key(self):
-        return '_multipass_oidc_nonce_' + self.name
-
     def initiate_external_login(self):
-        session[self._session_key] = nonce = generate_token(20)
-        return self.oauth_app.authorize_redirect(self._get_redirect_uri(), nonce=nonce)
+        return self.oauth_app.authorize_redirect(self._get_redirect_uri())
 
     def process_logout(self, return_url):
         logout_url = self.oidc_settings['logout_url']
@@ -125,7 +123,8 @@ class OIDCAuthProvider(AuthProvider):
         # try to get a token containing a valid oidc id token
         try:
             oauth_token_data = self.oauth_app.authorize_access_token()
-            id_token = self._parse_id_token(oauth_token_data, session.pop(self._session_key))
+            nonce = session.get('_{}_authlib_{}_'.format(self.oauth_app.name, 'nonce'))
+            id_token = self._parse_id_token(oauth_token_data, nonce)
             return self.multipass.handle_auth_success(AuthInfo(self, **id_token))
         except AuthlibBaseError as exc:
             raise AuthenticationFailed(str(exc), provider=self)

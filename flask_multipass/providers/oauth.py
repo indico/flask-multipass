@@ -8,7 +8,8 @@ from __future__ import unicode_literals
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import RemoteApp
-from flask import current_app, url_for, request
+from authlib.integrations.requests_client import OAuth1Session, OAuth2Session
+from flask import current_app, request, url_for
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
@@ -27,7 +28,8 @@ class OAuthAuthProvider(AuthProvider):
         super(OAuthAuthProvider, self).__init__(*args, **kwargs)
         self.settings.setdefault('callback_uri', '/oauth/{}'.format(self.name))
         oauth_settings = self.settings.setdefault('oauth', {})
-        self.oauth_app = RemoteApp(self.name + '_flaskmultipass', **oauth_settings)
+        self.oauth_app = RemoteApp(self.name + '_flaskmultipass', oauth1_client_cls=OAuth1Session,
+                                   oauth2_client_cls=OAuth2Session, **oauth_settings)
         self.authorized_endpoint = '_flaskmultipass_oauth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.authorized_endpoint,
                                  self._authorize_callback, methods=('GET', 'POST'))
