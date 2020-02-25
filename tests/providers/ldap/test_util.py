@@ -26,6 +26,7 @@ from flask_multipass.providers.ldap.util import build_search_filter, find_one, l
 @pytest.mark.parametrize(('criteria', 'type_filter', 'mapping', 'exact', 'expected'), (
     ({}, '', None, True, None),
     ({}, '', '(|(objectClass=Person)(objectCategory=user))', True, None),
+    ({'cn': ['foobar'], 'objectSid': [b'\00\xa0foo']}, '', None, True, r"(&(cn=foobar)(objectSid=\00\a0\66\6f\6f))"),
     ({'givenName': ['Alain'], 'sn': ["D'Issoir"]}, '', None, True, "(&(givenName=Alain)(sn=D'Issoir))"),
     ({'givenName': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'last_name': 'sn'}, True,
      "(&(givenName=Alain)(sn=D'Issoir))"),

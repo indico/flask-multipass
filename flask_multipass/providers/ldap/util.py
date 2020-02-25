@@ -11,17 +11,18 @@ from contextlib import contextmanager
 from warnings import warn
 
 import ldap
-from flask import appcontext_tearing_down, g, has_app_context, current_app
+from flask import appcontext_tearing_down, current_app, g, has_app_context
 from ldap.controls import SimplePagedResultsControl
-from ldap.filter import filter_format
+from ldap.filter import escape_filter_chars
 from ldap.ldapobject import ReconnectLDAPObject
 from werkzeug.urls import url_parse
 
-from flask_multipass._compat import iteritems, itervalues
+from flask_multipass._compat import PY2, iteritems, itervalues, text_type
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
 from flask_multipass.util import convert_app_data
+
 
 #: A context holding the LDAP connection and the LDAP provider settings.
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
@@ -186,6 +187,21 @@ def _build_assert_template(value, exact):
         return '(|{})'.format(assert_template * len(value))
 
 
+def _escape_filter_chars(value):
+    if isinstance(value, text_type):
+        return escape_filter_chars(value)
+    elif PY2:
+        return ''.join('\\%02x' % ord(c) for c in value)
+    else:
+        return ''.join('\\%02x' % c for c in value)
+
+
+def _filter_format(filter_template, assertion_values):
+    # like python-ldap's filter_format, but handles binary data (bytes) gracefully by escaping
+    # everything so things don't break when searching e.g. for someone's binary objectSid
+    return filter_template % tuple(_escape_filter_chars(v) for v in assertion_values)
+
+
 def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     """Builds a valid LDAP search filter for retrieving entries.
 
@@ -204,7 +220,7 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     if not assertions:
         return None
     filter_template = '(&{}{})'.format("".join(assert_templates), type_filter)
-    return filter_format(filter_template, (item for assertion in assertions for item in assertion))
+    return _filter_format(filter_template, (item for assertion in assertions for item in assertion))
 
 
 def get_page_cookie(server_ctrls):
