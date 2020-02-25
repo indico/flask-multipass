@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import requests
 from authlib.common.errors import AuthlibBaseError
-from authlib.common.security import generate_token
 from authlib.integrations.flask_client import RemoteApp
 from authlib.integrations.requests_client import OAuth1Session, OAuth2Session
 from authlib.jose import jwk, jwt
