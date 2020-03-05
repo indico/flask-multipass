@@ -38,8 +38,7 @@ setup(
     ],
     extras_require={
         'ldap': ['python-ldap'],
-        'oauth': ['authlib>=0.13', 'requests'],
-        'oidc': ['authlib>=0.13', 'requests'],
+        'authlib': ['authlib[client]>=0.14.1,<0.15'],
         'sqlalchemy': ['sqlalchemy', 'wtforms'],
     },
     setup_requires=pytest_runner,
@@ -54,15 +53,13 @@ setup(
     entry_points={
         'flask_multipass.auth_providers': {
             'ldap = flask_multipass.providers.ldap:LDAPAuthProvider',
-            'oauth = flask_multipass.providers.oauth:OAuthAuthProvider',
-            'oidc = flask_multipass.providers.oidc:OIDCAuthProvider',
+            'authlib = flask_multipass.providers.authlib:AuthlibAuthProvider',
             'shibboleth = flask_multipass.providers.shibboleth:ShibbolethAuthProvider',
             'static = flask_multipass.providers.static:StaticAuthProvider'
         },
         'flask_multipass.identity_providers': {
             'ldap = flask_multipass.providers.ldap:LDAPIdentityProvider',
-            'oauth = flask_multipass.providers.oauth:OAuthIdentityProvider',
-            'oidc = flask_multipass.providers.oidc:OIDCIdentityProvider',
+            'authlib = flask_multipass.providers.authlib:AuthlibIdentityProvider',
             'shibboleth = flask_multipass.providers.shibboleth:ShibbolethIdentityProvider',
             'static = flask_multipass.providers.static:StaticIdentityProvider'
         }

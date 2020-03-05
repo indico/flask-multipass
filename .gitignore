@@ -1,6 +1,7 @@
 .cache/
 .eggs/
 .idea/
+.vscode/
 .tox/
 build/
 dist/
