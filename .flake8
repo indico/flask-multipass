@@ -1,0 +1,16 @@
+[flake8]
+max-line-length = 120
+
+extend-exclude =
+    artwork
+    build
+    dist
+    docs
+    env
+    htmlcov
+    *.egg-info
+    .*/
+    example/.*/
+
+per-file-ignores =
+    tests/*.py:F811
