@@ -6,6 +6,8 @@
 
 from __future__ import unicode_literals
 
+import itertools
+
 from flask import current_app, render_template, request, url_for, session, redirect, flash
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
@@ -350,6 +352,50 @@ class Multipass(object):
                 continue
             for identity_info in provider.search_identities(provider.map_search_criteria(criteria), exact=exact):
                 yield identity_info
+
+    def search_identities_ex(self, providers=None, exact=False, limit=None, criteria=None):
+        """Search user identities matching search criteria.
+
+        This is very similar to :meth:`search_identities`, but instead of just
+        yielding identities, it allows specifying a limit and only returns up
+        to that number of identities *per provider*. It also returns the total
+        number of found identities so the application can decide to inform the
+        user that their search criteria may be too broad.
+
+        :return: A tuple containing ``(identities, total_count)``.
+        """
+        for k, v in iteritems(criteria):
+            if isinstance(v, multi_value_types):
+                criteria[k] = v = set(v)
+            elif not isinstance(v, set):
+                criteria[k] = v = {v}
+            if any(not x for x in v):
+                raise ValueError('Empty search criterion: ' + k)
+
+        found_identities = []
+        total = 0
+        for provider in itervalues(self.identity_providers):
+            if providers is not None and provider.name not in providers:
+                continue
+            if not provider.supports_search:
+                continue
+            if provider.supports_search_ex:
+                result, subtotal = provider.search_identities_ex(provider.map_search_criteria(criteria), exact=exact,
+                                                                 limit=limit)
+                found_identities += result
+                total += subtotal
+            else:
+                result_iter = provider.search_identities(provider.map_search_criteria(criteria), exact=exact)
+                if limit is not None:
+                    result = list(itertools.islice(result_iter, limit))
+                    found_identities += result
+                    total += len(result) + sum(1 for _ in result_iter)
+                else:
+                    result = list(result_iter)
+                    found_identities += result
+                    total += len(result)
+
+        return found_identities, total
 
     def get_group(self, provider, name):
         """Returns a specific group

@@ -25,6 +25,7 @@ class IdentityProvider(object):
     __support_attrs__ = {'supports_refresh': 'refresh_identity',
                          'supports_get': 'get_identity',
                          'supports_search': 'search_identities',
+                         'supports_search_ex': 'search_identities_ex',
                          'supports_groups': ('get_group', 'search_groups', 'group_class'),
                          'supports_get_identity_groups': 'get_identity_groups'}
     #: The entry point to lookup providers (do not override this!)
@@ -38,6 +39,8 @@ class IdentityProvider(object):
     supports_get = True
     #: If the provider supports searching identities
     supports_search = False
+    #: If the provider supports the extended identity search feature
+    supports_search_ex = False
     #: If the provider also provides groups and membership information
     supports_groups = False
     #: If the provider supports getting the list of groups an identity belongs to
@@ -57,6 +60,8 @@ class IdentityProvider(object):
         if search_enabled and not self.supports_search:
             raise ValueError('Provider does not support searching: ' + type(self).__name__)
         self.supports_search = search_enabled
+        if not self.supports_search:
+            self.supports_search_ex = False
 
     def get_identity_from_auth(self, auth_info):  # pragma: no cover
         """Retrieves identity information after authentication
@@ -122,6 +127,20 @@ class IdentityProvider(object):
             raise NotImplementedError
         else:
             raise RuntimeError('This provider does not support searching')
+
+    def search_identities_ex(self, criteria, exact=False, limit=None):  # pragma: no cover
+        """Search user identities matching certain criteria.
+
+        :param criteria: A dict containing the criteria to search for.
+        :param exact: If criteria need to match exactly, i.e. no
+                      substring matches are performed.
+        :param limit: The max number of identities to return.
+        :return: A tuple containing ``(identities, total_count)``.
+        """
+        if self.supports_search_ex:
+            raise NotImplementedError
+        else:
+            raise RuntimeError('This provider does not support extended searching')
 
     def get_group(self, name):  # pragma: no cover
         """Returns a specific group
