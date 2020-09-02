@@ -19,14 +19,12 @@ Here you can see an example configuration for an application using both external
 .. code-block:: python
 
     _github_oauth_config = {
-        'consumer_key': '',  # put your key here
-        'consumer_secret': '',  # put your secret here
-        'request_token_params': {'scope': 'user:email'},
-        'base_url': 'https://api.github.com',
-        'request_token_url': None,
-        'access_token_method': 'POST',
+        'client_id': '',  # put your client id here
+        'client_secret': '',  # put your client secret here
+        'client_kwargs': {'scope': 'user:email'},
+        'authorize_url': 'https://github.com/login/oauth/authorize',
         'access_token_url': 'https://github.com/login/oauth/access_token',
-        'authorize_url': 'https://github.com/login/oauth/authorize'
+        'userinfo_endpoint': 'https://api.github.com/user',
     }
 
     _my_ldap_config = {
@@ -61,7 +59,7 @@ Here you can see an example configuration for an application using both external
             }
         },
         'github': {
-            'type': 'oauth',
+            'type': 'authlib',
             'title': 'GitHub',
             'oauth': _github_oauth_config
         },
@@ -96,9 +94,7 @@ Here you can see an example configuration for an application using both external
             }
         },
         'github': {
-            'type': 'oauth',
-            'oauth': _github_oauth_config,
-            'endpoint': '/user',
+            'type': 'authlib',
             'identifier_field': 'id',
             'mapping': {
                 'user_name': 'login',

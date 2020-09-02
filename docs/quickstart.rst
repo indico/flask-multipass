@@ -78,7 +78,7 @@ Configuration
 Using external providers with Multipass is very easy. First, you need to specify some configuration details for each external provider in the Multipass configuration.
 
 
-In the following example we use GitHub as external provider. By specifying ``'type': 'oauth'`` we link it to ``OAuthAuthProvider`` and ``OAuthIdentityProvider`` classes.  Another type you can use for external provider is ``'type': 'shibboleth'``  for  ``ShibbolethAuthProvider`` and ``ShibbolethIdentityProvider``.
+In the following example we use GitHub as external provider. By specifying ``'type': 'authlib'`` we link it to ``AuthlibAuthProvider`` and ``AuthlibIdentityProvider`` classes.  Another type you can use for external provider is ``'type': 'shibboleth'``  for  ``ShibbolethAuthProvider`` and ``ShibbolethIdentityProvider``.
 
 Although using one of the two providers is probably the most common case, you can also write your own class for any desired external provider. You can check out the base classes for :ref:`auth_providers` and :ref:`identity_providers` to get an idea how to implement your own class.
 
@@ -86,30 +86,24 @@ Here is a code example from our configuration file ``example.cfg`` that we load 
 
 .. code-block:: python
 
-    _github_oauth_config = {
-        'consumer_key': '',  # put your key here
-        'consumer_secret': '',  # put your secret here
-        'request_token_params': {'scope': 'user:email'},
-        'base_url': 'https://api.github.com',
-        'request_token_url': None,
-        'access_token_method': 'POST',
-        'access_token_url': 'https://github.com/login/oauth/access_token',
-        'authorize_url': 'https://github.com/login/oauth/authorize'
-    }
-
     MULTIPASS_AUTH_PROVIDERS = {
         'github': {
-            'type': 'oauth',
+            'type': 'authlib',
             'title': 'GitHub',
-            'oauth': _github_oauth_config
+            'authlib_args': {
+                'client_id': '',  # put your client id here
+                'client_secret': '',  # put your client secret here
+                'client_kwargs': {'scope': 'user:email'},
+                'authorize_url': 'https://github.com/login/oauth/authorize',
+                'access_token_url': 'https://github.com/login/oauth/access_token',
+                'userinfo_endpoint': 'https://api.github.com/user',
+            }
         }
     }
 
     MULTIPASS_IDENTITY_PROVIDERS = {
         'github': {
-            'type': 'oauth',
-            'oauth': _github_oauth_config,
-            'endpoint': '/user',
+            'type': 'authlib',
             'identifier_field': 'id',
             'mapping': {
                 'user_name': 'login',
@@ -227,7 +221,7 @@ The ``logout`` method then calls  ``process_logout`` on provider which name was 
 
 In the ``process_logout`` method the provider can implement some provider-specific actions such as sending a logout notification to the provider or redirecting to a SSO logout page. The ``return_url`` from argument can be passed further if the external provider allows to specify the URL to redirect to after logging out.
 
-Notice that in our example we are using ``OAuthAuthProvider`` which has no ``process_logout`` method implemented. Therefore we are passing ``'true'`` for ``clear_session`` to remove ``'user_id'`` that we saved in ``session`` earlier and log out the user in this way.
+Notice that in our example we are using ``AuthlibAuthProvider`` which has no ``process_logout`` method implemented. Therefore we are passing ``'true'`` for ``clear_session`` to remove ``'user_id'`` that we saved in ``session`` earlier and log out the user in this way.
 
 If there is no provider specified in ``'_multipass_login_provider'`` the ``logout`` method redirects straight to the  ``return_url``
 
