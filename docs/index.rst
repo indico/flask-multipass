@@ -15,10 +15,10 @@ Flask-Mulipass with your Flask application.
 
 .. toctree::
    :maxdepth: 4
-	
+
    quickstart
    config_example
-	
+
 API reference
 -------------
 For more detailed information on classes and methods of Flask-Multipass
