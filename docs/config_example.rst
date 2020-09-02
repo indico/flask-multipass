@@ -85,15 +85,15 @@ Here you can see an example configuration for an application using both external
 
     MULTIPASS_IDENTITY_PROVIDERS = {
         'test_identity_provider': {
-        'type': 'static',
-        'identities': {
-            'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
-            'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
-        },
-        'groups': {
-            'Admins': ['Pig'],
-            'Everybody': ['Pig', 'Bunny'],
-        }
+            'type': 'static',
+            'identities': {
+                'Pig': {'email': 'guinea.pig@example.com', 'name': 'Guinea Pig', 'affiliation': 'Pig University'},
+                'Bunny': {'email': 'bugs.bunny@example.com', 'name': 'Bugs Bunny', 'affiliation': 'Bunny Inc.'}
+            },
+            'groups': {
+                'Admins': ['Pig'],
+                'Everybody': ['Pig', 'Bunny'],
+            }
         },
         'github': {
             'type': 'oauth',
@@ -106,8 +106,8 @@ Here you can see an example configuration for an application using both external
             }
         },
         'my-ldap': {
-        'type': 'ldap',
-        'ldap': _my_ldap_config,
+            'type': 'ldap',
+            'ldap': _my_ldap_config,
             'mapping': {
                 'name': 'givenName',
                 'email': 'mail',
