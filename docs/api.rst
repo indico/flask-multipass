@@ -15,7 +15,7 @@ Authentication Providers
    :members:
 .. autoclass:: flask_multipass.providers.ldap.LDAPAuthProvider
    :members:
-.. autoclass:: flask_multipass.providers.oauth.OAuthAuthProvider
+.. autoclass:: flask_multipass.providers.authlib.AuthlibAuthProvider
    :members:
 .. autoclass:: flask_multipass.providers.static.StaticAuthProvider
    :members:
@@ -32,7 +32,7 @@ Identity Providers
    :members:
 .. autoclass:: flask_multipass.providers.ldap.LDAPIdentityProvider
    :members:
-.. autoclass:: flask_multipass.providers.oauth.OAuthIdentityProvider
+.. autoclass:: flask_multipass.providers.authlib.AuthlibIdentityProvider
    :members:
 .. autoclass:: flask_multipass.providers.static.StaticIdentityProvider
    :members:
