@@ -53,7 +53,7 @@ class AuthlibAuthProvider(AuthProvider):
                          change it e.g. if your oauth/oidc infrastructure requires
                          a specific callback uri and you do not want to rely on the
                          default one.
-    - ``include_token``: when set to ``True``, te AuthInfo passed to the
+    - ``include_token``: when set to ``True``, the AuthInfo passed to the
                          identity provider includes the ``token`` containing
                          the raw token data received from oauth. this is useful
                          when connecting this auth provider to a custom identity
