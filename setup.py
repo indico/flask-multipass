@@ -37,7 +37,7 @@ setup(
         'blinker'
     ],
     extras_require={
-        'ldap': ['python-ldap'],
+        'ldap': ['python-ldap>=3.3.1,<4.0'],
         'authlib': ['authlib[client]>=0.14.1,<0.15'],
         'sqlalchemy': ['sqlalchemy', 'wtforms'],
     },

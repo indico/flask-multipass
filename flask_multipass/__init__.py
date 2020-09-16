@@ -12,7 +12,7 @@ from .exceptions import (MultipassException, AuthenticationFailed, IdentityRetri
 from .group import Group
 from .identity import IdentityProvider
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __all__ = ('Multipass', 'AuthProvider', 'IdentityProvider', 'AuthInfo', 'IdentityInfo', 'Group', 'MultipassException',
            'AuthenticationFailed', 'IdentityRetrievalFailed', 'GroupRetrievalFailed', 'NoSuchUser',
            'InvalidCredentials')

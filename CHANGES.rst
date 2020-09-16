@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.3.2
+-------------
+
+- Require a recent ``python-ldap`` version when enabling the ``ldap`` extra.
+
 Version 0.3.1
 -------------
 
