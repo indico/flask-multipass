@@ -155,6 +155,9 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def __init__(self, *args, **kwargs):
         super(LDAPIdentityProvider, self).__init__(*args, **kwargs)
         self.set_defaults()
+        uid_field = self.settings.get('uid')
+        if uid_field:
+            self.ldap_settings['uid'] = uid_field
         self.ldap_settings.setdefault('gid', 'cn')
         self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')
         self.ldap_settings.setdefault('member_of_attr', 'memberOf')
