@@ -67,7 +67,14 @@ class ShibbolethAuthProvider(AuthProvider):
 
         if not attributes:
             raise AuthenticationFailed("No valid data received", provider=self)
-        return self.multipass.handle_auth_success(AuthInfo(self, **attributes))
+
+        # Define 'identifier' attribute if 'identifier_field' is defined.
+        # Required to use a LDAP identity provider with the SSO auth provider.
+        identifier_field = self.settings.get('identifier_field')
+        if identifier_field:
+            return self.multipass.handle_auth_success(AuthInfo(self, identifier=attributes[identifier_field], **attributes))
+        else:
+            return self.multipass.handle_auth_success(AuthInfo(self, **attributes))
 
 
 class ShibbolethIdentityProvider(IdentityProvider):
