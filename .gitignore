@@ -5,7 +5,7 @@
 .tox/
 build/
 dist/
-env/
+.venv/
 htmlcov/
 
 *.egg
