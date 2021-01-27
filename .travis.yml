@@ -10,9 +10,9 @@ env:
   - DEPS=devel
 install:
   - pip install -U pip setuptools
-  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/flask.git || :'
-  - pip install -U pytest pytest-cov pytest-mock coveralls python-ldap flask-wtf flake8
-  - pip install -e .
+  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/flask.git git+https://github.com/pallets/werkzeug.git || :'
+  - pip install -U pytest pytest-cov pytest-mock coveralls flake8
+  - pip install -e .[ldap,authlib,sqlalchemy]
 script:
   - pytest
   - flake8

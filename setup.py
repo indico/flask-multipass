@@ -37,9 +37,9 @@ setup(
         'blinker'
     ],
     extras_require={
-        'ldap': ['python-ldap>=3.3.1,<4.0'],
+        'ldap': ['flask-wtf', 'python-ldap>=3.3.1,<4.0'],
         'authlib': ['authlib[client]>=0.14.1,<0.15'],
-        'sqlalchemy': ['sqlalchemy', 'wtforms'],
+        'sqlalchemy': ['sqlalchemy', 'flask-wtf'],
     },
     setup_requires=pytest_runner,
     tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
