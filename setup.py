@@ -38,7 +38,7 @@ setup(
     ],
     extras_require={
         'ldap': ['flask-wtf', 'python-ldap>=3.3.1,<4.0'],
-        'authlib': ['authlib[client]>=0.14.1,<0.15'],
+        'authlib': ['authlib[client]>=0.14.1,<0.16'],
         'sqlalchemy': ['sqlalchemy', 'flask-wtf'],
     },
     setup_requires=pytest_runner,
