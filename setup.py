@@ -6,7 +6,6 @@
 
 import ast
 import re
-import sys
 
 from setuptools import setup, find_packages
 
@@ -14,10 +13,6 @@ from setuptools import setup, find_packages
 with open('flask_multipass/__init__.py', 'rb') as f:
     version_line = re.search(r'__version__\s+=\s+(.*)', f.read().decode('utf-8')).group(1)
     version = str(ast.literal_eval(version_line))
-
-
-needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
-pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 
 setup(
@@ -40,9 +35,8 @@ setup(
         'ldap': ['flask-wtf', 'python-ldap>=3.3.1,<4.0'],
         'authlib': ['authlib[client]>=0.14.1,<0.16'],
         'sqlalchemy': ['sqlalchemy', 'flask-wtf'],
+        'dev': ['pytest', 'pytest-cov', 'pytest-mock']
     },
-    setup_requires=pytest_runner,
-    tests_require=['pytest', 'pytest-cov', 'pytest-mock'],
     classifiers=[
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.7',
