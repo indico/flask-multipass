@@ -122,12 +122,17 @@ class AuthlibAuthProvider(AuthProvider):
                 authinfo_token_data['token'] = token_data
 
             if self.use_id_token:
-                id_token = self.authlib_client.parse_id_token(token_data)
+                try:
+                    # authlib 1.0+ parses the id_token automatically
+                    id_token = dict(token_data['userinfo'])
+                except KeyError:
+                    # older authlib versions
+                    id_token = self.authlib_client.parse_id_token(token_data)
                 for key in INTERNAL_FIELDS:
                     id_token.pop(key, None)
                 return self.multipass.handle_auth_success(AuthInfo(self, **dict(authinfo_token_data, **id_token)))
             else:
-                user_info = self.authlib_client.userinfo()
+                user_info = self.authlib_client.userinfo(token=token_data)
                 return self.multipass.handle_auth_success(AuthInfo(self, **dict(authinfo_token_data, **user_info)))
         except AuthlibBaseError as exc:
             raise AuthenticationFailed(str(exc), provider=self)
