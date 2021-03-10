@@ -11,6 +11,7 @@ import itertools
 from flask import current_app, render_template, request, url_for, session, redirect, flash
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
+from werkzeug.urls import url_parse
 
 from flask_multipass._compat import iteritems, itervalues, text_type
 from flask_multipass.auth import AuthProvider
@@ -124,8 +125,20 @@ class Multipass(object):
     def set_next_url(self):
         """Saves the URL to redirect to after logging in."""
         next_url = request.args.get('next')
-        if next_url:
+        if next_url and self.validate_next_url(next_url):
             session['_multipass_next_url'] = next_url
+
+    def validate_next_url(self, url):
+        """Make sure the next URL is an allowed redirect target.
+
+        The default logic is to accept relative URL and URLs with the same
+        host as the one serving the current request.
+
+        If you override this and want to allow more hosts, make sure to use
+        a whitelist of trusted hosts to avoid creating an open redirector.
+        """
+        url_info = url_parse(url)
+        return not url_info.netloc or url_info.netloc == request.host
 
     def process_login(self, provider=None):
         """Handles the login process

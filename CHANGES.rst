@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.3.5
+-------------
+
+- Validate ``next`` URL to avoid having an open redirector
+
 Version 0.3.4
 -------------
 

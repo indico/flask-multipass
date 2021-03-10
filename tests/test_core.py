@@ -139,6 +139,40 @@ def test_next_url():
         assert multipass._get_next_url() == '/success'
 
 
+def test_next_url_invalid():
+    app = Flask('test')
+    app.add_url_rule('/success', 'success')
+    app.config['SECRET_KEY'] = 'testing'
+    app.config['MULTIPASS_SUCCESS_ENDPOINT'] = 'success'
+    multipass = Multipass(app)
+    with app.test_request_context():
+        request.args = {'next': '//evil.com'}
+        multipass.set_next_url()
+        assert multipass._get_next_url() == '/success'
+
+
+@pytest.mark.parametrize(('url', 'valid'), (
+    ('foo', True),
+    ('/foo', True),
+    ('/foo?bar', True),
+    ('/foo#bar', True),
+    ('//localhost', True),
+    ('//localhost/foo', True),
+    ('http://localhost', True),
+    ('https://localhost/', True),
+    ('//evil', False),
+    ('//evil.com', False),
+    ('//evil.com:80', False),
+    ('http://evil.com', False),
+    ('https://evil.com', False),
+))
+def test_validate_next_url(url, valid):
+    app = Flask('test')
+    multipass = Multipass(app)
+    with app.test_request_context():
+        assert multipass.validate_next_url(url) == valid
+
+
 def test_login_finished():
     multipass = Multipass()
     with pytest.raises(AssertionError):
