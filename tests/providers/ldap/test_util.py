@@ -4,23 +4,17 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 from collections import OrderedDict
+from unittest.mock import MagicMock, call
 
 import ldap
 import pytest
 from werkzeug.urls import url_parse
 
-try:
-    from mock import call, MagicMock
-except ImportError:
-    from unittest.mock import call, MagicMock
-
 from flask_multipass.exceptions import MultipassException
-from flask_multipass.util import convert_app_data
 from flask_multipass.providers.ldap.globals import current_ldap
-from flask_multipass.providers.ldap.util import build_search_filter, find_one, ldap_context, to_unicode, LDAPContext
+from flask_multipass.providers.ldap.util import LDAPContext, build_search_filter, find_one, ldap_context, to_unicode
+from flask_multipass.util import convert_app_data
 
 
 @pytest.mark.parametrize(('criteria', 'type_filter', 'mapping', 'exact', 'expected'), (

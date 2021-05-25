@@ -14,4 +14,3 @@ extend-exclude =
 
 per-file-ignores =
     tests/*.py:F811
-    _compat.py:F821

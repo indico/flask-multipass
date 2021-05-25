@@ -4,8 +4,6 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import absolute_import, unicode_literals
-
 from collections import namedtuple
 from contextlib import contextmanager
 from warnings import warn
@@ -17,7 +15,6 @@ from ldap.filter import escape_filter_chars
 from ldap.ldapobject import ReconnectLDAPObject
 from werkzeug.urls import url_parse
 
-from flask_multipass._compat import PY2, iteritems, itervalues, text_type
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
@@ -34,7 +31,7 @@ conn_keys = {'uri', 'bind_dn', 'bind_password', 'tls', 'starttls'}
 def _clear_ldap_cache(*args, **kwargs):
     if not has_app_context() or '_multipass_ldap_connections' not in g:
         return
-    for conn in itervalues(g._multipass_ldap_connections):
+    for conn in g._multipass_ldap_connections.values():
         try:
             conn.unbind_s()
         except ldap.LDAPError:
@@ -127,7 +124,7 @@ def ldap_connect(settings, use_cache=True):
 
     if use_cache:
         cache = _get_ldap_cache()
-        cache_key = frozenset((k, hash(v)) for k, v in iteritems(settings) if k in conn_keys)
+        cache_key = frozenset((k, hash(v)) for k, v in settings.items() if k in conn_keys)
         conn = cache.get(cache_key)
         if conn is not None:
             return conn
@@ -184,14 +181,12 @@ def _build_assert_template(value, exact):
     if len(value) == 1:
         return assert_template
     else:
-        return '(|{})'.format(assert_template * len(value))
+        return f'(|{assert_template * len(value)})'
 
 
 def _escape_filter_chars(value):
-    if isinstance(value, text_type):
+    if isinstance(value, str):
         return escape_filter_chars(value)
-    elif PY2:
-        return ''.join('\\%02x' % ord(c) for c in value)
     else:
         return ''.join('\\%02x' % c for c in value)
 
@@ -215,8 +210,8 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     """
 
     assertions = convert_app_data(criteria, mapping or {})
-    assert_templates = [_build_assert_template(value, exact) for _, value in iteritems(assertions)]
-    assertions = [(k, v) for k, values in iteritems(assertions) if k and values for v in values]
+    assert_templates = [_build_assert_template(value, exact) for _, value in assertions.items()]
+    assertions = [(k, v) for k, values in assertions.items() if k and values for v in values]
     if not assertions:
         return None
     filter_template = '(&{}{})'.format("".join(assert_templates), type_filter)
@@ -241,7 +236,7 @@ def to_unicode(data):
     if isinstance(data, bytes):
         return data.decode('utf-8', 'replace')
     elif isinstance(data, dict):
-        return {to_unicode(k): to_unicode(v) for k, v in iteritems(data)}
+        return {to_unicode(k): to_unicode(v) for k, v in data.items()}
     elif isinstance(data, list):
         return [to_unicode(x) for x in data]
     elif isinstance(data, set):

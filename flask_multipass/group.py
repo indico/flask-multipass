@@ -4,14 +4,10 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
-from flask_multipass._compat import add_metaclass
 from flask_multipass.util import SupportsMeta
 
 
-@add_metaclass(SupportsMeta)
-class Group(object):
+class Group(metaclass=SupportsMeta):
     """Base class for groups
 
     :param provider: The identity provider managing the group.
@@ -55,4 +51,4 @@ class Group(object):
         return self.has_member(identifier)
 
     def __repr__(self):
-        return '<{}({}, {})>'.format(type(self).__name__, self.provider, self.name)
+        return f'<{type(self).__name__}({self.provider}, {self.name})>'

@@ -4,16 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from unittest.mock import Mock
 
 import pytest
 from flask import Flask, request, session
-try:
-    from mock import Mock
-except ImportError:
-    from unittest.mock import Mock
 
-from flask_multipass import Multipass, AuthProvider, AuthenticationFailed
+from flask_multipass import AuthenticationFailed, AuthProvider, Multipass
 
 
 def test_init_app_twice():

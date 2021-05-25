@@ -4,8 +4,6 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import absolute_import, unicode_literals
-
 from flask_multipass.exceptions import MultipassException
 
 

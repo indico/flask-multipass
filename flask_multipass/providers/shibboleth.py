@@ -4,22 +4,15 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from urllib.parse import quote
 
-import urllib
+from flask import current_app, redirect, request, url_for
 
-from flask import request, current_app, url_for, redirect
-
-from flask_multipass._compat import iteritems, PY2
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
-from flask_multipass.exceptions import MultipassException, AuthenticationFailed, IdentityRetrievalFailed
+from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFailed, MultipassException
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import login_view
-
-
-def _to_unicode(s):
-    return s.decode('utf-8') if PY2 and isinstance(s, str) else s
 
 
 def _lower_keys(iter_):
@@ -37,7 +30,7 @@ class ShibbolethAuthProvider(AuthProvider):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ShibbolethAuthProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # convert everything to lowercase (headers/WSGI vars are case-insensitive)
         self.attrs_prefix = self.settings.setdefault('attrs_prefix', 'ADFS_').lower()
         self.attrs = [attr.lower() for attr in self.settings.get('attrs', [])] or None
@@ -54,16 +47,17 @@ class ShibbolethAuthProvider(AuthProvider):
     def process_logout(self, return_url):
         logout_uri = self.settings.get('logout_uri')
         if logout_uri:
-            return redirect(logout_uri.format(return_url=urllib.quote(return_url)))
+            return redirect(logout_uri.format(return_url=quote(return_url)))
 
     @login_view
     def _shibboleth_callback(self):
-        mapping = _lower_keys(iteritems(request.headers if self.from_headers else request.environ))
+        data_source = request.headers if self.from_headers else request.environ
+        mapping = _lower_keys(data_source.items())
         # get all attrs in the 'attrs' list, if empty use 'attrs_prefix'
         if self.attrs is None:
-            attributes = {k: _to_unicode(v) for k, v in mapping if k.startswith(self.attrs_prefix)}
+            attributes = {k: v for k, v in mapping if k.startswith(self.attrs_prefix)}
         else:
-            attributes = {k: _to_unicode(v) for k, v in mapping if k in self.attrs}
+            attributes = {k: v for k, v in mapping if k in self.attrs}
 
         if not attributes:
             raise AuthenticationFailed("No valid data received", provider=self)
@@ -84,7 +78,7 @@ class ShibbolethIdentityProvider(IdentityProvider):
     supports_get = False
 
     def __init__(self, *args, **kwargs):
-        super(ShibbolethIdentityProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # make headers/vars case-insensitive
         self.id_field = self.settings.setdefault('identifier_field', 'ADFS_LOGIN').lower()
         self.settings['mapping'] = {k: v.lower() for k, v in self.settings['mapping'].items()}

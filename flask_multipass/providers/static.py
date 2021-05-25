@@ -4,18 +4,16 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 import itertools
 import operator
 
-from wtforms.fields import StringField, PasswordField
+from flask_wtf import FlaskForm
+from wtforms.fields import PasswordField, StringField
 from wtforms.validators import DataRequired
 
-from flask_multipass._compat import iteritems, FlaskForm
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
-from flask_multipass.exceptions import NoSuchUser, InvalidCredentials
+from flask_multipass.exceptions import InvalidCredentials, NoSuchUser
 from flask_multipass.group import Group
 from flask_multipass.identity import IdentityProvider
 
@@ -37,7 +35,7 @@ class StaticAuthProvider(AuthProvider):
     login_form = StaticLoginForm
 
     def __init__(self, *args, **kwargs):
-        super(StaticAuthProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.settings.setdefault('identities', {})
 
     def process_local_login(self, data):
@@ -86,7 +84,7 @@ class StaticIdentityProvider(IdentityProvider):
     group_class = StaticGroup
 
     def __init__(self, *args, **kwargs):
-        super(StaticIdentityProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.settings.setdefault('identities', {})
         self.settings.setdefault('groups', {})
 
@@ -107,8 +105,8 @@ class StaticIdentityProvider(IdentityProvider):
         return self._get_identity(identifier)
 
     def search_identities(self, criteria, exact=False):
-        for identifier, user in iteritems(self.settings['identities']):
-            for key, values in iteritems(criteria):
+        for identifier, user in self.settings['identities'].items():
+            for key, values in criteria.items():
                 # same logic as multidict
                 user_value = user.get(key)
                 user_values = set(user_value) if isinstance(user_value, (tuple, list)) else {user_value}

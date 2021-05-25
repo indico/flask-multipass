@@ -378,8 +378,8 @@ The same applies for searching identities. There you accept a ``criteria`` dicti
 .. code-block:: python
 
     def search_identities(self, criteria, exact=False):
-        for identifier, user in iteritems(self.settings['identities']):
-            for key, values in iteritems(criteria):
+        for identifier, user in self.settings['identities'].items():
+            for key, values in criteria.items():
                 user_value = user.get(key)
                 user_values = set(user_value) if isinstance(user_value, (tuple, list)) else {user_value}
                 if not any(user_values):

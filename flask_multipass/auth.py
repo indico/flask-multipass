@@ -4,14 +4,10 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
-from flask_multipass._compat import add_metaclass
 from flask_multipass.util import SupportsMeta
 
 
-@add_metaclass(SupportsMeta)
-class AuthProvider(object):
+class AuthProvider(metaclass=SupportsMeta):
     """Provides the base for an authentication provider.
 
     :param multipass: The Flask-Multipass instance
@@ -118,4 +114,4 @@ class AuthProvider(object):
         return None
 
     def __repr__(self):
-        return '<{}({})>'.format(type(self).__name__, self.name)
+        return f'<{type(self).__name__}({self.name})>'

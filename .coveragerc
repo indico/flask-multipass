@@ -1,7 +1,6 @@
 [run]
 branch = true
 source = flask_multipass
-omit = flask_multipass/_compat.py
 
 [report]
 exclude_lines =

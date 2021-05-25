@@ -4,15 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 from werkzeug.datastructures import MultiDict
 
-from flask_multipass._compat import bytes_type, text_type
 from flask_multipass.util import convert_provider_data
 
 
-class AuthInfo(object):
+class AuthInfo:
     """Stores data from an authentication provider.
 
     :param provider: The authentication provider instance providing
@@ -53,12 +50,12 @@ class AuthInfo(object):
         return AuthInfo(self.provider, **convert_provider_data(self.data, mapping))
 
     def __repr__(self):
-        data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
-        secure = ', secure={}'.format(self.secure_login) if self.secure_login is not None else ''
-        return '<AuthInfo({}, {}{})>'.format(self.provider, data, secure)
+        data = ', '.join(f'{k}={v!r}' for k, v in sorted(self.data.items()))
+        secure = f', secure={self.secure_login}' if self.secure_login is not None else ''
+        return f'<AuthInfo({self.provider}, {data}{secure})>'
 
 
-class IdentityInfo(object):
+class IdentityInfo:
     """Stores user identity information for the application.
 
     :param provider: The identity provider instance providing the data.
@@ -85,7 +82,8 @@ class IdentityInfo(object):
     def __init__(self, provider, identifier, multipass_data=None, secure_login=None, **data):
         self.provider = provider
         self.secure_login = secure_login
-        self.identifier = identifier.decode('utf-8') if isinstance(identifier, bytes_type) else text_type(identifier)
+        # XXX: do we ever expect something that's not a str here?!
+        self.identifier = identifier.decode() if isinstance(identifier, bytes) else str(identifier)
         if not provider.supports_refresh:
             assert multipass_data is None
             self.multipass_data = None
@@ -95,6 +93,6 @@ class IdentityInfo(object):
         self.data = MultiDict(convert_provider_data(data, mapping or {}, self.provider.settings['identity_info_keys']))
 
     def __repr__(self):
-        data = ', '.join('{}={!r}'.format(k, v) for k, v in sorted(self.data.items()))
-        secure = ', secure={}'.format(self.secure_login) if self.secure_login is not None else ''
-        return '<IdentityInfo({}, {}, {}{})>'.format(self.provider, self.identifier, data or None, secure)
+        data = ', '.join(f'{k}={v!r}' for k, v in sorted(self.data.items()))
+        secure = f', secure={self.secure_login}' if self.secure_login is not None else ''
+        return f'<IdentityInfo({self.provider}, {self.identifier}, {data or None}{secure})>'

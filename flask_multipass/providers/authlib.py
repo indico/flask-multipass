@@ -4,7 +4,6 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the MIT License.
 
-from __future__ import absolute_import, unicode_literals
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
@@ -73,8 +72,8 @@ class AuthlibAuthProvider(AuthProvider):
     """
 
     def __init__(self, *args, **kwargs):
-        super(AuthlibAuthProvider, self).__init__(*args, **kwargs)
-        callback_uri = self.settings.get('callback_uri', '/multipass/authlib/{}'.format(self.name))
+        super().__init__(*args, **kwargs)
+        callback_uri = self.settings.get('callback_uri', f'/multipass/authlib/{self.name}')
         self.authlib_client = _authlib_oauth.register(self.name, **self.authlib_settings)
         self.include_token = self.settings.get('include_token', False)
         self.use_id_token = self.settings.get('use_id_token')
@@ -152,12 +151,12 @@ class AuthlibIdentityProvider(IdentityProvider):
     supports_get = False
 
     def __init__(self, *args, **kwargs):
-        super(AuthlibIdentityProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.id_field = self.settings.setdefault('identifier_field', 'sub').lower()
 
     def get_identity_from_auth(self, auth_info):
         identifier = auth_info.data.get(self.id_field)
         if not identifier:
-            raise IdentityRetrievalFailed('Identifier ({}) missing in authlib response'.format(self.id_field),
+            raise IdentityRetrievalFailed(f'Identifier ({self.id_field}) missing in authlib response',
                                           provider=self)
         return IdentityInfo(self, identifier=identifier, **auth_info.data)

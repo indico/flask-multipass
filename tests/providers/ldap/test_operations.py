@@ -4,18 +4,13 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from unittest.mock import MagicMock
 
 import pytest
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE
-try:
-    from mock import MagicMock
-except ImportError:
-    from unittest.mock import MagicMock
-
 
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
-from flask_multipass.providers.ldap.operations import (get_group_by_id, get_user_by_id, get_token_groups_from_user_dn,
+from flask_multipass.providers.ldap.operations import (get_group_by_id, get_token_groups_from_user_dn, get_user_by_id,
                                                        search)
 from flask_multipass.providers.ldap.util import ldap_context
 

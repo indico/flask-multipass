@@ -4,13 +4,9 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from unittest.mock import MagicMock
 
 import pytest
-try:
-    from mock import MagicMock
-except ImportError:
-    from unittest.mock import MagicMock
 
 from flask_multipass import AuthInfo, AuthProvider, IdentityInfo, Multipass
 

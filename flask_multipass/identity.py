@@ -4,16 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 from flask import current_app
 
-from flask_multipass._compat import add_metaclass
 from flask_multipass.util import SupportsMeta, convert_app_data
 
 
-@add_metaclass(SupportsMeta)
-class IdentityProvider(object):
+class IdentityProvider(metaclass=SupportsMeta):
     """Provides the base for an identity provider.
 
     :param multipass: The Flask-Multipass instance
@@ -176,4 +172,4 @@ class IdentityProvider(object):
         return convert_app_data(criteria, mapping)
 
     def __repr__(self):
-        return '<{}({})>'.format(type(self).__name__, self.name)
+        return f'<{type(self).__name__}({self.name})>'

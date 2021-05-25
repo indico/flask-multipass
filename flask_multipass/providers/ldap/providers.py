@@ -4,27 +4,25 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import absolute_import, unicode_literals
-
 from warnings import warn
 
+from flask_wtf import FlaskForm
 from ldap import INVALID_CREDENTIALS
-from wtforms.fields import StringField, PasswordField
+from wtforms.fields import PasswordField, StringField
 from wtforms.validators import DataRequired
 
-from flask_multipass._compat import FlaskForm
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
-from flask_multipass.exceptions import NoSuchUser, InvalidCredentials, IdentityRetrievalFailed, GroupRetrievalFailed
+from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed, InvalidCredentials, NoSuchUser
 from flask_multipass.group import Group
 from flask_multipass.identity import IdentityProvider
-from flask_multipass.util import convert_app_data
-
 from flask_multipass.providers.ldap.globals import current_ldap
-from flask_multipass.providers.ldap.operations import (build_user_search_filter, build_group_search_filter,
-                                                       get_user_by_id, get_group_by_id, get_token_groups_from_user_dn,
+from flask_multipass.providers.ldap.operations import (build_group_search_filter, build_user_search_filter,
+                                                       get_group_by_id, get_token_groups_from_user_dn, get_user_by_id,
                                                        search)
 from flask_multipass.providers.ldap.util import ldap_context, to_unicode
+from flask_multipass.util import convert_app_data
+
 
 try:
     import certifi
@@ -37,7 +35,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', [DataRequired()])
 
 
-class LDAPProviderMixin(object):
+class LDAPProviderMixin:
     @property
     def ldap_settings(self):
         return self.settings['ldap']
@@ -64,7 +62,7 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
     login_form = LoginForm
 
     def __init__(self, *args, **kwargs):
-        super(LDAPAuthProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.set_defaults()
 
     def process_local_login(self, data):
@@ -89,7 +87,7 @@ class LDAPGroup(Group):
     supports_member_list = True
 
     def __init__(self, provider, name, dn):  # pragma: no cover
-        super(LDAPGroup, self).__init__(provider, name)
+        super().__init__(provider, name)
         self.dn = dn
 
     @property
@@ -101,7 +99,7 @@ class LDAPGroup(Group):
         return self.provider.settings
 
     def _iter_group(self):
-        to_visit = set([self.dn])
+        to_visit = {self.dn}
         visited = set()
         while to_visit:
             next_group_dn = to_visit.pop()
@@ -153,7 +151,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     group_class = LDAPGroup
 
     def __init__(self, *args, **kwargs):
-        super(LDAPIdentityProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.set_defaults()
         self.ldap_settings.setdefault('gid', 'cn')
         self.ldap_settings.setdefault('group_filter', '(objectClass=groupOfNames)')

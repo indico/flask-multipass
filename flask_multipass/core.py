@@ -4,21 +4,18 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 import itertools
 
-from flask import current_app, render_template, request, url_for, session, redirect, flash
+from flask import current_app, flash, redirect, render_template, request, session, url_for
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_parse
 
-from flask_multipass._compat import iteritems, itervalues, text_type
 from flask_multipass.auth import AuthProvider
-from flask_multipass.exceptions import MultipassException, IdentityRetrievalFailed, GroupRetrievalFailed
+from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed, MultipassException
 from flask_multipass.identity import IdentityProvider
-from flask_multipass.util import (get_state, resolve_provider_type, get_canonical_provider_map, validate_provider_map,
-                                  get_provider_base)
+from flask_multipass.util import (get_canonical_provider_map, get_provider_base, get_state, resolve_provider_type,
+                                  validate_provider_map)
 
 
 # If SQLAlchemy is available, handle its AssociationCollection as a
@@ -31,7 +28,7 @@ else:
     multi_value_types = (list, tuple, _AssociationCollection)
 
 
-class Multipass(object):
+class Multipass:
     """Base class of the Flask-Multipass extension.
 
     :param app: The flask application. If omitted, use :meth:`init_app`
@@ -250,7 +247,7 @@ class Multipass(object):
                                   login page.
         """
         session['_multipass_auth_failed'] = True
-        flash(current_app.config['MULTIPASS_FAILURE_MESSAGE'].format(error=text_type(exc)),
+        flash(current_app.config['MULTIPASS_FAILURE_MESSAGE'].format(error=str(exc)),
               current_app.config['MULTIPASS_FAILURE_CATEGORY'])
         if redirect_to_login:
             return redirect(url_for(current_app.config['MULTIPASS_LOGIN_ENDPOINT']))
@@ -262,7 +259,7 @@ class Multipass(object):
                              option name ``MULTIPASS_*_TEMPLATE``
         :param kwargs: The variables passed to the template/
         """
-        key = 'MULTIPASS_{}_TEMPLATE'.format(template_key)
+        key = f'MULTIPASS_{template_key}_TEMPLATE'
         template = current_app.config[key]
         if template is None:
             raise RuntimeError('Config option missing: ' + key)
@@ -350,7 +347,7 @@ class Multipass(object):
                          many values for the same criterion.
         :return: An iterable of matching user identities.
         """
-        for k, v in iteritems(criteria):
+        for k, v in criteria.items():
             if isinstance(v, multi_value_types):
                 criteria[k] = v = set(v)
             elif not isinstance(v, set):
@@ -358,13 +355,12 @@ class Multipass(object):
             if any(not x for x in v):
                 raise ValueError('Empty search criterion: ' + k)
 
-        for provider in itervalues(self.identity_providers):
+        for provider in self.identity_providers.values():
             if providers is not None and provider.name not in providers:
                 continue
             if not provider.supports_search:
                 continue
-            for identity_info in provider.search_identities(provider.map_search_criteria(criteria), exact=exact):
-                yield identity_info
+            yield from provider.search_identities(provider.map_search_criteria(criteria), exact=exact)
 
     def search_identities_ex(self, providers=None, exact=False, limit=None, criteria=None):
         """Search user identities matching search criteria.
@@ -377,7 +373,7 @@ class Multipass(object):
 
         :return: A tuple containing ``(identities, total_count)``.
         """
-        for k, v in iteritems(criteria):
+        for k, v in criteria.items():
             if isinstance(v, multi_value_types):
                 criteria[k] = v = set(v)
             elif not isinstance(v, set):
@@ -387,7 +383,7 @@ class Multipass(object):
 
         found_identities = []
         total = 0
-        for provider in itervalues(self.identity_providers):
+        for provider in self.identity_providers.values():
             if providers is not None and provider.name not in providers:
                 continue
             if not provider.supports_search:
@@ -433,13 +429,12 @@ class Multipass(object):
                       substring matches are performed.
         :return: An iterable of matching groups.
         """
-        for provider in itervalues(self.identity_providers):
+        for provider in self.identity_providers.values():
             if providers is not None and provider.name not in providers:
                 continue
             if not provider.supports_groups:
                 continue
-            for group in provider.search_groups(name, exact=exact):
-                yield group
+            yield from provider.search_groups(name, exact=exact)
 
     def is_identity_in_group(self, provider, identity_identifier, group_name):
         """Checks if a user identity is in a group
@@ -461,7 +456,7 @@ class Multipass(object):
         registry = self.provider_registry[AuthProvider if key == 'AUTH' else IdentityProvider]
         providers = {}
         provider_classes = set()
-        for name, settings in iteritems(current_app.config['MULTIPASS_{}_PROVIDERS'.format(key)]):
+        for name, settings in current_app.config[f'MULTIPASS_{key}_PROVIDERS'].items():
             settings = settings.copy()
             cls = resolve_provider_type(base, settings.pop('type'), registry)
             if not cls.multi_instance and cls in provider_classes:
@@ -499,7 +494,7 @@ class Multipass(object):
         if not auth_failed and self.single_auth_provider:
             return redirect(url_for(login_endpoint, provider=self.single_auth_provider.name, next=next_url))
         else:
-            return self.render_template('LOGIN_SELECTOR', providers=self.auth_providers.values(), next=next_url,
+            return self.render_template('LOGIN_SELECTOR', providers=list(self.auth_providers.values()), next=next_url,
                                         auth_failed=auth_failed, login_endpoint=login_endpoint)
 
     def _login_external(self, provider):
@@ -537,7 +532,7 @@ class Multipass(object):
         return self.render_template('LOGIN_FORM', form=form, provider=provider)
 
 
-class _MultipassState(object):
+class _MultipassState:
     def __init__(self, multipass, app):
         self.multipass = multipass
         self.app = app
@@ -546,4 +541,4 @@ class _MultipassState(object):
         self.provider_map = {}
 
     def __repr__(self):
-        return '<MultipassState({}, {})>'.format(self.multipass, self.app)
+        return f'<MultipassState({self.multipass}, {self.app})>'

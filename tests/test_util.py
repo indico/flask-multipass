@@ -4,15 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 from pkg_resources import EntryPoint
 
 import pytest
 from flask import Flask
 
 from flask_multipass import Multipass
-from flask_multipass._compat import iteritems, add_metaclass
 from flask_multipass.auth import AuthProvider
 from flask_multipass.core import _MultipassState
 from flask_multipass.exceptions import AuthenticationFailed
@@ -132,7 +129,7 @@ def test_get_provider_base():
 
 
 def test_get_provider_base_invalid():
-    class NoProvider(object):
+    class NoProvider:
         pass
 
     class InvalidProvider(AuthProvider, IdentityProvider):
@@ -172,7 +169,7 @@ def test_login_view(mocker):
         handle_auth_error.assert_called_with(e, True)
 
 
-class DummyBase(object):
+class DummyBase:
     _entry_point = 'dummy'
 
 
@@ -180,7 +177,7 @@ class Dummy(DummyBase):
     pass
 
 
-class FakeDummy(object):
+class FakeDummy:
     pass
 
 
@@ -242,7 +239,7 @@ def test_validate_provider_map(valid, auth_providers, identity_providers, provid
     state = _MultipassState(None, None)
     state.auth_providers = {x: {} for x in auth_providers}
     state.identity_providers = {x: {} for x in identity_providers}
-    state.provider_map = {a: [{'identity_provider': u}] for a, u in iteritems(provider_map)}
+    state.provider_map = {a: [{'identity_provider': u}] for a, u in provider_map.items()}
     if valid:
         validate_provider_map(state)
     else:
@@ -250,7 +247,7 @@ def test_validate_provider_map(valid, auth_providers, identity_providers, provid
 
 
 def test_classproperty():
-    class Foo(object):
+    class Foo:
         @classproperty
         @classmethod
         def bar(cls):
@@ -281,8 +278,7 @@ def test_classproperty():
 
 
 def test_supports_meta_no_support_attrs():
-    @add_metaclass(SupportsMeta)
-    class BrokenBase(object):
+    class BrokenBase(metaclass=SupportsMeta):
         pass
 
     with pytest.raises(AttributeError):
@@ -292,8 +288,7 @@ def test_supports_meta_no_support_attrs():
 
 @pytest.fixture(params=(True, False))
 def supports_base(request):
-    @add_metaclass(SupportsMeta)
-    class Base(object):
+    class Base(metaclass=SupportsMeta):
         if request.param:
             __support_attrs__ = {SupportsMeta.callable(lambda cls: cls.has_foo, 'blah'): 'foo'}
         else:
@@ -348,8 +343,7 @@ def test_supports_meta_inheritance(supports_base):
 
 
 def test_supports_meta_multi():
-    @add_metaclass(SupportsMeta)
-    class Base(object):
+    class Base(metaclass=SupportsMeta):
         __support_attrs__ = {'has_foobar': ('foo', 'bar')}
         has_foobar = False
 
@@ -373,8 +367,7 @@ def test_supports_meta_multi():
 
 
 def test_supports_meta_default_true():
-    @add_metaclass(SupportsMeta)
-    class Base(object):
+    class Base(metaclass=SupportsMeta):
         __support_attrs__ = {'has_foo': 'foo'}
         has_foo = True
 

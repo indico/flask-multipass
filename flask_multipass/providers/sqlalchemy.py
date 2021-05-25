@@ -4,14 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals, absolute_import
-
+from flask_wtf import FlaskForm
 from sqlalchemy import inspect
-from wtforms.fields import StringField, PasswordField
+from wtforms.fields import PasswordField, StringField
 from wtforms.validators import DataRequired
 
-from flask_multipass import AuthProvider, IdentityProvider, NoSuchUser, InvalidCredentials, AuthInfo, IdentityInfo
-from flask_multipass._compat import string_types, FlaskForm
+from flask_multipass import AuthInfo, AuthProvider, IdentityInfo, IdentityProvider, InvalidCredentials, NoSuchUser
 
 
 class LoginForm(FlaskForm):
@@ -88,7 +86,7 @@ class SQLAlchemyIdentityProviderBase(IdentityProvider):
     def get_identity_from_auth(self, auth_info):
         cls = type(self)
         identity = auth_info.data['identity']
-        if isinstance(cls.identity_user_relationship, string_types):
+        if isinstance(cls.identity_user_relationship, str):
             relationship_name = cls.identity_user_relationship
         else:
             relationship_name = cls.identity_user_relationship.key

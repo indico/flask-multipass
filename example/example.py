@@ -4,11 +4,9 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
-
 import json
 
-from flask import Flask, render_template, flash, session, url_for, redirect, request, g
+from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 from flask_multipass import Multipass
@@ -77,7 +75,7 @@ def identity_handler(identity_info):
     identity.multipass_data = json.dumps(identity_info.multipass_data)
     db.session.commit()
     session['user_id'] = user.id
-    flash('Received IdentityInfo: {}'.format(identity_info), 'success')
+    flash(f'Received IdentityInfo: {identity_info}', 'success')
 
 
 @app.before_request
@@ -129,7 +127,7 @@ def refresh():
             continue
         identity_info = multipass.refresh_identity(identity.identifier, json.loads(identity.multipass_data))
         identity.multipass_data = json.dumps(identity_info.multipass_data)
-        flash('Refreshed IdentityInfo: {}'.format(identity_info), 'success')
+        flash(f'Refreshed IdentityInfo: {identity_info}', 'success')
     db.session.commit()
     return redirect(url_for('index'))
 

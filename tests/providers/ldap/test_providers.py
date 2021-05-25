@@ -4,15 +4,11 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from __future__ import unicode_literals
+from unittest.mock import MagicMock
 
 import pytest
 from flask import Flask
 from ldap import INVALID_CREDENTIALS
-try:
-    from mock import MagicMock
-except ImportError:
-    from unittest.mock import MagicMock
 
 from flask_multipass import Multipass
 from flask_multipass.exceptions import IdentityRetrievalFailed, InvalidCredentials, NoSuchUser
