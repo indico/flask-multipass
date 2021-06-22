@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4
+-----------
+
+- Drop support for Python 2; Python 3.6+ is now required
+
 Version 0.3.5
 -------------
 
