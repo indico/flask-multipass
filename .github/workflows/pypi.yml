@@ -1,0 +1,38 @@
+name: PyPI release 🐍 📦
+
+on:
+  push:
+    tags: [v*]
+
+jobs:
+  build-publish:
+    name: PyPI release 🐍 📦
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      name: Set up Python 🐍
+      with:
+        python-version: '3.9'
+    - name: Check version 🔍
+      run: python .github/utils/check_version.py "${GITHUB_REF#refs/tags/v}"
+    - name: Install pypa/build 🔧
+      run: pip install --user build
+    - name: Build wheel and sdist 📦
+      run: >-
+        python -m
+        build
+        --sdist
+        --wheel
+        --outdir dist/
+        .
+    - name: Publish to Test PyPI 🧪
+      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+    - name: Publish to PyPI 🚀
+      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
