@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.2
+-------------
+
+- Fix LDAP group membership checks on servers that are not using ``ad_group_style``
+
 Version 0.4.1
 -------------
 

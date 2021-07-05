@@ -135,6 +135,7 @@ class LDAPGroup(Group):
                 token_groups = get_token_groups_from_user_dn(user_dn)
                 return any(group_sid in token_groups for group_sid in group_sids)
             else:
+                user_data = to_unicode(user_data)
                 return self.dn in user_data.get(self.ldap_settings['member_of_attr'], [])
 
 
