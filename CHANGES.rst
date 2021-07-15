@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.3
+-------------
+
+- Add ``saml`` provider which supports SAML without the need for Shibboleth and Apache
+
 Version 0.4.2
 -------------
 
