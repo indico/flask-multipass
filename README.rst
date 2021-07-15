@@ -19,6 +19,7 @@ There are bult-in authentication and identity providers for:
  * `Static (hardcoded) credentials <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/static.py>`_
  * `Local (SQLAlchemy DB) authentication <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/sqlalchemy.py>`_
  * `Authlib (OAuth/OIDC) <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/authlib.py>`_
+ * `SAML <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/saml.py>`_
  * `Shibboleth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/shibboleth.py>`_
  * `LDAP <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/ldap/providers.py>`_
 

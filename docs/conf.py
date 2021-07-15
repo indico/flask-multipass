@@ -23,8 +23,8 @@ from unittest.mock import MagicMock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_themes'))
 
-# Mock away ldap
-for module in ('ldap', 'ldap.controls', 'ldap.filter', 'ldap.ldapobject', 'urlparse'):
+# Mock away ldap/saml
+for module in ('ldap', 'ldap.controls', 'ldap.filter', 'ldap.ldapobject', 'urlparse', 'onelogin.saml2.auth'):
     sys.modules[module] = MagicMock()
 
 # -- General configuration ------------------------------------------------
