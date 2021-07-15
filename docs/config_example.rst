@@ -73,7 +73,7 @@ Here you can see an example configuration for an application using both external
             # 'NameIDFormat': 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent'
         },
         'idp': {
-            # This metadata is provider by your SAML IdP. You can omit (or
+            # This metadata is provided by your SAML IdP. You can omit (or
             # leave empty) the whole 'idp' section in case you need SP
             # metadata to register your app and get the IdP metadata from
             # https://yourapp.example.com/multipass/saml/{auth-provider-name}/metadata
