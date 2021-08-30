@@ -34,7 +34,7 @@ Version 0.3.4
 Version 0.3.3
 -------------
 
-- Add missing dependencies for ``ldap` and ``sqlalchemy`` extras
+- Add missing dependencies for ``ldap`` and ``sqlalchemy`` extras
 - Add support for authlib 1.0.0a1
 - Add explicit support for Python 3.9
 
