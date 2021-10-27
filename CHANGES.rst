@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.4
+-------------
+
+- Support authlib 1.0.0b2
+
 Version 0.4.3
 -------------
 
