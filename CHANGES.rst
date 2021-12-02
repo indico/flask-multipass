@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.5
+-------------
+
+- Log details when getting oauth token fails
+
 Version 0.4.4
 -------------
 

@@ -4,10 +4,12 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the MIT License.
 
+import logging
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
 from flask import current_app, redirect, request, url_for
+from requests.exceptions import HTTPError
 from werkzeug.urls import url_encode, url_join
 
 from flask_multipass.auth import AuthProvider
@@ -113,7 +115,17 @@ class AuthlibAuthProvider(AuthProvider):
         if error:
             raise AuthenticationFailed(error, provider=self)
         try:
-            token_data = self.authlib_client.authorize_access_token()
+            try:
+                token_data = self.authlib_client.authorize_access_token()
+            except HTTPError as exc:
+                try:
+                    data = exc.response.json()
+                except ValueError:
+                    data = {'error': 'unknown', 'error_description': exc.response.text}
+                error = data.get('error', 'unknown')
+                desc = data.get('error_description', repr(data))
+                logging.getLogger('multipass.authlib').error(f'Getting token failed: {error}: %s', desc)
+                raise
             authinfo_token_data = {}
             if self.include_token == 'only':
                 return self.multipass.handle_auth_success(AuthInfo(self, token=token_data))
