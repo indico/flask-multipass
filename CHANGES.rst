@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.7
+-------------
+
+- Declare explicit compatibility with Python 3.10
+
 Version 0.4.6
 -------------
 
