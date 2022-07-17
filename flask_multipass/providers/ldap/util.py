@@ -135,7 +135,7 @@ def ldap_connect(settings, use_cache=True):
     ldap_connection = ReconnectLDAPObject(settings['uri'], bytes_mode=False)
     ldap_connection.protocol_version = ldap.VERSION3
     ldap_connection.set_option(ldap.OPT_REFERRALS, 0)
-    ldap_connection.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND if use_ldaps else ldap.OPT_X_TLS_NEVER)
+    ldap_connection.set_option( ldap.OPT_X_TLS_DEMAND if use_ldaps else ldap.OPT_X_TLS_NEVER, True)
     if settings['verify_cert'] and settings['cert_file']:
         ldap_connection.set_option(ldap.OPT_X_TLS_CACERTFILE, settings['cert_file'])
     ldap_connection.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
