@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.8
+-------------
+
+- Fix LDAP TLS configuration
+
 Version 0.4.7
 -------------
 
