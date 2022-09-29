@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.4.9
+-------------
+
+- Support authlib 1.1 (remove upper version pin)
+
 Version 0.4.8
 -------------
 
