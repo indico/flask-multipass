@@ -29,7 +29,7 @@ class Group(metaclass=SupportsMeta):
         If the group does not support listing members,
         :exc:`~exceptions.NotImplementedError` is raised.
 
-        :return: An iterable of :class:`.IdentityInfo` objects.
+        :return: An iterator of :class:`.IdentityInfo` objects.
         """
         if self.supports_member_list:
             raise NotImplementedError
