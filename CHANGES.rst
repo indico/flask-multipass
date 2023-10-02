@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.5
+-----------
+
+- Drop support for Python 3.7 and older (3.7 is EOL since June 2023)
+- Declare explicit compatibility with Python 3.11
+
 Version 0.4.9
 -------------
 
