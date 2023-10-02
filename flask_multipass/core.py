@@ -5,11 +5,11 @@
 # and/or modify it under the terms of the Revised BSD License.
 
 import itertools
+from urllib.parse import urlsplit
 
 from flask import current_app, flash, redirect, render_template, request, session, url_for
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
-from werkzeug.urls import url_parse
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed, MultipassException
@@ -134,7 +134,7 @@ class Multipass:
         If you override this and want to allow more hosts, make sure to use
         a whitelist of trusted hosts to avoid creating an open redirector.
         """
-        url_info = url_parse(url)
+        url_info = urlsplit(url)
         return not url_info.netloc or url_info.netloc == request.host
 
     def process_login(self, provider=None):

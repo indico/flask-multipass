@@ -4,9 +4,10 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
+from urllib.parse import urlsplit
+
 from flask import current_app, make_response, redirect, request, session, url_for
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from werkzeug.urls import url_parse
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
@@ -39,7 +40,7 @@ class SAMLAuthProvider(AuthProvider):
         return self.settings['saml_config']
 
     def _prepare_flask_request(self):
-        url_data = url_parse(request.url)
+        url_data = urlsplit(request.url)
         return {
             'https': 'on' if request.scheme == 'https' else 'off',
             'http_host': request.host,

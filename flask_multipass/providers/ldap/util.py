@@ -6,6 +6,7 @@
 
 from collections import namedtuple
 from contextlib import contextmanager
+from urllib.parse import urlsplit
 from warnings import warn
 
 import ldap
@@ -13,7 +14,6 @@ from flask import appcontext_tearing_down, current_app, g, has_app_context
 from ldap.controls import SimplePagedResultsControl
 from ldap.filter import escape_filter_chars
 from ldap.ldapobject import ReconnectLDAPObject
-from werkzeug.urls import url_parse
 
 from flask_multipass.exceptions import MultipassException
 from flask_multipass.providers.ldap.exceptions import LDAPServerError
@@ -129,7 +129,7 @@ def ldap_connect(settings, use_cache=True):
         if conn is not None:
             return conn
 
-    uri_info = url_parse(settings['uri'])
+    uri_info = urlsplit(settings['uri'])
     use_ldaps = uri_info.scheme == 'ldaps'
     credentials = (settings['bind_dn'], settings['bind_password'])
     ldap_connection = ReconnectLDAPObject(settings['uri'], bytes_mode=False)

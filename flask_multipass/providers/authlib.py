@@ -5,12 +5,12 @@
 # and/or modify it under the terms of the MIT License.
 
 import logging
+from urllib.parse import urlencode, urljoin
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
 from flask import current_app, redirect, request, url_for
 from requests.exceptions import HTTPError
-from werkzeug.urls import url_encode, url_join
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
@@ -104,8 +104,8 @@ class AuthlibAuthProvider(AuthProvider):
         except KeyError:
             logout_uri = self.authlib_client.load_server_metadata().get('end_session_endpoint')
         if logout_uri:
-            return_url = url_join(request.url_root, return_url)
-            query = url_encode({'post_logout_redirect_uri': return_url})
+            return_url = urljoin(request.url_root, return_url)
+            query = urlencode({'post_logout_redirect_uri': return_url})
             return redirect(logout_uri + '?' + query)
 
     @login_view
