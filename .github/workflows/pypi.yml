@@ -5,34 +5,82 @@ on:
     tags: [v*]
 
 jobs:
-  build-publish:
-    name: PyPI release 🐍 📦
-    runs-on: ubuntu-20.04
-
+  build:
+    name: Build package 📦
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      name: Set up Python 🐍
-      with:
-        python-version: '3.9'
-    - name: Check version 🔍
-      run: python .github/utils/check_version.py "${GITHUB_REF#refs/tags/v}"
-    - name: Install pypa/build 🔧
-      run: pip install --user build
-    - name: Build wheel and sdist 📦
-      run: >-
-        python -m
-        build
-        --sdist
-        --wheel
-        --outdir dist/
-        .
-    - name: Publish to Test PyPI 🧪
-      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
-      with:
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-    - name: Publish to PyPI 🚀
-      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        name: Set up Python 🐍
+        with:
+          python-version: '3.11'
+      - name: Check version 🔍
+        run: python .github/utils/check_version.py "${GITHUB_REF#refs/tags/v}"
+      - name: Install build deps 🔧
+        run: pip install --user build
+      - name: Build wheel and sdist 📦
+        run: >-
+          python -m
+          build
+          --sdist
+          --wheel
+          --outdir dist/
+          .
+      - uses: actions/upload-artifact@v3
+        name: Upload build artifacts 📦
+        with:
+          name: wheel
+          retention-days: 7
+          path: ./dist
+
+  create-github-release:
+    name: Create GitHub release 🐙
+    # Upload wheel to a GitHub release. It remains available as a build artifact for a while as well.
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v3
+        name: Download build artifacts 📦
+      - name: Create draft release 🐙
+        run: >-
+          gh release create
+          --draft
+          --repo ${{ github.repository }}
+          --title ${{ github.ref_name }}
+          ${{ github.ref_name }}
+          wheel/*
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  publish-pypi:
+    name: Publish 🚀
+    needs: build
+    # Wait for approval before attempting to upload to PyPI. This allows reviewing the
+    # files in the draft release.
+    environment: publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v3
+      # Try uploading to Test PyPI first, in case something fails.
+      - name: Publish to Test PyPI 🧪
+        uses: pypa/gh-action-pypi-publish@v1.8.10
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: wheel/
+      - name: Publish to PyPI 🚀
+        uses: pypa/gh-action-pypi-publish@v1.8.10
+        with:
+          packages-dir: wheel/
+      - name: Publish GitHub release 🐙
+        run: >-
+          gh release edit
+          --draft=false
+          --repo ${{ github.repository }}
+          ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
