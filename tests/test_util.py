@@ -4,7 +4,7 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from pkg_resources import EntryPoint
+from importlib.metadata import EntryPoint
 
 import pytest
 from flask import Flask
@@ -190,17 +190,23 @@ class MockEntryPoint(EntryPoint):
         return mapping[self.name]
 
 
+def mock_entry_point(name):
+    # we can't override MockEntryPoint's `__init__` to pass the default values since it's using
+    # a namedtuple in Python<3.11, and required args are handled via __new__ in namedtuple
+    return MockEntryPoint(name, 'dummy.value', 'dummy.group')
+
+
 @pytest.fixture
-def mock_entry_point(monkeypatch):
-    def _mock_iter_entry_points(_, name):
+def mock_entry_points(monkeypatch):
+    def _mock_entry_points(*, group, name):
         return {
-            'dummy': [MockEntryPoint('dummy', 'who.cares')],
-            'fake': [MockEntryPoint('fake', 'who.cares')],
-            'multi': [MockEntryPoint('dummy', 'who.cares'), MockEntryPoint('fake', 'who.cares')],
+            'dummy': [mock_entry_point('dummy')],
+            'fake': [mock_entry_point('fake')],
+            'multi': [mock_entry_point('dummy'), mock_entry_point('fake')],
             'unknown': []
         }[name]
 
-    monkeypatch.setattr('flask_multipass.util.iter_entry_points', _mock_iter_entry_points)
+    monkeypatch.setattr('flask_multipass.util.importlib_entry_points', _mock_entry_points)
 
 
 def test_resolve_provider_type_class():
@@ -209,7 +215,7 @@ def test_resolve_provider_type_class():
         resolve_provider_type(DummyBase, FakeDummy)
 
 
-@pytest.mark.usefixtures('mock_entry_point')
+@pytest.mark.usefixtures('mock_entry_points')
 def test_resolve_provider_type_invalid():
     # unknown type
     with pytest.raises(ValueError):
@@ -222,7 +228,7 @@ def test_resolve_provider_type_invalid():
         assert resolve_provider_type(DummyBase, 'fake')
 
 
-@pytest.mark.usefixtures('mock_entry_point')
+@pytest.mark.usefixtures('mock_entry_points')
 def test_resolve_provider_type():
     assert resolve_provider_type(DummyBase, 'dummy') is Dummy
 

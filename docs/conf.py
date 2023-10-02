@@ -62,16 +62,14 @@ author = 'Indico Team'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-import pkg_resources
+import importlib.metadata
 try:
-    release = pkg_resources.get_distribution('flask-multipass').version
-except pkg_resources.DistributionNotFound:
-    print('To build the documentation, The distribution information of')
-    print('Flask-Multipass has to be available.  Either install the package')
-    print('into your development environment or run "setup.py develop"')
-    print('to setup the metadata.  A virtualenv is recommended!')
+    release = importlib.metadata.version('flask-multipass')
+except importlib.metadata.PackageNotFoundError:
+    print('To build the documentation, The distribution information')
+    print('of Flask-Multipass has to be available.')
     sys.exit(1)
-del pkg_resources
+del importlib
 
 if 'dev' in release:
     release = release.split('dev')[0] + 'dev'

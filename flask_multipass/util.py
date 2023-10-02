@@ -5,10 +5,10 @@
 # and/or modify it under the terms of the Revised BSD License.
 
 from functools import wraps
+from importlib.metadata import entry_points as importlib_entry_points
 from inspect import getmro, isclass
 
 from flask import current_app
-from pkg_resources import iter_entry_points
 
 from flask_multipass.exceptions import MultipassException
 
@@ -143,12 +143,13 @@ def resolve_provider_type(base, type_, registry=None):
     if registry is not None and type_ in registry:
         cls = registry[type_]
     else:
-        entry_points = list(iter_entry_points(base._entry_point, type_))
+        entry_points = importlib_entry_points(group=base._entry_point, name=type_)
         if not entry_points:
             raise ValueError('Unknown type: ' + type_)
         elif len(entry_points) != 1:
-            raise RuntimeError('Type {} is not unique. Defined in {}'.format(
-                type_, ', '.join(ep.module_name for ep in entry_points)))
+            # TODO: remove the getattr check after dropping python 3.8
+            defs = ', '.join(getattr(ep, 'module', ep.value) for ep in entry_points)
+            raise RuntimeError(f'Type {type_} is not unique. Defined in {defs}')
         entry_point = entry_points[0]
         cls = entry_point.load()
     if not issubclass(cls, base):
