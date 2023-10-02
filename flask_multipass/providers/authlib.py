@@ -10,7 +10,7 @@ from urllib.parse import urlencode, urljoin
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
 from flask import current_app, redirect, request, url_for
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, RequestException
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
@@ -96,7 +96,12 @@ class AuthlibAuthProvider(AuthProvider):
         return url_for(self.authorized_endpoint, _external=True)
 
     def initiate_external_login(self):
-        return self.authlib_client.authorize_redirect(self._get_redirect_uri())
+        try:
+            return self.authlib_client.authorize_redirect(self._get_redirect_uri())
+        except RequestException:
+            logging.getLogger('multipass.authlib').exception('Initiating Authlib login failed')
+            multipass_exc = AuthenticationFailed('Logging in is currently not possible due to an error', provider=self)
+            return self.multipass.handle_auth_error(multipass_exc, True)
 
     def process_logout(self, return_url):
         try:

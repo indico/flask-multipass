@@ -7,6 +7,7 @@ Version 0.5
 - Drop support for Python 3.7 and older (3.7 is EOL since June 2023)
 - Declare explicit compatibility with Python 3.11
 - Support werkzeug 3.0
+- Fail more gracefully if Authlib (OIDC) login provider is down
 
 Version 0.4.9
 -------------
