@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - master
-      - '*-maintenance'
+      - '*.x'
   pull_request:
     branches:
       - master
-      - '*-maintenance'
+      - '*.x'
 
 jobs:
   tests:
