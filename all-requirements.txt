@@ -6,5 +6,6 @@ flask
 flask_wtf
 flask_sqlalchemy
 wtforms
+sphinx>=7.2.6
 flask_sphinx_themes
 authlib
