@@ -143,7 +143,7 @@ def test_ldap_context(mocker, settings, options):
     ldap_conn = MagicMock()
     ldap_initialize.return_value = ldap_conn
     with ldap_context(settings) as ldap_ctx:
-        ldap_initialize.called_once_with(settings['uri'])
+        ldap_initialize.assert_called_once_with(settings['uri'], bytes_mode=False)
         assert ldap_conn.protocol_version == ldap.VERSION3, 'LDAP v3 has not been set'
         assert ldap_conn.set_option.mock_calls == [call.set_option(*args) for args in options], 'Not all options set'
         if settings['starttls']:
@@ -154,7 +154,6 @@ def test_ldap_context(mocker, settings, options):
         ldap_conn.simple_bind_s.assert_called_once_with(settings['bind_dn'], settings['bind_password'])
         assert current_ldap == ldap_ctx, 'The LDAP context has not been set as the current one'
         assert current_ldap == LDAPContext(connection=ldap_conn, settings=settings)
-    ldap_conn.unbind_s.called_once()
     assert not current_ldap, 'The LDAP context has not been unset'
 
 
