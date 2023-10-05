@@ -19,7 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: Style, python: '3.10', tox: style}
+          - {name: Style, python: '3.12', tox: style}
+          - {name: '3.12', python: '3.12', tox: py312}
           - {name: '3.11', python: '3.11', tox: py311}
           - {name: '3.10', python: '3.10', tox: py310}
           - {name: '3.9', python: '3.9', tox: py39}
