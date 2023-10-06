@@ -4,6 +4,7 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
+import sys
 from importlib.metadata import EntryPoint
 
 import pytest
@@ -170,7 +171,7 @@ def test_login_view(mocker):
 
 
 class DummyBase:
-    _entry_point = 'dummy'
+    _entry_point = 'fakeproviders'
 
 
 class Dummy(DummyBase):
@@ -190,21 +191,29 @@ class MockEntryPoint(EntryPoint):
         return mapping[self.name]
 
 
-def mock_entry_point(name):
+def mock_entry_point(name, n=0):
     # we can't override MockEntryPoint's `__init__` to pass the default values since it's using
     # a namedtuple in Python<3.11, and required args are handled via __new__ in namedtuple
-    return MockEntryPoint(name, 'dummy.value', 'dummy.group')
+    return MockEntryPoint(name, f'dummy.value.{n}', 'dummy.group')
 
 
 @pytest.fixture
 def mock_entry_points(monkeypatch):
-    def _mock_entry_points(*, group, name):
-        return {
-            'dummy': [mock_entry_point('dummy')],
-            'fake': [mock_entry_point('fake')],
-            'multi': [mock_entry_point('dummy'), mock_entry_point('fake')],
-            'unknown': []
-        }[name]
+    MOCK_EPS = {
+        'fakeproviders': [
+            mock_entry_point('dummy'),
+            mock_entry_point('fake'),
+            mock_entry_point('multi'),
+            mock_entry_point('multi', 1),
+        ]
+    }
+
+    if sys.version_info < (3, 10):
+        def _mock_entry_points():
+            return MOCK_EPS
+    else:
+        def _mock_entry_points(*, group, name):
+            return [ep for ep in MOCK_EPS[group] if ep.name == name]
 
     monkeypatch.setattr('flask_multipass.util.importlib_entry_points', _mock_entry_points)
 

@@ -4,6 +4,7 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
+import sys
 from functools import wraps
 from importlib.metadata import entry_points as importlib_entry_points
 from inspect import getmro, isclass
@@ -143,14 +144,17 @@ def resolve_provider_type(base, type_, registry=None):
     if registry is not None and type_ in registry:
         cls = registry[type_]
     else:
-        entry_points = importlib_entry_points(group=base._entry_point, name=type_)
+        if sys.version_info < (3, 10):
+            entry_points = {ep for ep in importlib_entry_points().get(base._entry_point, []) if ep.name == type_}
+        else:
+            entry_points = importlib_entry_points(group=base._entry_point, name=type_)
         if not entry_points:
             raise ValueError('Unknown type: ' + type_)
         elif len(entry_points) != 1:
             # TODO: remove the getattr check after dropping python 3.8
             defs = ', '.join(getattr(ep, 'module', ep.value) for ep in entry_points)
             raise RuntimeError(f'Type {type_} is not unique. Defined in {defs}')
-        entry_point = entry_points[0]
+        entry_point = list(entry_points)[0]
         cls = entry_point.load()
     if not issubclass(cls, base):
         raise TypeError(f'Found a class {cls} which is not a subclass of {base}')

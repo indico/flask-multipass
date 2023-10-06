@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.5.1
+-------------
+
+- Fix compatibility with Python 3.8 and 3.9
+
 Version 0.5
 -----------
 

@@ -218,3 +218,12 @@ def test_handle_auth_error_with_redirect(mocker):
         multipass.handle_auth_error(AuthenticationFailed(), redirect_to_login=True)
         assert flash.called
         redirect.assert_called_with(app.config['MULTIPASS_LOGIN_URLS'][0])
+
+
+def test_load_providers_from_entrypoints():
+    app = Flask('test')
+    app.config['SECRET_KEY'] = 'testing'
+    app.config['MULTIPASS_AUTH_PROVIDERS'] = {'test': {'type': 'static'}}
+    app.config['MULTIPASS_IDENTITY_PROVIDERS'] = {'test': {'type': 'static'}}
+    app.config['MULTIPASS_PROVIDER_MAP'] = {'test': 'test'}
+    Multipass(app)
