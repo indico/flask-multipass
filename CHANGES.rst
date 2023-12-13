@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.5.2
+-------------
+
+- Add ``ldap_or_authinfo`` identity provider which behaves exactly like the ``ldap``
+  provider, but if the user cannot be found in LDAP, it falls back to the data
+  from the auth provider (typically shibboleth)
+
 Version 0.5.1
 -------------
 

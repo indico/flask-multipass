@@ -13,7 +13,7 @@ from .group import Group
 from .identity import IdentityProvider
 
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __all__ = ('Multipass', 'AuthProvider', 'IdentityProvider', 'AuthInfo', 'IdentityInfo', 'Group', 'MultipassException',
            'AuthenticationFailed', 'IdentityRetrievalFailed', 'GroupRetrievalFailed', 'NoSuchUser',
            'InvalidCredentials')
