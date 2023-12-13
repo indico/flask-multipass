@@ -235,14 +235,16 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
 
 
 class AuthFallbackLDAPIdentityProvider(LDAPIdentityProvider):
-    """Provides identity information using LDAP with a fallback to authorization data.
-
-    This identity provider is meant to be used together with the auth providers, like
-    Shibboleth, who can authorize access to users who are not present is the LDAP directory.
-    By default it will use the identifier returned by the auth provider and lookup all the data 
-    in LDAP.
-
-    In case the user does not have data in LDAP, the data provided via auth provider will be used.
+    """Provides identity information using LDAP with a fallback to auth provider data.
+    
+    This identity provider is meant to be used together with an auth provider that provides
+    all the required data (in particular the Shibboleth provider).
+    
+    By default it will use only the identifier from the auth provider and look up all the data
+    from LDAP.
+    
+    In case the user does not have data in LDAP however, the data provided from the auth provider
+    will be used.
     """
 
     def get_identity_from_auth(self, auth_info):
