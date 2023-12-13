@@ -232,3 +232,21 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
             for group_dn, group_data in self._search_groups(search_filter):
                 group_name = to_unicode(group_data[self.ldap_settings['gid']][0])
                 yield self.group_class(self, group_name, group_dn)
+
+
+class AuthFallbackLDAPIdentityProvider(LDAPIdentityProvider):
+    """Provides identity information using LDAP with a fallback to authorization data.
+
+    This identity provider is meant to be used together with the auth providers, like
+    Shibboleth, who can authorize access to users who are not present is the LDAP directory.
+    By default it will use the identifier returned by the auth provider and lookup all the data 
+    in LDAP.
+
+    In case the user does not have data in LDAP, the data provided via auth provider will be used.
+    """
+
+    def get_identity_from_auth(self, auth_info):
+        identifier = auth_info.data.get('identifier')
+        if identity := super().get_identity_from_auth(auth_info):
+            return identity
+        return IdentityInfo(self, identifier=identifier, **auth_info.data)
