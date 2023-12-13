@@ -236,13 +236,13 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
 
 class AuthFallbackLDAPIdentityProvider(LDAPIdentityProvider):
     """Provides identity information using LDAP with a fallback to auth provider data.
-    
+
     This identity provider is meant to be used together with an auth provider that provides
     all the required data (in particular the Shibboleth provider).
-    
+
     By default it will use only the identifier from the auth provider and look up all the data
     from LDAP.
-    
+
     In case the user does not have data in LDAP however, the data provided from the auth provider
     will be used.
     """
