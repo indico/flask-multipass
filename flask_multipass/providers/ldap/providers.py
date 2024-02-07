@@ -116,7 +116,12 @@ class LDAPGroup(Group):
                 user_filter = build_user_search_filter({self.ldap_settings['member_of_attr']: {group_dn}}, exact=True)
                 for _, user_data in self.provider._search_users(user_filter):
                     user_data = to_unicode(user_data)
-                    yield IdentityInfo(self.provider, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+                    try:
+                        identifier = user_data[self.ldap_settings['uid']][0]
+                    except KeyError:
+                        # user does not have an identifier -> skip it
+                        continue
+                    yield IdentityInfo(self.provider, identifier=identifier, **user_data)
                 group_filter = build_group_search_filter({self.ldap_settings['member_of_attr']: {group_dn}}, exact=True)
                 subgroups = list(self.provider._search_groups(group_filter))
                 try:

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.5.3
+-------------
+
+- Skip LDAP group members that do not have the specified ``uid`` attribute set instead
+  of failing with an error
+
 Version 0.5.2
 -------------
 
