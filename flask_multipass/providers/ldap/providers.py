@@ -202,7 +202,12 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
                 raise IdentityRetrievalFailed("Unable to generate search filter from criteria", provider=self)
             for _, user_data in self._search_users(search_filter):
                 user_data = to_unicode(user_data)
-                yield IdentityInfo(self, identifier=user_data[self.ldap_settings['uid']][0], **user_data)
+                try:
+                    identifier = user_data[self.ldap_settings['uid']][0]
+                except KeyError:
+                    # user does not have an identifier -> skip it
+                    continue
+                yield IdentityInfo(self, identifier=identifier, **user_data)
 
     def get_identity_groups(self, identifier):
         groups = set()
