@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.5.5
+-------------
+
+- Ensure only valid schemas (http and https) can be used when validating the ``next`` URL
+
 Version 0.5.4
 -------------
 
