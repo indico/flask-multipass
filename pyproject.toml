@@ -1,0 +1,51 @@
+[project]
+name = 'Flask-Multipass'
+version = '0.5.5'
+description = 'A pluggable solution for multi-backend authentication with Flask'
+readme = 'README.rst'
+license = 'BSD-3-Clause'
+authors = [{ name = 'Indico Team', email = 'indico-team@cern.ch' }]
+classifiers = [
+    'Environment :: Web Environment',
+    'Framework :: Flask',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
+requires-python = '~=3.8'
+dependencies = ['flask', 'blinker']
+
+[project.optional-dependencies]
+dev = ['pytest', 'pytest-cov', 'pytest-mock']
+authlib = ['authlib>=0.14.1', 'requests']
+ldap = ['flask-wtf', 'python-ldap>=3.3.1,<4.0']
+saml = ['python3-saml>=1.10.1,<1.11']
+sqlalchemy = ['sqlalchemy', 'flask-wtf']
+
+[project.urls]
+GitHub = 'https://github.com/indico/flask-multipass'
+
+[project.entry-points.'flask_multipass.auth_providers']
+ldap = 'flask_multipass.providers.ldap:LDAPAuthProvider'
+authlib = 'flask_multipass.providers.authlib:AuthlibAuthProvider'
+saml = 'flask_multipass.providers.saml:SAMLAuthProvider'
+shibboleth = 'flask_multipass.providers.shibboleth:ShibbolethAuthProvider'
+static = 'flask_multipass.providers.static:StaticAuthProvider'
+
+[project.entry-points.'flask_multipass.identity_providers']
+ldap = 'flask_multipass.providers.ldap:LDAPIdentityProvider'
+ldap_or_authinfo = 'flask_multipass.providers.ldap:AuthFallbackLDAPIdentityProvider'
+authlib = 'flask_multipass.providers.authlib:AuthlibIdentityProvider'
+saml = 'flask_multipass.providers.saml:SAMLIdentityProvider'
+shibboleth = 'flask_multipass.providers.shibboleth:ShibbolethIdentityProvider'
+static = 'flask_multipass.providers.static:StaticIdentityProvider'
+
+[build-system]
+requires = ['hatchling==1.25.0']
+build-backend = 'hatchling.build'
+
+[tool.hatch.build]
+exclude = ['docs/_build', '.github', '.python-version']

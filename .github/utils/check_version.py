@@ -1,13 +1,10 @@
-import os
 import sys
-from importlib.util import find_spec
+import tomllib
+from pathlib import Path
 
-from setuptools.config.expand import StaticModule
 
-
-package = 'flask_multipass'
-sys.path.insert(0, os.getcwd())
-version = StaticModule(package, find_spec(package)).__version__
+data = tomllib.loads(Path('pyproject.toml').read_text())
+version = data['project']['version']
 tag_version = sys.argv[1]
 
 if tag_version != version:

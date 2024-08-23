@@ -5,6 +5,7 @@ Version 0.5.5
 -------------
 
 - Ensure only valid schemas (http and https) can be used when validating the ``next`` URL
+- Deprecate the ``flask_multipass.__version__`` attribute
 
 Version 0.5.4
 -------------
