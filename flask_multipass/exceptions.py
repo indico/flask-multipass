@@ -32,8 +32,10 @@ class NoSuchUser(AuthenticationFailed):
 class InvalidCredentials(AuthenticationFailed):
     """Indicates a failure to authenticate using the given credentials."""
 
-    def __init__(self, details=None, provider=None):
+    def __init__(self, details=None, provider=None, username=None, identifier=None):
         AuthenticationFailed.__init__(self, 'Invalid credentials', details=details, provider=provider)
+        self.username = username
+        self.identifier = identifier
 
 
 class IdentityRetrievalFailed(MultipassException):
