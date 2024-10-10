@@ -54,6 +54,7 @@ The following configuration values exist for Flask-Multipass:
 ``MULTIPASS_FAILURE_CATEGORY``         Category of message when flashing after unsuccessful login
 ``MULTIPASS_ALL_MATCHING_IDENTITIES``  If true, all matching identities are passed after successful authentication
 ``MULTIPASS_REQUIRE_IDENTITY``         If true, ``IdentityRetrievalFailed`` is raised when no matching identities are found, otherwise empty list is passed
+``MULTIPASS_HIDE_NO_SUCH_USER``        If true, ``InvalidCredentials`` instead of ``NoSuchUser`` is raised when no user is found in the system
 ====================================== =========================================
 
 A configuration example can be found here: :ref:`config_example`
