@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.5.6
+-------------
+
+- Reject invalid ``next`` URLs with backslashes that could be used to trick browsers into
+  redirecting to an otherwise disallowed host when doing client-side redirects
+
 Version 0.5.5
 -------------
 

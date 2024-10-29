@@ -134,8 +134,13 @@ class Multipass:
         If you override this and want to allow more hosts, make sure to use
         a whitelist of trusted hosts to avoid creating an open redirector.
         """
-        url_info = urlsplit(url)
+        # Browsers treat backslashes like forward slashes, while urllib doesn't.
+        # Since we just want to validate scheme and netloc here, we normalize
+        # slashes to those recognized by urllib.
+        url_info = urlsplit(url.replace('\\', '/'))
         if url_info.scheme and url_info.scheme not in {'http', 'https'}:
+            return False
+        if url_info.scheme and not url_info.netloc:
             return False
         return not url_info.netloc or url_info.netloc == request.host
 
