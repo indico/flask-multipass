@@ -135,8 +135,9 @@ class Multipass:
         a whitelist of trusted hosts to avoid creating an open redirector.
         """
         url_info = urlsplit(url)
-        if (url_info.scheme and url_info.scheme not in {'http', 'https'})\
-            or (url_info.scheme in {'http', 'https'} and not url_info.netloc):
+        if url_info.scheme and url_info.scheme not in {'http', 'https'}:
+            return False
+        if url_info.scheme in {'http', 'https'} and not url_info.netloc:
             return False
         return not url_info.netloc or url_info.netloc == request.host
 
