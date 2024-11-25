@@ -15,9 +15,18 @@ from flask_multipass.auth import AuthProvider
 from flask_multipass.core import _MultipassState
 from flask_multipass.exceptions import AuthenticationFailed
 from flask_multipass.identity import IdentityProvider
-from flask_multipass.util import (classproperty, get_state, resolve_provider_type, convert_provider_data, login_view,
-                                  get_canonical_provider_map, validate_provider_map, SupportsMeta, get_provider_base,
-                                  convert_app_data)
+from flask_multipass.util import (
+    SupportsMeta,
+    classproperty,
+    convert_app_data,
+    convert_provider_data,
+    get_canonical_provider_map,
+    get_provider_base,
+    get_state,
+    login_view,
+    resolve_provider_type,
+    validate_provider_map,
+)
 
 
 @pytest.mark.parametrize(('config_map', 'canonical_map'), (
@@ -199,21 +208,21 @@ def mock_entry_point(name, n=0):
 
 @pytest.fixture
 def mock_entry_points(monkeypatch):
-    MOCK_EPS = {
+    mock_eps = {
         'fakeproviders': [
             mock_entry_point('dummy'),
             mock_entry_point('fake'),
             mock_entry_point('multi'),
             mock_entry_point('multi', 1),
-        ]
+        ],
     }
 
     if sys.version_info < (3, 10):
         def _mock_entry_points():
-            return MOCK_EPS
+            return mock_eps
     else:
         def _mock_entry_points(*, group, name):
-            return [ep for ep in MOCK_EPS[group] if ep.name == name]
+            return [ep for ep in mock_eps[group] if ep.name == name]
 
     monkeypatch.setattr('flask_multipass.util.importlib_entry_points', _mock_entry_points)
 

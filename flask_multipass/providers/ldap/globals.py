@@ -6,7 +6,6 @@
 
 from werkzeug.local import LocalProxy, LocalStack
 
-
 _ldap_ctx_stack = LocalStack()
 
 #: Proxy to the current ldap connection and settings

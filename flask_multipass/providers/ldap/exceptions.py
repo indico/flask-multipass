@@ -8,8 +8,8 @@ from flask_multipass.exceptions import MultipassException
 
 
 class LDAPException(MultipassException):
-    """Base class for Multipass LDAP exceptions"""
+    """Base class for Multipass LDAP exceptions."""
 
 
 class LDAPServerError(LDAPException):
-    """Indicates the LDAP server had an unexpected behavior"""
+    """Indicates the LDAP server had an unexpected behavior."""

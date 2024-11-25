@@ -17,12 +17,16 @@ from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFa
 from flask_multipass.group import Group
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.providers.ldap.globals import current_ldap
-from flask_multipass.providers.ldap.operations import (build_group_search_filter, build_user_search_filter,
-                                                       get_group_by_id, get_token_groups_from_user_dn, get_user_by_id,
-                                                       search)
+from flask_multipass.providers.ldap.operations import (
+    build_group_search_filter,
+    build_user_search_filter,
+    get_group_by_id,
+    get_token_groups_from_user_dn,
+    get_user_by_id,
+    search,
+)
 from flask_multipass.providers.ldap.util import ldap_context, to_unicode
 from flask_multipass.util import convert_app_data
-
 
 try:
     import certifi
@@ -49,16 +53,18 @@ class LDAPProviderMixin:
         self.ldap_settings.setdefault('uid', 'uid')
         self.ldap_settings.setdefault('user_filter', '(objectClass=person)')
         if not self.ldap_settings['cert_file'] and self.ldap_settings['verify_cert']:
-            warn("You should install certifi or provide a certificate file in order to verify the LDAP certificate.")
+            warn('You should install certifi or provide a certificate file in order to verify the LDAP certificate.',
+                 stacklevel=1)
         # Convert LDAP settings to text in case someone gave us bytes
         self.settings['ldap'] = to_unicode(self.settings['ldap'])
 
 
 class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
-    """Provides authentication using LDAP
+    """Provides authentication using LDAP.
 
     The type name to instantiate this provider is *ldap*.
     """
+
     login_form = LoginForm
 
     def __init__(self, *args, **kwargs):
@@ -81,7 +87,7 @@ class LDAPAuthProvider(LDAPProviderMixin, AuthProvider):
 
 
 class LDAPGroup(Group):
-    """A group from the LDAP identity provider"""
+    """A group from the LDAP identity provider."""
 
     #: If it is possible to get the list of members of a group.
     supports_member_list = True
@@ -135,7 +141,7 @@ class LDAPGroup(Group):
             if not user_dn:
                 return False
             if self.ldap_settings['ad_group_style']:
-                group_dn, group_data = get_group_by_id(self.name, attributes=['objectSid'])
+                _group_dn, group_data = get_group_by_id(self.name, attributes=['objectSid'])
                 group_sids = group_data.get('objectSid')
                 token_groups = get_token_groups_from_user_dn(user_dn)
                 return any(group_sid in token_groups for group_sid in group_sids)
@@ -199,7 +205,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         with ldap_context(self.ldap_settings):
             search_filter = build_user_search_filter(criteria, self.settings['mapping'], exact=exact)
             if not search_filter:
-                raise IdentityRetrievalFailed("Unable to generate search filter from criteria", provider=self)
+                raise IdentityRetrievalFailed('Unable to generate search filter from criteria', provider=self)
             for _, user_data in self._search_users(search_filter):
                 user_data = to_unicode(user_data)
                 try:
@@ -212,7 +218,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
     def get_identity_groups(self, identifier):
         groups = set()
         with ldap_context(self.ldap_settings):
-            user_dn, user_data = get_user_by_id(identifier, self._attributes)
+            user_dn, _user_data = get_user_by_id(identifier, self._attributes)
             if not user_dn:
                 return set()
             if self.ldap_settings['ad_group_style']:
@@ -238,7 +244,7 @@ class LDAPIdentityProvider(LDAPProviderMixin, IdentityProvider):
         with ldap_context(self.ldap_settings):
             search_filter = build_group_search_filter({self.ldap_settings['gid']: {name}}, exact=exact)
             if not search_filter:
-                raise GroupRetrievalFailed("Unable to generate search filter from criteria", provider=self)
+                raise GroupRetrievalFailed('Unable to generate search filter from criteria', provider=self)
             for group_dn, group_data in self._search_groups(search_filter):
                 group_name = to_unicode(group_data[self.ldap_settings['gid']][0])
                 yield self.group_class(self, group_name, group_dn)

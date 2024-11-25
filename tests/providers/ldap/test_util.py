@@ -20,7 +20,7 @@ from flask_multipass.util import convert_app_data
 @pytest.mark.parametrize(('criteria', 'type_filter', 'mapping', 'exact', 'expected'), (
     ({}, '', None, True, None),
     ({}, '', '(|(objectClass=Person)(objectCategory=user))', True, None),
-    ({'cn': ['foobar'], 'objectSid': [b'\00\xa0foo']}, '', None, True, r"(&(cn=foobar)(objectSid=\00\a0\66\6f\6f))"),
+    ({'cn': ['foobar'], 'objectSid': [b'\00\xa0foo']}, '', None, True, r'(&(cn=foobar)(objectSid=\00\a0\66\6f\6f))'),
     ({'givenName': ['Alain'], 'sn': ["D'Issoir"]}, '', None, True, "(&(givenName=Alain)(sn=D'Issoir))"),
     ({'givenName': ['Alain'], 'last_name': ["D'Issoir"]}, '', {'last_name': 'sn'}, True,
      "(&(givenName=Alain)(sn=D'Issoir))"),
@@ -40,17 +40,17 @@ from flask_multipass.util import convert_app_data
      {'first_name': 'givenName', 'last_name': 'sn'}, False,
      "(&(givenName=*Alain*)(sn=*D'Issoir*)(|(objectClass=Person)(objectCategory=user)))"),
     ({'email': ['alaindissoir@mail.com']}, '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, False,
-     "(&(mail=*alaindissoir@mail.com*)(|(objectClass=Person)(objectCategory=user)))"),
+     '(&(mail=*alaindissoir@mail.com*)(|(objectClass=Person)(objectCategory=user)))'),
     ({'email': ['alaindissoir@mail.com']}, '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, True,
-     "(&(mail=alaindissoir@mail.com)(|(objectClass=Person)(objectCategory=user)))"),
+     '(&(mail=alaindissoir@mail.com)(|(objectClass=Person)(objectCategory=user)))'),
     ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
      '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, False,
-     "(&(|(mail=*alaindissoir@mail.com*)(mail=*alain@dissoir.com*)(mail=*alaindi@mail.com*))"
-     "(|(objectClass=Person)(objectCategory=user)))"),
+     '(&(|(mail=*alaindissoir@mail.com*)(mail=*alain@dissoir.com*)(mail=*alaindi@mail.com*))'
+     '(|(objectClass=Person)(objectCategory=user)))'),
     ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
      '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, True,
-     "(&(|(mail=alaindissoir@mail.com)(mail=alain@dissoir.com)(mail=alaindi@mail.com))"
-     "(|(objectClass=Person)(objectCategory=user)))")
+     '(&(|(mail=alaindissoir@mail.com)(mail=alain@dissoir.com)(mail=alaindi@mail.com))'
+     '(|(objectClass=Person)(objectCategory=user)))'),
 ))
 def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact, expected):
     def _convert_app_data(*args, **kwargs):
@@ -61,9 +61,9 @@ def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact,
 
 @pytest.mark.parametrize(('data', 'expected'), (
     ({'uid': [b'amazzing'], 'givenName': [b'Antonio'], 'sn': [b'Mazzinghy']},
-     {'uid': [u'amazzing'], 'givenName': [u'Antonio'], 'sn': [u'Mazzinghy']}),
+     {'uid': ['amazzing'], 'givenName': ['Antonio'], 'sn': ['Mazzinghy']}),
     ({'uid': ['poisson'], 'company': [b'Chez Ordralfab\xc3\xa9tix'], 'sn': [b'I\xc3\xa9losubmarine']},
-     {'uid': [u'poisson'], 'company': [u'Chez Ordralfab\xe9tix'], 'sn': [u'I\xe9losubmarine']})
+     {'uid': ['poisson'], 'company': ['Chez Ordralfab\xe9tix'], 'sn': ['I\xe9losubmarine']}),
 ))
 def test_to_unicode(data, expected):
     assert to_unicode(data) == expected
@@ -135,7 +135,7 @@ def test_to_unicode(data, expected):
       'verify_cert': False,
       'starttls': False},
      ((ldap.OPT_REFERRALS, 0),
-      (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0)))
+      (ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW), (ldap.OPT_X_TLS_NEWCTX, 0))),
 ))
 def test_ldap_context(mocker, settings, options):
     warn = mocker.patch('flask_multipass.providers.ldap.util.warn')
@@ -148,7 +148,8 @@ def test_ldap_context(mocker, settings, options):
         assert ldap_conn.set_option.mock_calls == [call.set_option(*args) for args in options], 'Not all options set'
         if settings['starttls']:
             if urlsplit(settings['uri']).scheme == 'ldaps':
-                warn.assert_called_once_with('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)')
+                warn.assert_called_once_with('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)',
+                                             stacklevel=1)
             else:
                 ldap_conn.start_tls_s.assert_called_once_with()
         ldap_conn.simple_bind_s.assert_called_once_with(settings['bind_dn'], settings['bind_password'])
@@ -175,7 +176,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
         'bind_password': 'LemotdepassedeLDAP',
         'verify_cert': True,
         'cert_file': '/etc/ssl/certs/ca-certificates.crt',
-        'starttls': True
+        'starttls': True,
     }
 
     ldap_initialize = mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
@@ -200,7 +201,7 @@ def test_ldap_context_invalid_credentials(mocker, method, triggered_exception, c
     ('dc=example,dc=com', '(&(mail=alain.dissoir@mail.com)(objectCategory=user))',
      [(None, {'cn': ['Configuration']})], (None, None)),
     ('dc=example,dc=com', '(&(mail=alain.dissoir@mail.com)(objectCategory=user))',
-     [(None, None), (None, {'cn': ['Configuration']})], (None, None))
+     [(None, None), (None, {'cn': ['Configuration']})], (None, None)),
 ))
 def test_find_one(mocker, base_dn, search_filter, data, expected):
     settings = {
@@ -210,7 +211,7 @@ def test_find_one(mocker, base_dn, search_filter, data, expected):
         'verify_cert': True,
         'cert_file': '/etc/ssl/certs/ca-certificates.crt',
         'starttls': True,
-        'timeout': 10
+        'timeout': 10,
     }
 
     ldap_search = MagicMock(return_value=data)

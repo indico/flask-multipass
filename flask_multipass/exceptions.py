@@ -5,7 +5,7 @@
 # and/or modify it under the terms of the Revised BSD License.
 
 class MultipassException(Exception):
-    """Base class for Multipass exceptions"""
+    """Base class for Multipass exceptions."""
 
     def __init__(self, message=None, details=None, provider=None):
         args = (message,) if message else ()
@@ -18,7 +18,7 @@ class AuthenticationFailed(MultipassException):
     """
     Indicates an authentication failure that was caused by the user,
     e.g. by entering the wrong credentials or not authorizing the
-    application
+    application.
     """
 
 
@@ -37,8 +37,8 @@ class InvalidCredentials(AuthenticationFailed):
 
 
 class IdentityRetrievalFailed(MultipassException):
-    """Indicates a failure while retrieving identity information"""
+    """Indicates a failure while retrieving identity information."""
 
 
 class GroupRetrievalFailed(MultipassException):
-    """Indicates a failure while retrieving group information"""
+    """Indicates a failure while retrieving group information."""

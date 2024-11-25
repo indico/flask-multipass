@@ -18,7 +18,7 @@ class LoginForm(FlaskForm):
 
 
 class SQLAlchemyAuthProviderBase(AuthProvider):
-    """Provides authentication against passwords stored in SQLAlchemy
+    """Provides authentication against passwords stored in SQLAlchemy.
 
     This provider expects your application to have an "identity" model
     which maps identifiers from IdentityInfo objects to users. For further
@@ -27,6 +27,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
 
     To use it, you have to subclass it in your application.
     """
+
     #: The :class:`~flask_wtf.Form` that is used for the login dialog
     login_form = LoginForm
     #: The Flask-SQLAlchemy model representing a user identity
@@ -41,7 +42,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
     identifier_column = None
 
     def check_password(self, identity, password):
-        """Checks the entered password
+        """Checks the entered password.
 
         :param identity: An instance of :attr:`identity_model`.
         :param password: The password entered by the user.
@@ -60,7 +61,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
 
 
 class SQLAlchemyIdentityProviderBase(IdentityProvider):
-    """Provides identity information for users stored in SQLAlchemy
+    """Provides identity information for users stored in SQLAlchemy.
 
     This provider expects your application to have an "identity" model
     which maps identifiers from IdentityInfo objects to users. For further
@@ -72,6 +73,7 @@ class SQLAlchemyIdentityProviderBase(IdentityProvider):
 
     To use it, you have to subclass it in your application.
     """
+
     #: The relationship of the identity model that points to the
     #: associated user object.  This can be either a SQLAlchemy
     #: relationship object such as ``Identity.user`` or a string

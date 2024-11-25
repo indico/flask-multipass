@@ -12,7 +12,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_multipass import Multipass
 from flask_multipass.providers.sqlalchemy import SQLAlchemyAuthProviderBase, SQLAlchemyIdentityProviderBase
 
-
 application = app = Flask(__name__)
 app.debug = True
 app.secret_key = 'fma-example'

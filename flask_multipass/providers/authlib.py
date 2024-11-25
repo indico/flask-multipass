@@ -18,7 +18,6 @@ from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFa
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import login_view
 
-
 # jwt/oidc-specific fields that are not relevant to applications
 INTERNAL_FIELDS = ('nonce', 'session_state', 'acr', 'jti', 'exp', 'azp', 'iss', 'iat', 'auth_time', 'typ', 'nbf', 'aud')
 
@@ -132,7 +131,7 @@ class AuthlibAuthProvider(AuthProvider):
                 logging.getLogger('multipass.authlib').error(f'Getting token failed: {error}: %s', desc)
                 raise
             authinfo_token_data = {}
-            if self.include_token == 'only':
+            if self.include_token == 'only':  # noqa: S105
                 return self.multipass.handle_auth_success(AuthInfo(self, token=token_data))
             elif self.include_token:
                 authinfo_token_data['token'] = token_data

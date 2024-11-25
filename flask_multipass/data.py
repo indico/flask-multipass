@@ -37,7 +37,7 @@ class AuthInfo:
             self.secure_login = is_secure_login(self)
 
     def map(self, mapping):
-        """Creates a new instance with transformed data keys
+        """Creates a new instance with transformed data keys.
 
         :param mapping: The dict mapping the current data keys to the
                         the keys that are expected by the identity

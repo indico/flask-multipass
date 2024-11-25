@@ -23,12 +23,12 @@ from flask_multipass.providers.ldap import LDAPAuthProvider, LDAPGroup, LDAPIden
         'verify_cert': True,
         'starttls': True,
         'timeout': 10,
-        'uid': 'uid'
+        'uid': 'uid',
     }}, {'username': 'alaindi', 'password': 'LemotdepassedeLDAP'}),
 ))
 def test_authenticate(mocker, settings, data):
     def user_dn(user):
-        return 'dn={0},dc=example,dc=com'.format(user)
+        return f'dn={user},dc=example,dc=com'
     mocker.patch('flask_multipass.providers.ldap.providers.get_user_by_id',
                  return_value=(user_dn(data['username']), {settings['ldap']['uid']: [data['username']]}))
     ldap_conn = MagicMock(simple_bind_s=MagicMock())
@@ -50,7 +50,7 @@ def test_authenticate(mocker, settings, data):
         'verify_cert': True,
         'starttls': True,
         'timeout': 10,
-        'uid': 'uid'
+        'uid': 'uid',
     }}, {'username': 'alaindi', 'password': 'LemotdepassedeLDAP'}),
 ))
 def test_authenticate_invalid_user(mocker, settings, data):
@@ -72,12 +72,12 @@ def test_authenticate_invalid_user(mocker, settings, data):
         'verify_cert': True,
         'starttls': True,
         'timeout': 10,
-        'uid': 'uid'
+        'uid': 'uid',
     }}, {'username': 'alaindi', 'password': 'LemotdepassedeLDAP'}),
 ))
 def test_authenticate_invalid_credentials(mocker, settings, data):
     def user_dn(user):
-        return 'dn={0},dc=example,dc=com'.format(user)
+        return f'dn={user},dc=example,dc=com'
     mocker.patch('flask_multipass.providers.ldap.providers.get_user_by_id',
                  return_value=(user_dn(data['username']), {settings['ldap']['uid']: [data['username']]}))
     ldap_conn = MagicMock(simple_bind_s=MagicMock(side_effect=[None, INVALID_CREDENTIALS]))
@@ -126,7 +126,7 @@ def test_authenticate_invalid_credentials(mocker, settings, data):
       'group_dn_1.2.1': [('group_dn_1.2.1.1', {}), ('group_dn_1.2.1.2', {}), ('group_dn_1.2.1.3', {})],
       'group_dn_1.2.1.3': []},
      {'group_dn_1', 'group_dn_1.1', 'group_dn_1.2', 'group_dn_1.2.1', 'group_dn_1.2.1.1', 'group_dn_1.2.1.2',
-      'group_dn_1.2.1.3'})
+      'group_dn_1.2.1.3'}),
 ))
 def test_iter_group(mocker, settings, group_dn, subgroups, expected):
     app = Flask('test')
@@ -138,7 +138,7 @@ def test_iter_group(mocker, settings, group_dn, subgroups, expected):
     iter_group = group._iter_group()
     # should not throw StopIteration as the initial group dn must be returned first
     current_dn = next(iter_group)
-    with pytest.raises(StopIteration):
+    with pytest.raises(StopIteration):  # noqa: PT012
         while current_dn:
             visited_groups.append(current_dn)
             current_dn = iter_group.send(subgroups.get(current_dn, []))
@@ -200,7 +200,7 @@ def test_iter_group(mocker, settings, group_dn, subgroups, expected):
                 'group_dn_1.1': [('user_3', {'uid': ['user_3']}), ('user_4', {'uid': ['user_4']})],
                 'group_dn_1.1.2': [('user_5', {'uid': ['user_5']}), ('user_6', {'uid': ['user_6']})],
                 'group_dn_1.1.3': [('user_7', {'uid': ['user_7']}), ('user_8', {'uid': ['user_8']})]}},
-     ['user_1', 'user_2', 'user_3', 'user_4', 'user_5', 'user_6', 'user_7', 'user_8'])
+     ['user_1', 'user_2', 'user_3', 'user_4', 'user_5', 'user_6', 'user_7', 'user_8']),
 ))
 def test_get_members(mocker, settings, group_dn, mock_data, expected):
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
@@ -217,7 +217,7 @@ def test_get_members(mocker, settings, group_dn, mock_data, expected):
     idp._search_users = MagicMock(side_effect=lambda x: mock_data['users'].get(x, []))
     group = LDAPGroup(idp, 'LDAP test group', group_dn)
 
-    with pytest.raises(StopIteration):
+    with pytest.raises(StopIteration):  # noqa: PT012
         members = group.get_members()
         while True:
             member = next(members)
@@ -303,7 +303,7 @@ def test_get_members(mocker, settings, group_dn, mock_data, expected):
 def test_has_member_ad(mocker, settings, group_mock, user_mock, expected):
     def get_token_groups(user_dn):
         if user_mock['dn'] != user_dn:
-            pytest.fail('expected {0}, got {1}'.format(user_mock['dn'], user_dn))
+            pytest.fail('expected {}, got {}'.format(user_mock['dn'], user_dn))
         return user_mock['token_groups']
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
     mocker.patch('flask_multipass.providers.ldap.providers.get_user_by_id',
@@ -407,7 +407,7 @@ def test_has_member_slapd(mocker, settings, group_dn, user_mock, expected):
         'timeout': 10,
         'ad_group_style': False,
         'uid': 'uid',
-        'member_of_attr': 'member_of'}}
+        'member_of_attr': 'member_of'}},
 ))
 def test_has_member_bad_identifier(mocker, settings):
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
@@ -441,7 +441,7 @@ def test_has_member_bad_identifier(mocker, settings):
         'timeout': 10,
         'ad_group_style': False,
         'uid': 'uid',
-        'member_of_attr': 'member_of'}}
+        'member_of_attr': 'member_of'}},
 ))
 def test_has_member_unknown_user(mocker, settings):
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject')
@@ -471,7 +471,7 @@ def test_has_member_unknown_user(mocker, settings):
       'page_size': 1000,
       'uid': 'uid',
       'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
-      'user_filter': '(objectClass=person)'},),
+      'user_filter': '(objectClass=person)'}),
     ({'uri': 'ldaps://required.uri',
       'bind_dn': 'uid=admin,OU=Users,OU=Required,DC=example,DC=com',
       'bind_password': 'required_password',
@@ -489,7 +489,7 @@ def test_has_member_unknown_user(mocker, settings):
       'page_size': 1000,
       'uid': 'uid',
       'user_base': 'OU=Users,OU=Required,DC=example,DC=com',
-      'user_filter': '(objectClass=person)'})
+      'user_filter': '(objectClass=person)'}),
 ))
 def test_default_authp_settings(mocker, required_settings, expected_settings):
     certifi = mocker.patch('flask_multipass.providers.ldap.providers.certifi')
@@ -547,7 +547,7 @@ def test_default_authp_settings(mocker, required_settings, expected_settings):
       'group_base': 'OU=Groups,OU=Required,DC=example,DC=com',
       'group_filter': '(|(objectClass=groupOfNames)(objectClass=custom))',
       'member_of_attr': 'member_of',
-      'ad_group_style': True})
+      'ad_group_style': True}),
 ))
 def test_default_idp_settings(mocker, required_settings, expected_settings):
     certifi = mocker.patch('flask_multipass.providers.ldap.providers.certifi')

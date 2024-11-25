@@ -14,9 +14,13 @@ from werkzeug.exceptions import NotFound
 from flask_multipass.auth import AuthProvider
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed, MultipassException
 from flask_multipass.identity import IdentityProvider
-from flask_multipass.util import (get_canonical_provider_map, get_provider_base, get_state, resolve_provider_type,
-                                  validate_provider_map)
-
+from flask_multipass.util import (
+    get_canonical_provider_map,
+    get_provider_base,
+    get_state,
+    resolve_provider_type,
+    validate_provider_map,
+)
 
 # If SQLAlchemy is available, handle its AssociationCollection as a
 # multi-value type for search criteria
@@ -77,7 +81,7 @@ class Multipass:
 
     @property
     def auth_providers(self):
-        """Returns a read-only dict of the active auth providers"""
+        """Returns a read-only dict of the active auth providers."""
         return get_state().auth_providers
 
     @property
@@ -90,7 +94,7 @@ class Multipass:
 
     @property
     def identity_providers(self):
-        """Returns a read-only dict of the active identity providers"""
+        """Returns a read-only dict of the active identity providers."""
         return get_state().identity_providers
 
     @property
@@ -116,7 +120,7 @@ class Multipass:
         registry[type_] = cls
 
     def redirect_success(self):
-        """Redirects to whatever page should be displayed after login"""
+        """Redirects to whatever page should be displayed after login."""
         return redirect(self._get_next_url())
 
     def set_next_url(self):
@@ -145,7 +149,7 @@ class Multipass:
         return not url_info.netloc or url_info.netloc == request.host
 
     def process_login(self, provider=None):
-        """Handles the login process
+        """Handles the login process.
 
         This should be registered in the Flask routing system and
         accept GET and POST requests on two URLs, one of them
@@ -202,13 +206,14 @@ class Multipass:
         :param identity_info: An :class:`.IdentityInfo` instance or
                               a list of them
         """
-        assert self.identity_callback is not None, \
-            'No identity callback has been registered. Register one using ' \
+        assert self.identity_callback is not None, (
+            'No identity callback has been registered. Register one using '
             'Register one using the Multipass.identity_handler decorator.'
+        )
         return self.identity_callback(identity_info)
 
     def handle_auth_success(self, auth_info):
-        """Called after a successful authentication
+        """Called after a successful authentication.
 
         This method calls :meth:`login_finished` with the found
         identity.  If ``MULTIPASS_ALL_MATCHING_IDENTITIES`` is set, it
@@ -238,7 +243,7 @@ class Multipass:
             if not current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
                 break
         if not identities and current_app.config['MULTIPASS_REQUIRE_IDENTITY']:
-            raise IdentityRetrievalFailed("No identity found", provider=auth_info.provider)
+            raise IdentityRetrievalFailed('No identity found', provider=auth_info.provider)
         session['_multipass_login_provider'] = auth_info.provider.name
         if current_app.config['MULTIPASS_ALL_MATCHING_IDENTITIES']:
             response = self.login_finished(identities)
@@ -247,7 +252,7 @@ class Multipass:
         return response or self.redirect_success()
 
     def handle_auth_error(self, exc, redirect_to_login=False):
-        """Handles an authentication failure
+        """Handles an authentication failure.
 
         :param exc: The exception indicating the error.
         :param redirect_to_login: Returns a redirect response to the
@@ -260,7 +265,7 @@ class Multipass:
             return redirect(url_for(current_app.config['MULTIPASS_LOGIN_ENDPOINT']))
 
     def render_template(self, template_key, **kwargs):
-        """Renders a template configured in the app config
+        """Renders a template configured in the app config.
 
         :param template_key: The template key to insert in the config
                              option name ``MULTIPASS_*_TEMPLATE``
@@ -303,7 +308,7 @@ class Multipass:
         return callback
 
     def refresh_identity(self, identifier, multipass_data):
-        """Retrieves user identity information for an existing identity
+        """Retrieves user identity information for an existing identity.
 
         :param identifier: The `identifier` from :class:`.IdentityInfo`
         :param multipass_data: The `multipass_data` dict from
@@ -343,7 +348,7 @@ class Multipass:
         return provider.get_identity(identifier)
 
     def search_identities(self, providers=None, exact=False, **criteria):
-        """Searches user identities matching certain criteria
+        """Searches user identities matching certain criteria.
 
         :param providers: A list of providers to search in. If not
                           specified, all providers are searched.
@@ -414,7 +419,7 @@ class Multipass:
         return found_identities, total
 
     def get_group(self, provider, name):
-        """Returns a specific group
+        """Returns a specific group.
 
         :param provider: The name of the provider containing the group.
         :param name: The name of the group.
@@ -427,7 +432,7 @@ class Multipass:
         return provider.get_group(name)
 
     def search_groups(self, name, providers=None, exact=False):
-        """Searches groups by name
+        """Searches groups by name.
 
         :param name: The name to search for.
         :param providers: A list of providers to search in. If not
@@ -444,7 +449,7 @@ class Multipass:
             yield from provider.search_groups(name, exact=exact)
 
     def is_identity_in_group(self, provider, identity_identifier, group_name):
-        """Checks if a user identity is in a group
+        """Checks if a user identity is in a group.
 
         :param provider: The name of the provider containing the group.
         :param identity_identifier: The identifier of the user.
@@ -454,7 +459,7 @@ class Multipass:
         return identity_identifier in group
 
     def _create_providers(self, key, base):
-        """Instantiates all providers
+        """Instantiates all providers.
 
         :param key: The key to insert into the config option name
                     ``MULTIPASS_*_PROVIDERS``
@@ -473,7 +478,7 @@ class Multipass:
         return providers
 
     def _create_login_rule(self):
-        """Creates the login URL rule if necessary"""
+        """Creates the login URL rule if necessary."""
         endpoint = current_app.config['MULTIPASS_LOGIN_ENDPOINT']
         rules = current_app.config['MULTIPASS_LOGIN_URLS']
         if rules is None:
@@ -494,7 +499,7 @@ class Multipass:
             return url_for(current_app.config['MULTIPASS_SUCCESS_ENDPOINT'])
 
     def _login_selector(self):
-        """Shows the login method (auth provider) selector"""
+        """Shows the login method (auth provider) selector."""
         next_url = request.args.get('next')
         auth_failed = session.pop('_multipass_auth_failed', False)
         login_endpoint = current_app.config['MULTIPASS_LOGIN_ENDPOINT']
@@ -505,12 +510,12 @@ class Multipass:
                                         auth_failed=auth_failed, login_endpoint=login_endpoint)
 
     def _login_external(self, provider):
-        """Starts the external login process"""
+        """Starts the external login process."""
         self.set_next_url()
         return provider.initiate_external_login()
 
     def handle_login_form(self, provider, data):
-        """Handles the submitted and validated login form
+        """Handles the submitted and validated login form.
 
         This returns a response in case of a successful login.
         In case of an error, it is handled internally and the
@@ -528,7 +533,7 @@ class Multipass:
             return response
 
     def _login_form(self, provider):
-        """Starts the local form-based login process"""
+        """Starts the local form-based login process."""
         form = provider.login_form()
         if not form.is_submitted():
             self.set_next_url()

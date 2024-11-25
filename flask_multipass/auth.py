@@ -20,7 +20,7 @@ class AuthProvider(metaclass=SupportsMeta):
         SupportsMeta.callable(lambda cls: cls.login_form is not None,
                               'login_form is set'): 'process_local_login',
         SupportsMeta.callable(lambda cls: cls.login_form is None,
-                              'login_form is not set'): 'initiate_external_login'
+                              'login_form is not set'): 'initiate_external_login',
     }
     #: The entry point to lookup providers (do not override this!)
     _entry_point = 'flask_multipass.auth_providers'
