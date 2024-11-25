@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.6
+-----------
+
+- Drop support for Python 3.8 (3.8 is EOL since Oct 2024)
+- Remove upper version pins of dependencies
+
 Version 0.5.6
 -------------
 
