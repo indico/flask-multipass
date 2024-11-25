@@ -50,7 +50,7 @@ class SAMLAuthProvider(AuthProvider):
             'get_data': request.args.copy(),
             'post_data': request.form.copy(),
             # enable when using ADFS as IdP, https://github.com/onelogin/python-saml/pull/144
-            'lowercase_urlencoding': self.settings.get('lowercase_urlencoding', False)
+            'lowercase_urlencoding': self.settings.get('lowercase_urlencoding', False),
         }
 
     def _init_saml_auth(self):
@@ -64,21 +64,21 @@ class SAMLAuthProvider(AuthProvider):
                 'entityId': 'https://idp.example.com',
                 'singleSignOnService': {
                     'url': 'https://idp.example.com/saml',
-                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
                 },
                 'singleLogoutService': {
                     'url': 'https://idp.example.com/saml',
-                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
                 },
-                'x509cert': ''
+                'x509cert': '',
             })
         config['sp'].setdefault('NameIDFormat', 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent')
         acs_config = config['sp'].setdefault('assertionConsumerService', {})
-        acs_config.setdefault('binding', "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST")
+        acs_config.setdefault('binding', 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST')
         acs_config['url'] = url_for(self.saml_acs_endpoint, _external=True)
         slo_config = config['sp'].get('singleLogoutService')
         if slo_config is not None:
-            slo_config.setdefault('binding', "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect")
+            slo_config.setdefault('binding', 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect')
             slo_config['url'] = url_for(self.saml_sls_endpoint, _external=True)
         req = self._prepare_flask_request()
         return OneLogin_Saml2_Auth(req, config)
@@ -130,10 +130,7 @@ class SAMLAuthProvider(AuthProvider):
 
         attributes = auth.get_friendlyname_attributes() if self.use_friendly_names else auth.get_attributes()
         if self.strip_prefix:
-            attributes = {
-                (k[len(self.strip_prefix):] if k.startswith(self.strip_prefix) else k): v
-                for k, v in attributes.items()
-            }
+            attributes = {k.removeprefix(self.strip_prefix): v for k, v in attributes.items()}
         # flatten single-element lists; otherwise linking e.g. to an LDAP identity
         # provider is not possible
         attributes = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in attributes.items()}
@@ -150,7 +147,7 @@ class SAMLAuthProvider(AuthProvider):
         auth = self._init_saml_auth()
         session_key_logout_request_id = self._make_session_key('logout_request_id')
         request_id = session.get(session_key_logout_request_id)
-        dscb = lambda: session.clear()  # noqa: E731
+        dscb = lambda: session.clear()
         url = auth.process_slo(request_id=request_id, delete_session_cb=dscb)
         errors = auth.get_errors()
         if errors:

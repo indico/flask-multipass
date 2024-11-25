@@ -20,7 +20,6 @@ from flask_multipass.providers.ldap.exceptions import LDAPServerError
 from flask_multipass.providers.ldap.globals import _ldap_ctx_stack, current_ldap
 from flask_multipass.util import convert_app_data
 
-
 #: A context holding the LDAP connection and the LDAP provider settings.
 LDAPContext = namedtuple('LDAPContext', ('connection', 'settings'))
 
@@ -41,7 +40,7 @@ def _clear_ldap_cache(*args, **kwargs):
 
 
 def _get_ldap_cache():
-    """Returns the cache dictionary for ldap contexts"""
+    """Returns the cache dictionary for ldap contexts."""
     if not has_app_context():
         return {}
     try:
@@ -78,24 +77,24 @@ def ldap_context(settings, use_cache=True):
             _clear_ldap_cache()
             raise
         finally:
-            assert _ldap_ctx_stack.pop() is ldap_ctx, "Popped wrong LDAP context"
+            assert _ldap_ctx_stack.pop() is ldap_ctx, 'Popped wrong LDAP context'
     except ldap.SERVER_DOWN:
         if has_app_context() and current_app.debug:
             raise
-        raise MultipassException("The LDAP server is unreachable")
+        raise MultipassException('The LDAP server is unreachable')
     except ldap.INVALID_CREDENTIALS:
         if has_app_context() and current_app.debug:
             raise
-        raise ValueError("Invalid bind credentials")
+        raise ValueError('Invalid bind credentials')
     except ldap.SIZELIMIT_EXCEEDED:
-        raise MultipassException("Size limit exceeded (try setting a smaller page size)")
+        raise MultipassException('Size limit exceeded (try setting a smaller page size)')
     except ldap.TIMELIMIT_EXCEEDED:
-        raise MultipassException("The time limit for the operation has been exceeded.")
+        raise MultipassException('The time limit for the operation has been exceeded.')
     except ldap.TIMEOUT:
-        raise MultipassException("The operation timed out.")
+        raise MultipassException('The operation timed out.')
     except ldap.FILTER_ERROR:
-        raise ValueError("The filter supplied to the operation is invalid. "
-                         "(This is most likely due to a bad user or group filter.")
+        raise ValueError('The filter supplied to the operation is invalid. '
+                         '(This is most likely due to a bad user or group filter.')
 
 
 def ldap_connect(settings, use_cache=True):
@@ -121,7 +120,6 @@ def ldap_connect(settings, use_cache=True):
     :param use_cache: bool -- If the connection should be cached.
     :return: The ldap connection.
     """
-
     if use_cache:
         cache = _get_ldap_cache()
         cache_key = frozenset((k, hash(v)) for k, v in settings.items() if k in conn_keys)
@@ -143,7 +141,7 @@ def ldap_connect(settings, use_cache=True):
     # see: http://stackoverflow.com/a/27713355/298479
     ldap_connection.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
     if use_ldaps and settings['starttls']:
-        warn("Unable to start TLS, LDAP connection already secured over SSL (LDAPS)")
+        warn('Unable to start TLS, LDAP connection already secured over SSL (LDAPS)', stacklevel=1)
     elif settings['starttls']:
         ldap_connection.start_tls_s()
     # TODO: allow anonymous bind
@@ -187,7 +185,7 @@ def _escape_filter_chars(value):
     if isinstance(value, str):
         return escape_filter_chars(value)
     else:
-        return ''.join('\\%02x' % c for c in value)
+        return ''.join(fr'\{c:02x}' for c in value)
 
 
 def _filter_format(filter_template, assertion_values):
@@ -207,13 +205,12 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
                   othewise perform substring matching.
     :return: str -- Valid LDAP search filter.
     """
-
     assertions = convert_app_data(criteria, mapping or {})
     assert_templates = [_build_assert_template(value, exact) for _, value in assertions.items()]
     assertions = [(k, v) for k, values in assertions.items() if k and values for v in values]
     if not assertions:
         return None
-    filter_template = '(&{}{})'.format("".join(assert_templates), type_filter)
+    filter_template = '(&{}{})'.format(''.join(assert_templates), type_filter)
     return _filter_format(filter_template, (item for assertion in assertions for item in assertion))
 
 
@@ -227,7 +224,7 @@ def get_page_cookie(server_ctrls):
     """
     page_ctrls = [ctrl for ctrl in server_ctrls if ctrl.controlType == SimplePagedResultsControl.controlType]
     if not page_ctrls:
-        raise LDAPServerError("The LDAP server ignores the RFC 2696 specification")
+        raise LDAPServerError('The LDAP server ignores the RFC 2696 specification')
     return page_ctrls[0].cookie
 
 

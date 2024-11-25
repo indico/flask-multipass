@@ -36,14 +36,11 @@ jobs:
       - name: Install ldap deps
         run: sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
 
-      - name: Update pip
-        run: |
-          pip install -U wheel
-          pip install -U setuptools
-          python -m pip install -U pip
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install tox
-        run: pip install tox
+        run: uv pip install --system tox
 
       - name: Run tests
         run: tox -e ${{ matrix.tox }}

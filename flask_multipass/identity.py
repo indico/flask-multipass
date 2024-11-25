@@ -60,7 +60,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             self.supports_search_ex = False
 
     def get_identity_from_auth(self, auth_info):  # pragma: no cover
-        """Retrieves identity information after authentication
+        """Retrieves identity information after authentication.
 
         :param auth_info: An :class:`.AuthInfo` instance from an auth
                           provider
@@ -70,7 +70,7 @@ class IdentityProvider(metaclass=SupportsMeta):
         raise NotImplementedError
 
     def refresh_identity(self, identifier, multipass_data):  # pragma: no cover
-        """Retrieves identity information for an existing user identity
+        """Retrieves identity information for an existing user identity.
 
         This method returns identity information for an identity that
         has been retrieved before based on the provider-specific refresh
@@ -100,7 +100,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             raise RuntimeError('This provider does not support getting an identity based on the identifier')
 
     def get_identity_groups(self, identifier):  # pragma: no cover
-        """Retrieves the list of groups a user identity belongs to
+        """Retrieves the list of groups a user identity belongs to.
 
         :param identifier: The unique user identifier used by the
                            provider.
@@ -112,7 +112,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             raise RuntimeError('This provider does not support getting the list of groups for an identity')
 
     def search_identities(self, criteria, exact=False):  # pragma: no cover
-        """Searches user identities matching certain criteria
+        """Searches user identities matching certain criteria.
 
         :param criteria: A dict containing the criteria to search for.
         :param exact: If criteria need to match exactly, i.e. no
@@ -139,7 +139,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             raise RuntimeError('This provider does not support extended searching')
 
     def get_group(self, name):  # pragma: no cover
-        """Returns a specific group
+        """Returns a specific group.
 
         :param name: The name of the group
         :return: An instance of :attr:`group_class`
@@ -150,7 +150,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             raise RuntimeError('This provider does not provide groups')
 
     def search_groups(self, name, exact=False):  # pragma: no cover
-        """Searches groups by name
+        """Searches groups by name.
 
         :param name: The name to search for
         :param exact: If the name needs to match exactly, i.e. no
@@ -163,7 +163,7 @@ class IdentityProvider(metaclass=SupportsMeta):
             raise RuntimeError('This provider does not provide groups')
 
     def map_search_criteria(self, criteria):
-        """Maps the search criteria from application keys to provider keys
+        """Maps the search criteria from application keys to provider keys.
 
         :param criteria: A dict containing search criteria
         :return: A dict containing search criteria with mapped keys

@@ -10,8 +10,12 @@ import pytest
 from ldap import NO_SUCH_OBJECT, SCOPE_BASE
 
 from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed
-from flask_multipass.providers.ldap.operations import (get_group_by_id, get_token_groups_from_user_dn, get_user_by_id,
-                                                       search)
+from flask_multipass.providers.ldap.operations import (
+    get_group_by_id,
+    get_token_groups_from_user_dn,
+    get_user_by_id,
+    search,
+)
 from flask_multipass.providers.ldap.util import ldap_context
 
 
@@ -37,8 +41,8 @@ def test_get_group_by_id_handles_none_id():
       'timeout': 10,
       'page_size': 3},
      'dc=example,dc=com', '(&(name=Alain)(objectCategory=user))', ['mail'],
-     {'msg_ids': ['msg_id<{}>'.format(i) for i in range(3)],
-      'cookies': ['cookie<{}>'.format(i) for i in range(2)],
+     {'msg_ids': [f'msg_id<{i}>' for i in range(3)],
+      'cookies': [f'cookie<{i}>' for i in range(2)],
       'results': ((('uid=alaina,dc=example,dc=com', {'mail': ['alaina@mail.com']}),
                    ('uid=alainb,dc=example,dc=com', {'mail': ['alainb@mail.com']}),
                    ('uid=alainc,dc=example,dc=com', {'mail': ['alainc@mail.com']})),
@@ -86,7 +90,7 @@ def test_search(mocker, settings, base_dn, search_filter, attributes, mock_data,
      'dc=example,dc=com',
      '(&(name=Alain)(objectCategory=user))',
      ['mail'],
-     ['msg_id<{}>'.format(i) for i in range(3)]),
+     [f'msg_id<{i}>' for i in range(3)]),
 ))
 def test_search_none_existing_entry(mocker, settings, base_dn, search_filter, attributes, msg_ids):
     page_ctrl = MagicMock()
@@ -96,34 +100,30 @@ def test_search_none_existing_entry(mocker, settings, base_dn, search_filter, at
     mocker.patch('flask_multipass.providers.ldap.util.ReconnectLDAPObject', return_value=ldap_connection)
 
     with ldap_context(settings):
-        for result in search(base_dn, search_filter, attributes):
+        for _result in search(base_dn, search_filter, attributes):
             pytest.fail('search should not yield any result')
 
 
 @pytest.mark.parametrize(('user_dn', 'mock_data', 'expected'), (
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
-     [('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
-     ['token<{}>'.format(i) for i in range(5)]),
+     [('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': [f'token<{i}>' for i in range(5)]})],
+     [f'token<{i}>' for i in range(5)]),
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
      [('cn=ielosubmarine,OU=Users,dc=example,dc=com',
-      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
-     ['token<{}>'.format(i) for i in range(5)]),
+      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': [f'token<{i}>' for i in range(5)]})],
+     [f'token<{i}>' for i in range(5)]),
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
      [(None, {'cn': ['Configuration']}),
       ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'name': [b'I\xc3\xa9losubmarine']})], []),
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
      [(None, {'cn': ['Configuration']}),
-      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
-     ['token<{}>'.format(i) for i in range(5)]),
+      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'tokenGroups': [f'token<{i}>' for i in range(5)]})],
+     [f'token<{i}>' for i in range(5)]),
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
      [(None, {'cn': ['Configuration']}),
       ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
-      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': ['token<{}>'.format(i) for i in range(5)]})],
-     ['token<{}>'.format(i) for i in range(5)]),
-    ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
-     [(None, {'cn': ['Configuration']}),
-      ('cn=ielosubmarine,OU=Users,dc=example,dc=com', {'name': [b'I\xc3\xa9losubmarine']})],
-     []),
+      {'name': [b'I\xc3\xa9losubmarine'], 'tokenGroups': [f'token<{i}>' for i in range(5)]})],
+     [f'token<{i}>' for i in range(5)]),
     ('cn=ielosubmarine,OU=Users,dc=example,dc=com',
      [(None, {'cn': ['Configuration']})],
      []),
@@ -136,7 +136,7 @@ def test_get_token_groups_from_user_dn(mocker, user_dn, mock_data, expected):
         'verify_cert': True,
         'cert_file': ' /etc/ssl/certs/ca-certificates.crt',
         'starttls': True,
-        'timeout': 10
+        'timeout': 10,
     }
 
     ldap_search = MagicMock(return_value=mock_data)

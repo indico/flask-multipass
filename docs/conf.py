@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Flask-Multipass documentation build configuration file, created by
 # sphinx-quickstart on Mon Mar 30 11:56:17 2015.
@@ -12,11 +11,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
+import importlib.metadata
 import os
-
+import sys
 from unittest.mock import MagicMock
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -37,7 +35,7 @@ for module in ('ldap', 'ldap.controls', 'ldap.filter', 'ldap.ldapobject', 'urlpa
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +60,6 @@ author = 'Indico Team'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-import importlib.metadata
 try:
     release = importlib.metadata.version('flask-multipass')
 except importlib.metadata.PackageNotFoundError:
@@ -124,7 +121,7 @@ html_theme_path = ['_themes']
 html_theme = 'flask'
 html_theme_options = {
     'index_logo_height': '120px',
-    'index_logo': 'flask-multipass-long.png'
+    'index_logo': 'flask-multipass-long.png',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -166,7 +163,7 @@ html_static_path = ['_static']
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
     'index': ['sidebarintro.html', 'sourcelink.html', 'searchbox.html'],
-    '**': ['sidebarlogo.html', 'localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']
+    '**': ['sidebarlogo.html', 'localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'],
 }
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -264,7 +261,7 @@ latex_documents = [(master_doc, 'Flask-Multipass.tex', 'Flask-Multipass Document
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'flask-multipass', 'Flask-Multipass Documentation',
-     [author], 1)
+     [author], 1),
 ]
 
 # If true, show URL addresses after external links.

@@ -4,14 +4,19 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from .auth import AuthProvider
-from .core import Multipass
-from .data import AuthInfo, IdentityInfo
-from .exceptions import (AuthenticationFailed, GroupRetrievalFailed, IdentityRetrievalFailed, InvalidCredentials,
-                         MultipassException, NoSuchUser)
-from .group import Group
-from .identity import IdentityProvider
-
+from flask_multipass.auth import AuthProvider
+from flask_multipass.core import Multipass
+from flask_multipass.data import AuthInfo, IdentityInfo
+from flask_multipass.exceptions import (
+    AuthenticationFailed,
+    GroupRetrievalFailed,
+    IdentityRetrievalFailed,
+    InvalidCredentials,
+    MultipassException,
+    NoSuchUser,
+)
+from flask_multipass.group import Group
+from flask_multipass.identity import IdentityProvider
 
 __all__ = ('Multipass', 'AuthProvider', 'IdentityProvider', 'AuthInfo', 'IdentityInfo', 'Group', 'MultipassException',
            'AuthenticationFailed', 'IdentityRetrievalFailed', 'GroupRetrievalFailed', 'NoSuchUser',

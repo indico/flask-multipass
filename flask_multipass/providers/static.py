@@ -24,7 +24,7 @@ class StaticLoginForm(FlaskForm):
 
 
 class StaticAuthProvider(AuthProvider):
-    """Provides authentication against a static list
+    """Provides authentication against a static list.
 
     This provider should NEVER be use in any production system.
     It serves mainly as a simple dummy/example for development.
@@ -50,7 +50,7 @@ class StaticAuthProvider(AuthProvider):
 
 
 class StaticGroup(Group):
-    """A group from the static identity provider"""
+    """A group from the static identity provider."""
 
     supports_member_list = True
 

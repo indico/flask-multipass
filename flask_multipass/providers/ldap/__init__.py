@@ -4,7 +4,11 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-from .providers import LDAPAuthProvider, LDAPGroup, LDAPIdentityProvider, AuthFallbackLDAPIdentityProvider
-
+from flask_multipass.providers.ldap.providers import (
+    AuthFallbackLDAPIdentityProvider,
+    LDAPAuthProvider,
+    LDAPGroup,
+    LDAPIdentityProvider,
+)
 
 __all__ = ('LDAPAuthProvider', 'LDAPGroup', 'LDAPIdentityProvider', 'AuthFallbackLDAPIdentityProvider')

@@ -1,7 +1,7 @@
 import sys
-import tomllib
 from pathlib import Path
 
+import tomllib
 
 data = tomllib.loads(Path('pyproject.toml').read_text())
 version = data['project']['version']

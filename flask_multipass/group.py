@@ -8,7 +8,7 @@ from flask_multipass.util import SupportsMeta
 
 
 class Group(metaclass=SupportsMeta):
-    """Base class for groups
+    """Base class for groups.
 
     :param provider: The identity provider managing the group.
     :param name: The unique name of the group.

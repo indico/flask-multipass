@@ -35,7 +35,7 @@ class ShibbolethAuthProvider(AuthProvider):
         self.attrs_prefix = self.settings.setdefault('attrs_prefix', 'ADFS_').lower()
         self.attrs = [attr.lower() for attr in self.settings.get('attrs', [])] or None
         if not self.settings.get('callback_uri'):
-            raise MultipassException("`callback_uri` must be specified in the provider settings", provider=self)
+            raise MultipassException('`callback_uri` must be specified in the provider settings', provider=self)
         self.from_headers = self.settings.get('from_headers', False)
         self.shibboleth_endpoint = '_flaskmultipass_shibboleth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.shibboleth_endpoint,
@@ -60,12 +60,12 @@ class ShibbolethAuthProvider(AuthProvider):
             attributes = {k: v for k, v in mapping if k in self.attrs}
 
         if not attributes:
-            raise AuthenticationFailed("No valid data received", provider=self)
+            raise AuthenticationFailed('No valid data received', provider=self)
         return self.multipass.handle_auth_success(AuthInfo(self, **attributes))
 
 
 class ShibbolethIdentityProvider(IdentityProvider):
-    """Provides identity information using Shibboleth
+    """Provides identity information using Shibboleth.
 
     This provider requires the application to run inside the Apache
     webserver with mod_shib.

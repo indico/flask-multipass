@@ -33,7 +33,7 @@ def convert_app_data(app_data, mapping, key_filter=None):
 
 
 def convert_provider_data(provider_data, mapping, key_filter=None):
-    """Converts data coming from the provider to be used by the application
+    """Converts data coming from the provider to be used by the application.
 
     The result will have all the keys listed in `keys` with values
     coming either from `data` (using the key mapping defined in
@@ -60,12 +60,12 @@ def convert_provider_data(provider_data, mapping, key_filter=None):
     if key_filter is not None:
         key_filter = set(key_filter)
         result = {key: value for key, value in result.items() if key in key_filter}
-        result.update({key: None for key in key_filter - set(result)})
+        result.update(dict.fromkeys(key_filter - set(result)))
     return result
 
 
 def get_canonical_provider_map(provider_map):
-    """Converts the configured provider map to a canonical form"""
+    """Converts the configured provider map to a canonical form."""
     canonical = {}
     for auth_provider_name, identity_providers in provider_map.items():
         if not isinstance(identity_providers, (list, tuple, set)):
@@ -83,9 +83,10 @@ def get_state(app=None):
     """
     if app is None:
         app = current_app
-    assert 'multipass' in app.extensions, \
-        'The multipass extension was not registered to the current application. ' \
+    assert 'multipass' in app.extensions, (
+        'The multipass extension was not registered to the current application. '
         'Please make sure to call init_app() first.'
+    )
     return app.extensions['multipass']
 
 
@@ -125,7 +126,7 @@ def login_view(func):
 
 
 def resolve_provider_type(base, type_, registry=None):
-    """Resolves a provider type to its class
+    """Resolves a provider type to its class.
 
     :param base: The base class of the provider
     :param type_: The type of the provider. Can be a subclass of
@@ -161,7 +162,7 @@ def resolve_provider_type(base, type_, registry=None):
 
 
 def validate_provider_map(state):
-    """Validates the provider map
+    """Validates the provider map.
 
     :param state: The :class:`._MultipassState` instance
     """
@@ -174,8 +175,8 @@ def validate_provider_map(state):
         raise ValueError('Broken identity provider links: ' + ', '.join(invalid_keys))
 
 
-class classproperty(property):
-    """Like a :class:`property`, but for a class
+class classproperty(property):  # noqa: N801
+    """Like a :class:`property`, but for a class.
 
     Usage::
 
@@ -185,6 +186,7 @@ class classproperty(property):
             def foo(cls):
                 return 'bar'
     """
+
     def __get__(self, obj, type=None):
         return self.fget.__get__(None, type)()
 
@@ -202,7 +204,8 @@ class SupportsMeta(type):
     Instead of a string key the dict may also contain a tuple returned
     from :meth:`callable`.
     """
-    def __new__(mcs, name, bases, dct):
+
+    def __new__(mcs, name, bases, dct):  # noqa: N804
         cls = type.__new__(mcs, name, bases, dct)
         base = next((x for x in reversed(getmro(cls)) if type(x) is mcs and x is not cls), None)
         if base is None:
@@ -226,7 +229,7 @@ class SupportsMeta(type):
 
     @staticmethod
     def callable(func, message):
-        """Returns an object suitable for more complex
+        """Returns an object suitable for more complex.
 
         :param func: A callable that is invoked with the dict of the
                      newly created object
