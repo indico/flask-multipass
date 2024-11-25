@@ -151,8 +151,7 @@ def resolve_provider_type(base, type_, registry=None):
         if not entry_points:
             raise ValueError('Unknown type: ' + type_)
         elif len(entry_points) != 1:
-            # TODO: remove the getattr check after dropping python 3.8
-            defs = ', '.join(getattr(ep, 'module', ep.value) for ep in entry_points)
+            defs = ', '.join(ep.module for ep in entry_points)
             raise RuntimeError(f'Type {type_} is not unique. Defined in {defs}')
         entry_point = list(entry_points)[0]
         cls = entry_point.load()

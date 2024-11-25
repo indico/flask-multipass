@@ -1,6 +1,6 @@
 [project]
 name = 'Flask-Multipass'
-version = '0.5.6'
+version = '0.6'
 description = 'A pluggable solution for multi-backend authentication with Flask'
 readme = 'README.rst'
 license = 'BSD-3-Clause'
@@ -9,20 +9,20 @@ classifiers = [
     'Environment :: Web Environment',
     'Framework :: Flask',
     'License :: OSI Approved :: BSD License',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
 ]
-requires-python = '~=3.8'
+requires-python = '~=3.9'
 dependencies = ['flask', 'blinker']
 
 [project.optional-dependencies]
 dev = ['pytest', 'pytest-cov', 'pytest-mock']
 authlib = ['authlib>=0.14.1', 'requests']
-ldap = ['flask-wtf', 'python-ldap>=3.3.1,<4.0']
-saml = ['python3-saml>=1.10.1,<1.11']
+ldap = ['flask-wtf', 'python-ldap>=3.3.1']
+saml = ['python3-saml>=1.10.1']
 sqlalchemy = ['sqlalchemy', 'flask-wtf']
 
 [project.urls]
