@@ -31,6 +31,7 @@ class SAMLAuthProvider(AuthProvider):
         self.saml_acs_endpoint = f'_flaskmultipass_saml_acs_{self.name}'
         self.saml_sls_endpoint = f'_flaskmultipass_saml_sls_{self.name}'
         self.saml_metadata_endpoint = f'_flaskmultipass_saml_metadata_{self.name}'
+        self.use_friendly_names = self.settings.get('saml_friendly_names', False)
         current_app.add_url_rule(self.saml_acs_uri, self.saml_acs_endpoint, self._saml_acs, methods=('GET', 'POST'))
         current_app.add_url_rule(self.saml_sls_uri, self.saml_sls_endpoint, self._saml_sls, methods=('GET', 'POST'))
         current_app.add_url_rule(self.saml_metadata_uri, self.saml_metadata_endpoint, self._saml_metadata)
@@ -127,7 +128,7 @@ class SAMLAuthProvider(AuthProvider):
         session[session_key_name_id_spnq] = saml_nameid_spnq = auth.get_nameid_spnq()
         session[session_key_session_index] = auth.get_session_index()
 
-        attributes = auth.get_attributes()
+        attributes = auth.get_friendlyname_attributes() if self.use_friendly_names else auth.get_attributes()
         if self.strip_prefix:
             attributes = {
                 (k[len(self.strip_prefix):] if k.startswith(self.strip_prefix) else k): v
