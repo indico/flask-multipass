@@ -6,7 +6,7 @@ Version 0.6
 
 - Drop support for Python 3.8 (3.8 is EOL since Oct 2024)
 - Remove upper version pins of dependencies
-- Support friendly names for SAML assertions (set `'saml_friendly_names': True`
+- Support friendly names for SAML assertions (set ``'saml_friendly_names': True``
   in the auth provider settings)
 
 Version 0.5.6
