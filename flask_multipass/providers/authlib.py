@@ -174,5 +174,5 @@ class AuthlibIdentityProvider(IdentityProvider):
         identifier = auth_info.data.get(self.id_field)
         if not identifier:
             raise IdentityRetrievalFailed(f'Identifier ({self.id_field}) missing in authlib response',
-                                          provider=self)
+                                          details=auth_info.data, provider=self)
         return IdentityInfo(self, identifier=identifier, **auth_info.data)

@@ -8,6 +8,7 @@ Version 0.6
 - Remove upper version pins of dependencies
 - Support friendly names for SAML assertions (set ``'saml_friendly_names': True``
   in the auth provider settings)
+- Include more verbose authentication data in ``IdentityRetrievalFailed`` exception details
 
 Version 0.5.6
 -------------

@@ -86,5 +86,6 @@ class ShibbolethIdentityProvider(IdentityProvider):
     def get_identity_from_auth(self, auth_info):
         identifier = auth_info.data.get(self.id_field)
         if not identifier:
-            raise IdentityRetrievalFailed('Identifier missing in shibboleth response', provider=self)
+            raise IdentityRetrievalFailed('Identifier missing in shibboleth response',
+                                          details=auth_info.data, provider=self)
         return IdentityInfo(self, identifier=identifier, **auth_info.data)

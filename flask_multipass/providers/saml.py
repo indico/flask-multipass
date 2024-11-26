@@ -191,8 +191,10 @@ class SAMLIdentityProvider(IdentityProvider):
         identifier = auth_info.data.get(self.id_field)
         if isinstance(identifier, list):
             if len(identifier) != 1:
-                raise IdentityRetrievalFailed('Identifier has multiple elements', provider=self)
+                raise IdentityRetrievalFailed('Identifier has multiple elements',
+                                              details=identifier, provider=self)
             identifier = identifier[0]
         if not identifier:
-            raise IdentityRetrievalFailed('Identifier missing in saml response', provider=self)
+            raise IdentityRetrievalFailed('Identifier missing in saml response',
+                                          details=auth_info.data, provider=self)
         return IdentityInfo(self, identifier=identifier, **auth_info.data)
