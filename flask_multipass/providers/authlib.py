@@ -109,7 +109,8 @@ class AuthlibAuthProvider(AuthProvider):
             logout_uri = self.authlib_client.load_server_metadata().get('end_session_endpoint')
         if logout_uri:
             return_url = urljoin(request.url_root, return_url)
-            query = urlencode({'post_logout_redirect_uri': return_url})
+            client_id = self.authlib_settings['client_id']
+            query = urlencode({'post_logout_redirect_uri': return_url, 'client_id': client_id})
             return redirect(logout_uri + '?' + query)
 
     @login_view
