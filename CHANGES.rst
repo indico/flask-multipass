@@ -6,6 +6,7 @@ Version 0.7
 
 - Support multiple id fields in SAML identity provider
 - Include ``client_id`` in authlib logout URL since some OIDC providers mayrequire this
+- Allow setting timeout for authlib token requests (default: 10 seconds)
 
 Version 0.6
 -----------
