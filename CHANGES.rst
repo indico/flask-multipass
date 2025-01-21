@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.7
+-----------
+
+- Support multiple id fields in SAML identity provider
+
 Version 0.6
 -----------
 
