@@ -44,7 +44,7 @@ shibboleth = 'flask_multipass.providers.shibboleth:ShibbolethIdentityProvider'
 static = 'flask_multipass.providers.static:StaticIdentityProvider'
 
 [build-system]
-requires = ['hatchling==1.25.0']
+requires = ['hatchling==1.27.0']
 build-backend = 'hatchling.build'
 
 [tool.hatch.build]
