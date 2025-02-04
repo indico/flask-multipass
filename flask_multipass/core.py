@@ -12,7 +12,13 @@ from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import NotFound
 
 from flask_multipass.auth import AuthProvider
-from flask_multipass.exceptions import GroupRetrievalFailed, IdentityRetrievalFailed, MultipassException
+from flask_multipass.exceptions import (
+    GroupRetrievalFailed,
+    IdentityRetrievalFailed,
+    InvalidCredentials,
+    MultipassException,
+    NoSuchUser,
+)
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import (
     get_canonical_provider_map,
@@ -72,6 +78,7 @@ class Multipass:
         app.config.setdefault('MULTIPASS_FAILURE_CATEGORY', 'error')
         app.config.setdefault('MULTIPASS_ALL_MATCHING_IDENTITIES', False)
         app.config.setdefault('MULTIPASS_REQUIRE_IDENTITY', True)
+        app.config.setdefault('MULTIPASS_HIDE_NO_SUCH_USER', False)
         with app.app_context():
             self._create_login_rule()
             state.auth_providers = ImmutableDict(self._create_providers('AUTH', AuthProvider))
@@ -528,6 +535,8 @@ class Multipass:
         try:
             response = provider.process_local_login(data)
         except MultipassException as e:
+            if isinstance(e, NoSuchUser) and current_app.config['MULTIPASS_HIDE_NO_SUCH_USER']:
+                e = InvalidCredentials(e.provider)
             self.handle_auth_error(e)
         else:
             return response

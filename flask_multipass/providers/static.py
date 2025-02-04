@@ -44,7 +44,7 @@ class StaticAuthProvider(AuthProvider):
         if password is None:
             raise NoSuchUser(provider=self)
         if password != data['password']:
-            raise InvalidCredentials(provider=self)
+            raise InvalidCredentials(provider=self, identifier=data['username'])
         auth_info = AuthInfo(self, username=data['username'])
         return self.multipass.handle_auth_success(auth_info)
 
