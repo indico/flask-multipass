@@ -9,6 +9,8 @@ Version 0.7
 - Allow setting timeout for authlib token requests (default: 10 seconds)
 - Add new ``MULTIPASS_HIDE_NO_SUCH_USER`` config setting to convert ``NoSuchUser``
   exceptions to ``InvalidCredentials`` to avoid disclosing whether a username is valid
+- Include the username in the ``identifier`` attribute of the ``InvalidCredentials``
+  exception so applications can apply e.g. per-username rate limiting
 
 Version 0.6
 -----------
