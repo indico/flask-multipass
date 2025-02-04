@@ -10,11 +10,11 @@ from urllib.parse import urlencode, urljoin
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
 from flask import current_app, redirect, request, url_for
-from requests.exceptions import HTTPError, RequestException
+from requests.exceptions import HTTPError, RequestException, Timeout
 
 from flask_multipass.auth import AuthProvider
 from flask_multipass.data import AuthInfo, IdentityInfo
-from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFailed
+from flask_multipass.exceptions import AuthenticationFailed, IdentityRetrievalFailed, MultipassException
 from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import login_view
 
@@ -70,6 +70,9 @@ class AuthlibAuthProvider(AuthProvider):
                          of ``register()`` in the
                          `authlib docs <https://docs.authlib.org/en/latest/client/frameworks.html>`_
                          for details.
+    - ``request_timeout``: the timeout in seconds for fetching the oauth token and
+                           requesting data from the userinfo endpoint (10 by default,
+                           set to None to disable)
     """
 
     def __init__(self, *args, **kwargs):
@@ -77,6 +80,7 @@ class AuthlibAuthProvider(AuthProvider):
         callback_uri = self.settings.get('callback_uri', f'/multipass/authlib/{self.name}')
         self.authlib_client = _authlib_oauth.register(self.name, **self.authlib_settings)
         self.include_token = self.settings.get('include_token', False)
+        self.request_timeout = self.settings.get('request_timeout')
         self.use_id_token = self.settings.get('use_id_token')
         if self.use_id_token is None:
             # default to using the id token when using the openid scope (oidc)
@@ -121,7 +125,10 @@ class AuthlibAuthProvider(AuthProvider):
             raise AuthenticationFailed(error, provider=self)
         try:
             try:
-                token_data = self.authlib_client.authorize_access_token()
+                token_data = self.authlib_client.authorize_access_token(timeout=self.request_timeout)
+            except Timeout as exc:
+                logging.getLogger('multipass.authlib').error('Getting token timed out')
+                raise MultipassException('Token request timed out, please try again later') from exc
             except HTTPError as exc:
                 try:
                     data = exc.response.json()
