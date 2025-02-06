@@ -8,7 +8,7 @@ import itertools
 from urllib.parse import urlsplit
 
 from flask import current_app, flash, redirect, render_template, request, session, url_for
-from werkzeug.datastructures import ImmutableDict
+from werkzeug.datastructures import Headers, ImmutableDict
 from werkzeug.exceptions import NotFound
 
 from flask_multipass.auth import AuthProvider
@@ -145,6 +145,13 @@ class Multipass:
         If you override this and want to allow more hosts, make sure to use
         a whitelist of trusted hosts to avoid creating an open redirector.
         """
+        # next_url comes as URL param, so it can have newline chars (as %0a and %0d).
+        # In redirect response it goes into header (Location).
+        # Werkzeug doesn't tolerate newline chars in header and raises ValueError.
+        try:
+            Headers([('test-header', url)])
+        except ValueError:
+            return False
         # Browsers treat backslashes like forward slashes, while urllib doesn't.
         # Since we just want to validate scheme and netloc here, we normalize
         # slashes to those recognized by urllib.
