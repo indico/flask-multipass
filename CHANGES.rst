@@ -5,12 +5,17 @@ Version 0.8
 -----------
 
 - Reject ``next`` URLs containing linebreaks gracefully
+- Look for ``logout_uri`` in top-level authlib provider config instead of the
+  ``authlib_args`` dict (the latter is still checked as a fallback)
+- Include ``id_token_hint`` in authlib logout URL
+- Add ``logout_args`` setting to authlib provider which allows removing some of
+  the query string arguments that are included by default
 
 Version 0.7
 -----------
 
 - Support multiple id fields in SAML identity provider
-- Include ``client_id`` in authlib logout URL since some OIDC providers mayrequire this
+- Include ``client_id`` in authlib logout URL since some OIDC providers may require this
 - Allow setting timeout for authlib token requests (default: 10 seconds)
 - Add new ``MULTIPASS_HIDE_NO_SUCH_USER`` config setting to convert ``NoSuchUser``
   exceptions to ``InvalidCredentials`` to avoid disclosing whether a username is valid
