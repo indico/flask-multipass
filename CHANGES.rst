@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.8
+-----------
+
+- Reject ``next`` URLs containing linebreaks gracefully
+
 Version 0.7
 -----------
 
