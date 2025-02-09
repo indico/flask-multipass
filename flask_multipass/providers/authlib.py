@@ -9,7 +9,7 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
-from flask import current_app, redirect, request, url_for
+from flask import current_app, redirect, request, session, url_for
 from requests.exceptions import HTTPError, RequestException, Timeout
 
 from flask_multipass.auth import AuthProvider
@@ -20,6 +20,8 @@ from flask_multipass.util import login_view
 
 # jwt/oidc-specific fields that are not relevant to applications
 INTERNAL_FIELDS = ('nonce', 'session_state', 'acr', 'jti', 'exp', 'azp', 'iss', 'iat', 'auth_time', 'typ', 'nbf', 'aud')
+
+_notset = object()
 
 
 class _MultipassFlaskIntegration(FlaskIntegration):
@@ -70,6 +72,11 @@ class AuthlibAuthProvider(AuthProvider):
                          of ``register()`` in the
                          `authlib docs <https://docs.authlib.org/en/latest/client/frameworks.html>`_
                          for details.
+    - ``logout_uri``:    a custom URL to redirect to after logging out; can be set to
+                         ``None`` to avoid using the URL from the OIDC metadata
+    - ``logout_args``:   the special argument types to include in the query string of
+                         the logout uri. defaults to
+                         ``{'client_id', 'id_token_hint', 'post_logout_redirect_uri'}``
     - ``request_timeout``: the timeout in seconds for fetching the oauth token and
                            requesting data from the userinfo endpoint (10 by default,
                            set to None to disable)
@@ -82,6 +89,8 @@ class AuthlibAuthProvider(AuthProvider):
         self.include_token = self.settings.get('include_token', False)
         self.request_timeout = self.settings.get('request_timeout')
         self.use_id_token = self.settings.get('use_id_token')
+        self.logout_uri = self.settings.get('logout_uri', self.authlib_settings.get('logout_uri', _notset))
+        self.logout_args = self.settings.get('logout_args', {'client_id', 'id_token_hint', 'post_logout_redirect_uri'})
         if self.use_id_token is None:
             # default to using the id token when using the openid scope (oidc)
             client_kwargs = self.authlib_settings.get('client_kwargs', {})
@@ -95,6 +104,10 @@ class AuthlibAuthProvider(AuthProvider):
     def authlib_settings(self):
         return self.settings['authlib_args']
 
+    @property
+    def _id_token_key(self):
+        return f'_multipass_authlib_id_token:{self.name}'
+
     def _get_redirect_uri(self):
         return url_for(self.authorized_endpoint, _external=True)
 
@@ -107,15 +120,24 @@ class AuthlibAuthProvider(AuthProvider):
             return self.multipass.handle_auth_error(multipass_exc, True)
 
     def process_logout(self, return_url):
-        try:
-            logout_uri = self.authlib_settings['logout_uri']
-        except KeyError:
-            logout_uri = self.authlib_client.load_server_metadata().get('end_session_endpoint')
-        if logout_uri:
-            return_url = urljoin(request.url_root, return_url)
-            client_id = self.authlib_settings['client_id']
-            query = urlencode({'post_logout_redirect_uri': return_url, 'client_id': client_id})
-            return redirect(logout_uri + '?' + query)
+        logout_uri = (
+            self.authlib_client.load_server_metadata().get('end_session_endpoint')
+            if self.logout_uri is _notset
+            else self.logout_uri
+        )
+        if not logout_uri:
+            return
+        return_url = urljoin(request.url_root, return_url)
+        client_id = self.authlib_settings['client_id']
+        query_args = {}
+        if 'client_id' in self.logout_args:
+            query_args['client_id'] = client_id
+        if 'post_logout_redirect_uri' in self.logout_args:
+            query_args['post_logout_redirect_uri'] = return_url
+        if (id_token := session.pop(self._id_token_key, None)) and 'id_token_hint' in self.logout_args:
+            query_args['id_token_hint'] = id_token
+        query = urlencode(query_args)
+        return redirect((logout_uri + '?' + query) if query else logout_uri)
 
     @login_view
     def _authorize_callback(self):
@@ -139,6 +161,8 @@ class AuthlibAuthProvider(AuthProvider):
                 logging.getLogger('multipass.authlib').error(f'Getting token failed: {error}: %s', desc)
                 raise
             authinfo_token_data = {}
+            if (id_token := token_data.get('id_token')) and 'id_token_hint' in self.logout_args:
+                session[self._id_token_key] = id_token
             if self.include_token == 'only':  # noqa: S105
                 return self.multipass.handle_auth_success(AuthInfo(self, token=token_data))
             elif self.include_token:
