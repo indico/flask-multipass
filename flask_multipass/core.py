@@ -543,7 +543,7 @@ class Multipass:
             response = provider.process_local_login(data)
         except MultipassException as e:
             if isinstance(e, NoSuchUser) and current_app.config['MULTIPASS_HIDE_NO_SUCH_USER']:
-                e = InvalidCredentials(e.provider)
+                e = InvalidCredentials(e.provider, e.identifier)
             self.handle_auth_error(e)
         else:
             return response
