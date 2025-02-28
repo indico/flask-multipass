@@ -205,7 +205,7 @@ class SupportsMeta(type):
     from :meth:`callable`.
     """
 
-    def __new__(mcs, name, bases, dct):  # noqa: N804
+    def __new__(mcs, name, bases, dct):
         cls = type.__new__(mcs, name, bases, dct)
         base = next((x for x in reversed(getmro(cls)) if type(x) is mcs and x is not cls), None)
         if base is None:
