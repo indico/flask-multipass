@@ -42,7 +42,7 @@ class StaticAuthProvider(AuthProvider):
         username = data['username']
         password = self.settings['identities'].get(username)
         if password is None:
-            raise NoSuchUser(provider=self)
+            raise NoSuchUser(provider=self, identifier=data['identifier'])
         if password != data['password']:
             raise InvalidCredentials(provider=self, identifier=data['username'])
         auth_info = AuthInfo(self, username=data['username'])

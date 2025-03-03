@@ -53,7 +53,7 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
         identity = self.identity_model.query.filter(type(self).provider_column == self.name,
                                                     type(self).identifier_column == data['identifier']).first()
         if not identity:
-            raise NoSuchUser(provider=self)
+            raise NoSuchUser(provider=self, identifier=data['identifier'])
         if not self.check_password(identity, data['password']):
             raise InvalidCredentials(provider=self, identifier=data['identifier'])
         auth_info = AuthInfo(self, identity=identity)
