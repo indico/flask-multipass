@@ -6,6 +6,7 @@ Version 0.9
 
 - Include the username in the ``identifier`` attribute of the ``NoSuchUser``
   exception so applications can apply e.g. per-username rate limiting
+- Fail silently when there's no ``objectSid`` for an AD-style LDAP group
 
 Version 0.8
 -----------
