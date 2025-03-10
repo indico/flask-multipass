@@ -142,7 +142,7 @@ class LDAPGroup(Group):
                 return False
             if self.ldap_settings['ad_group_style']:
                 _group_dn, group_data = get_group_by_id(self.name, attributes=['objectSid'])
-                group_sids = group_data.get('objectSid')
+                group_sids = group_data.get('objectSid', [])
                 token_groups = get_token_groups_from_user_dn(user_dn)
                 return any(group_sid in token_groups for group_sid in group_sids)
             else:
