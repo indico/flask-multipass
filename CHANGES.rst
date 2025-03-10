@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.9
+-----------
+
+- Include the username in the ``identifier`` attribute of the ``NoSuchUser``
+  exception so applications can apply e.g. per-username rate limiting
+
 Version 0.8
 -----------
 

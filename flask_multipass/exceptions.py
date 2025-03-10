@@ -25,8 +25,9 @@ class AuthenticationFailed(MultipassException):
 class NoSuchUser(AuthenticationFailed):
     """Indicates a user does not exist when attempting to authenticate."""
 
-    def __init__(self, details=None, provider=None):
+    def __init__(self, details=None, provider=None, identifier=None):
         AuthenticationFailed.__init__(self, 'No such user', details=details, provider=provider)
+        self.identifier = identifier
 
 
 class InvalidCredentials(AuthenticationFailed):
