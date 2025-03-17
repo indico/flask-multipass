@@ -1,6 +1,6 @@
 [project]
 name = 'Flask-Multipass'
-version = '0.9'
+version = '0.10'
 description = 'A pluggable solution for multi-backend authentication with Flask'
 readme = 'README.rst'
 license = 'BSD-3-Clause'

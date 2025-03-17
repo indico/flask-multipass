@@ -25,16 +25,16 @@ class AuthenticationFailed(MultipassException):
 class NoSuchUser(AuthenticationFailed):
     """Indicates a user does not exist when attempting to authenticate."""
 
-    def __init__(self, details=None, provider=None, identifier=None):
-        AuthenticationFailed.__init__(self, 'No such user', details=details, provider=provider)
+    def __init__(self, message='No such user', *, details=None, provider=None, identifier=None):
+        AuthenticationFailed.__init__(self, message, details=details, provider=provider)
         self.identifier = identifier
 
 
 class InvalidCredentials(AuthenticationFailed):
     """Indicates a failure to authenticate using the given credentials."""
 
-    def __init__(self, details=None, provider=None, identifier=None):
-        AuthenticationFailed.__init__(self, 'Invalid credentials', details=details, provider=provider)
+    def __init__(self, message='Invalid credentials', *, details=None, provider=None, identifier=None):
+        AuthenticationFailed.__init__(self, message, details=details, provider=provider)
         self.identifier = identifier
 
 
