@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.10
+------------
+
+- Allow overriding the message of ``NoSuchUser`` and ``InvalidCredentials``, and
+  make its other arguments keyword-only
+
 Version 0.9
 -----------
 
