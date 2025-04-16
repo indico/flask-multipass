@@ -30,6 +30,10 @@ class AuthProvider(metaclass=SupportsMeta):
     #: form in your application, specify a :class:`~flask_wtf.Form`
     #: here (usually containing a username/email and a password field).
     login_form = None
+    #: The field name in the login form that contains the identifier.
+    #: Useful to reliably retrieve identifier data in applications that use
+    #: multiple auth providers.
+    identifier_field_name = None
 
     def __init__(self, multipass, name, settings):
         self.multipass = multipass

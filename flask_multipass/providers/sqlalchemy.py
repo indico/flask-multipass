@@ -30,6 +30,8 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
 
     #: The :class:`~flask_wtf.Form` that is used for the login dialog
     login_form = LoginForm
+    #: The field name in the login form that contains the identifier
+    identifier_field_name = LoginForm.identifier.name
     #: The Flask-SQLAlchemy model representing a user identity
     identity_model = None
     #: The column of the identity model that contains the provider

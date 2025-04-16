@@ -33,6 +33,7 @@ class StaticAuthProvider(AuthProvider):
     """
 
     login_form = StaticLoginForm
+    identifier_field_name = StaticLoginForm.username.name
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
