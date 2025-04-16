@@ -34,6 +34,12 @@ class AuthProvider(metaclass=SupportsMeta):
     #: Useful to reliably retrieve identifier data in applications that use
     #: multiple auth providers.
     identifier_field_name = None
+    #: The rate limiter used for login attempts in local auth providers.
+    #: This should be an instance of :class:`~flask_limiter.Limiter`.
+    rate_limiter = None
+    #: The rate limiter used for login attempts bound to a specific user
+    #: This should be an instance of :class:`~flask_limiter.Limiter`.
+    rate_limiter_user = None
 
     def __init__(self, multipass, name, settings):
         self.multipass = multipass
@@ -49,6 +55,12 @@ class AuthProvider(metaclass=SupportsMeta):
         redirect to a third-party service to perform authentication.
         """
         return self.login_form is None
+
+    def is_rate_limited(self, form):
+        """True if rate limiters are set for local auth provider."""
+        if self.is_external:
+            return False
+        return bool(self._get_exceeded_rate_limiter(form.data[self.identifier_field_name]))
 
     def process_local_login(self, data):  # pragma: no cover
         """Handles the login process based on form data.
@@ -117,5 +129,28 @@ class AuthProvider(metaclass=SupportsMeta):
         """
         return None
 
+    def notify_failed_login(self, identifier=None):
+        """Notify the provider about a failed login attempt."""
+        if not self.is_rate_limited:
+            return
+        if identifier and self.rate_limiter_user:
+            self.rate_limiter_user.hit(identifier)
+        elif self.rate_limiter:
+            self.rate_limiter.hit()
+
     def __repr__(self):
         return f'<{type(self).__name__}({self.name})>'
+
+    def _get_exceeded_rate_limiter(self, identifier=None):
+        """Return the rate limiter that has been exceeded."""
+        # TODO: Handle better
+        if not self.rate_limiter or not self.rate_limiter_user:
+            raise Exception
+        if self.rate_limiter.test():
+            return None
+        elif not self.rate_limiter_user.limits or not identifier:
+            return self.rate_limiter
+        elif self.rate_limiter_user.test(identifier):
+            return None
+        else:
+            return self.rate_limiter_user
