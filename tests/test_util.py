@@ -145,8 +145,10 @@ def test_get_provider_base_invalid():
     class InvalidProvider(AuthProvider, IdentityProvider):
         pass
 
-    pytest.raises(TypeError, get_provider_base, NoProvider)
-    pytest.raises(TypeError, get_provider_base, InvalidProvider)
+    with pytest.raises(TypeError):
+        get_provider_base(NoProvider)
+    with pytest.raises(TypeError):
+        get_provider_base(InvalidProvider)
 
 
 def test_login_view(mocker):
@@ -267,7 +269,8 @@ def test_validate_provider_map(valid, auth_providers, identity_providers, provid
     if valid:
         validate_provider_map(state)
     else:
-        pytest.raises(ValueError, validate_provider_map, state)
+        with pytest.raises(ValueError):
+            validate_provider_map(state)
 
 
 def test_classproperty():
