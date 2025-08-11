@@ -27,7 +27,7 @@ jobs:
           - {name: '3.9', python: '3.9', tox: py39}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
