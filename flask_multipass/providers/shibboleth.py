@@ -17,6 +17,13 @@ from flask_multipass.util import login_view
 
 def _lower_keys(iter_):
     for k, v in iter_:
+        if isinstance(v, str):
+            try:
+                # Values coming from WSGI environ may be UTF-8 bytes mis-decoded as Latin-1
+                v = v.encode("latin1").decode("utf-8")
+            except Exception:
+                # leave unchanged if not UTF-8 or already correct
+                pass
         yield k.lower(), v
 
 
