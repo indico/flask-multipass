@@ -6,6 +6,7 @@ Version 0.11
 
 - Drop support for Python 3.9 (3.9 is EOL since Oct 2025)
 - Add support for Python 3.14
+- shibboleth: Fix encoding of UTF-8 values incorrectly decoded as Latin-1
 
 Version 0.10
 ------------
