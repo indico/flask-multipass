@@ -15,8 +15,15 @@ from flask_multipass.identity import IdentityProvider
 from flask_multipass.util import login_view
 
 
-def _lower_keys(iter_):
+def _fix_data(iter_, fix_encoding):
     for k, v in iter_:
+        if fix_encoding:
+            try:
+                # Values coming from WSGI environ may be UTF-8 bytes mis-decoded as Latin-1
+                v = v.encode('latin1').decode('utf-8')
+            except UnicodeError:
+                # leave unchanged if not UTF-8 or already correct
+                pass
         yield k.lower(), v
 
 
@@ -37,6 +44,7 @@ class ShibbolethAuthProvider(AuthProvider):
         if not self.settings.get('callback_uri'):
             raise MultipassException('`callback_uri` must be specified in the provider settings', provider=self)
         self.from_headers = self.settings.get('from_headers', False)
+        self.fix_data_encoding = self.settings.get('fix_data_encoding', True)
         self.shibboleth_endpoint = '_flaskmultipass_shibboleth_' + self.name
         current_app.add_url_rule(self.settings['callback_uri'], self.shibboleth_endpoint,
                                  self._shibboleth_callback, methods=('GET', 'POST'))
@@ -52,7 +60,7 @@ class ShibbolethAuthProvider(AuthProvider):
     @login_view
     def _shibboleth_callback(self):
         data_source = request.headers if self.from_headers else request.environ
-        mapping = _lower_keys(data_source.items())
+        mapping = _fix_data(data_source.items(), self.fix_data_encoding)
         # get all attrs in the 'attrs' list, if empty use 'attrs_prefix'
         if self.attrs is None:
             attributes = {k: v for k, v in mapping if k.startswith(self.attrs_prefix)}
