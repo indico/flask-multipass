@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.11
+------------
+
+- Drop support for Python 3.9 (3.9 is EOL since Oct 2025)
+- Add support for Python 3.14
+
 Version 0.10
 ------------
 

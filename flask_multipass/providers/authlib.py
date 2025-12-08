@@ -158,7 +158,7 @@ class AuthlibAuthProvider(AuthProvider):
                     data = {'error': 'unknown', 'error_description': exc.response.text}
                 error = data.get('error', 'unknown')
                 desc = data.get('error_description', repr(data))
-                logging.getLogger('multipass.authlib').error(f'Getting token failed: {error}: %s', desc)
+                logging.getLogger('multipass.authlib').error(f'Getting token failed: {error}: %s', desc)  # noqa: G004
                 raise
             authinfo_token_data = {}
             if (id_token := token_data.get('id_token')) and 'id_token_hint' in self.logout_args:

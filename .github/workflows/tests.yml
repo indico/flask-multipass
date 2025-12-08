@@ -19,12 +19,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: Style, python: '3.13', tox: style}
+          - {name: Style, python: '3.14', tox: style}
+          - {name: '3.14', python: '3.14', tox: py314}
           - {name: '3.13', python: '3.13', tox: py313}
           - {name: '3.12', python: '3.12', tox: py312}
           - {name: '3.11', python: '3.11', tox: py311}
           - {name: '3.10', python: '3.10', tox: py310}
-          - {name: '3.9', python: '3.9', tox: py39}
 
     steps:
       - uses: actions/checkout@v6
@@ -37,7 +37,7 @@ jobs:
         run: sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        uses: astral-sh/setup-uv@v7
 
       - name: Install tox
         run: uv pip install --system tox
