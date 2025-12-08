@@ -4,7 +4,6 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-import sys
 from importlib.metadata import EntryPoint
 
 import pytest
@@ -145,8 +144,10 @@ def test_get_provider_base_invalid():
     class InvalidProvider(AuthProvider, IdentityProvider):
         pass
 
-    pytest.raises(TypeError, get_provider_base, NoProvider)
-    pytest.raises(TypeError, get_provider_base, InvalidProvider)
+    with pytest.raises(TypeError):
+        get_provider_base(NoProvider)
+    with pytest.raises(TypeError):
+        get_provider_base(InvalidProvider)
 
 
 def test_login_view(mocker):
@@ -217,12 +218,8 @@ def mock_entry_points(monkeypatch):
         ],
     }
 
-    if sys.version_info < (3, 10):
-        def _mock_entry_points():
-            return mock_eps
-    else:
-        def _mock_entry_points(*, group, name):
-            return [ep for ep in mock_eps[group] if ep.name == name]
+    def _mock_entry_points(*, group, name):
+        return [ep for ep in mock_eps[group] if ep.name == name]
 
     monkeypatch.setattr('flask_multipass.util.importlib_entry_points', _mock_entry_points)
 
@@ -267,7 +264,8 @@ def test_validate_provider_map(valid, auth_providers, identity_providers, provid
     if valid:
         validate_provider_map(state)
     else:
-        pytest.raises(ValueError, validate_provider_map, state)
+        with pytest.raises(ValueError):
+            validate_provider_map(state)
 
 
 def test_classproperty():

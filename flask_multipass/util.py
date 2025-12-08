@@ -4,7 +4,6 @@
 # Flask-Multipass is free software; you can redistribute it
 # and/or modify it under the terms of the Revised BSD License.
 
-import sys
 from functools import wraps
 from importlib.metadata import entry_points as importlib_entry_points
 from inspect import getmro, isclass
@@ -145,10 +144,7 @@ def resolve_provider_type(base, type_, registry=None):
     if registry is not None and type_ in registry:
         cls = registry[type_]
     else:
-        if sys.version_info < (3, 10):
-            entry_points = {ep for ep in importlib_entry_points().get(base._entry_point, []) if ep.name == type_}
-        else:
-            entry_points = importlib_entry_points(group=base._entry_point, name=type_)
+        entry_points = importlib_entry_points(group=base._entry_point, name=type_)
         if not entry_points:
             raise ValueError('Unknown type: ' + type_)
         elif len(entry_points) != 1:

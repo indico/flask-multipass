@@ -1,4 +1,4 @@
-target-version = 'py39'
+target-version = 'py310'
 line-length = 120
 
 [lint]
@@ -16,6 +16,7 @@ select = [
     'C4',     # flake8-comprehensions
     'INT',    # flake8-gettext
     'LOG',    # flake8-logging
+    'G',      # flake8-logging-format
     'B',      # flake8-bugbear
     'A001',   # flake8-builtins
     'COM',    # flake8-commas
@@ -42,7 +43,6 @@ ignore = [
     'RUF012',  # ultra-noisy and dicts in classvars are very common
     'RUF015',  # not always more readable, and we don't do it for huge lists
     'RUF022',  # autofix messes up our formatting instead of just sorting
-    'UP038',   # it looks kind of weird and it slower than a tuple
     'D205',    # too many docstrings which have no summary line
     'D301',    # https://github.com/astral-sh/ruff/issues/8696
     'D1',      # we have way too many missing docstrings :(
@@ -95,7 +95,7 @@ ignore = [
 ]
 
 extend-safe-fixes = [
-    'RUF005',  # we typically don't deal with objects overriding `__add__` ir `__radd__`
+    'RUF005',  # we typically don't deal with objects overriding `__add__` or `__radd__`
     'C4',      # they seem pretty safe
     'UP008',   # ^ likewise
     'D200',    # ^ likewise
@@ -144,3 +144,6 @@ convention = 'pep257'
 'tests/*.py' = ['F811', 'E241', 'S105', 'E272']
 'docs/conf.py' = ['E265']
 'example/example.py' = ['S104', 'S105', 'S106']
+
+[lint.ruff]
+parenthesize-tuple-in-subscript = true
