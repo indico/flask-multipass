@@ -7,6 +7,8 @@ Version 0.11
 - Drop support for Python 3.9 (3.9 is EOL since Oct 2025)
 - Add support for Python 3.14
 - shibboleth: Fix encoding of UTF-8 values incorrectly decoded as Latin-1
+- Fix open redirect caused by browsers accepting certain invalid URLs such
+  as `////example.com` and treating them like `//example.com`
 
 Version 0.10
 ------------
