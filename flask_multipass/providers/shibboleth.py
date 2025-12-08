@@ -19,7 +19,7 @@ def _lower_keys(iter_):
     for k, v in iter_:
         try:
             # Values coming from WSGI environ may be UTF-8 bytes mis-decoded as Latin-1
-            v = v.encode("latin1").decode("utf-8")
+            v = v.encode('latin1').decode('utf-8')
         except UnicodeError:
             # leave unchanged if not UTF-8 or already correct
             pass
