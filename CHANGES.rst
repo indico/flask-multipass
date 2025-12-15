@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.11.1
+--------------
+
+- shibboleth: Fix error when cleaning up data from the WSGI environment
+
 Version 0.11
 ------------
 

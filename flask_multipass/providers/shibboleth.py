@@ -17,7 +17,7 @@ from flask_multipass.util import login_view
 
 def _fix_data(iter_, fix_encoding):
     for k, v in iter_:
-        if fix_encoding:
+        if fix_encoding and isinstance(v, str):
             try:
                 # Values coming from WSGI environ may be UTF-8 bytes mis-decoded as Latin-1
                 v = v.encode('latin1').decode('utf-8')
