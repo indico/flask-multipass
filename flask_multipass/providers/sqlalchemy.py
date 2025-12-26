@@ -40,6 +40,8 @@ class SQLAlchemyAuthProviderBase(AuthProvider):
     #: i.e. the username. This needs to be a SQLAlchemy column object,
     #: e.g. ``Identity.identifier``
     identifier_column = None
+    #: The field name in the ``login_form`` that contains the identifier
+    identifier_field_name = 'identifier'
 
     def check_password(self, identity, password):
         """Checks the entered password.
