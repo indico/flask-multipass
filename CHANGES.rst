@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.11.2
+--------------
+
+- Fix an open redirect in the ``next`` URL validation
+
 Version 0.11.1
 --------------
 

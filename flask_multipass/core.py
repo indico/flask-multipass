@@ -154,19 +154,24 @@ class Multipass:
             return False
         # Browsers treat backslashes like forward slashes, while urllib doesn't.
         # Since we just want to validate scheme and netloc here, we normalize
-        # slashes to those recognized by urllib.
-        url = url.replace('\\', '/')
-        # Browsers are great at accepting crappy data, so `////example.com` is
-        # handled like `//example.com`, even though it's invalid and `urlparse`
-        # will not set a netloc when receiving such a URL.
-        if url.startswith('///'):
-            return False
-        url_info = urlsplit(url)
-        if url_info.scheme and url_info.scheme not in {'http', 'https'}:
-            return False
-        if url_info.scheme and not url_info.netloc:
-            return False
-        return not url_info.netloc or url_info.netloc == request.host
+        # slashes to those recognized by urllib. We need to test both variants
+        # though because replacing a backslash with a slash can result in different
+        # ways to inject shit.
+        for url_variant in (url, url.replace('\\', '/')):
+            # Browsers are great at accepting crappy data, so `////example.com` is
+            # handled like `//example.com`, even though it's invalid and `urlparse`
+            # will not set a netloc when receiving such a URL.
+            if url_variant.startswith('///'):
+                return False
+            url_info = urlsplit(url_variant)
+            if url_info.scheme and url_info.scheme not in {'http', 'https'}:
+                return False
+            if url_info.scheme and not url_info.netloc:
+                return False
+            if url_info.netloc and url_info.netloc != request.host:
+                return False
+
+        return True
 
     def process_login(self, provider=None):
         """Handles the login process.

@@ -178,6 +178,13 @@ def test_next_url_invalid():
     ('javascript:alert("eeeeeeeevil")', False),
     ('///localhost', False),
     ('////localhost', False),
+    (r'\\\localhost', False),
+    (r'\\\\localhost', False),
+    (r'https://localhost\%40evil.com/', False),
+    ('https://localhost%5c%40evil.com/', False),
+    (r'https://localhost\@evil.com/', False),
+    (r'https://localhost@evil.com/', False),
+    (r'https://localhost:localhost@evil.com/', False),
 ))
 def test_validate_next_url(url, valid):
     app = Flask('test')
