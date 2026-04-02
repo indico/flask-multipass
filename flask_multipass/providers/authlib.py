@@ -57,7 +57,7 @@ class _ORCIDHandledToken(CodeIDToken):
         Copied from https://github.com/authlib/authlib/issues/725
         """
         amr = self.get('amr')
-        if amr and not isinstance(self['amr'], list | str):
+        if amr and not isinstance(self['amr'], (list, str)):
             claim_error = 'amr'
             raise InvalidClaimError(claim_error)
 
