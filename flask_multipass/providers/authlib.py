@@ -9,6 +9,8 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
+from authlib.jose.errors import InvalidClaimError
+from authlib.oidc.core import CodeIDToken
 from flask import current_app, redirect, request, session, url_for
 from requests.exceptions import HTTPError, RequestException, Timeout
 
@@ -38,6 +40,26 @@ class _MultipassOAuth(OAuth):
         # we do not use any of the flask extension functionality nor the registry
         # and do not want to prevent the main application from using it
         pass
+
+
+class _ORCIDHandledToken(CodeIDToken):
+    def validate_amr(self):
+        """OPTIONAL. Authentication Methods References. JSON array of strings
+        that are identifiers for authentication methods used in the
+        authentication. For instance, values might indicate that both password
+        and OTP authentication methods were used. The definition of particular
+        values to be used in the amr Claim is beyond the scope of this
+        specification. Parties using this claim will need to agree upon the
+        meanings of the values used, which may be context-specific. The amr
+        value is an array of case sensitive strings. However, ORCID sends
+        just a string back and this causes a validation error. This patched
+        version fixes it.
+        Copied from https://github.com/authlib/authlib/issues/725
+        """
+        amr = self.get('amr')
+        if amr and not isinstance(self['amr'], list | str):
+            claim_error = 'amr'
+            raise InvalidClaimError(claim_error)
 
 
 _authlib_oauth = _MultipassOAuth('dummy')
@@ -147,7 +169,10 @@ class AuthlibAuthProvider(AuthProvider):
             raise AuthenticationFailed(error, provider=self)
         try:
             try:
-                token_data = self.authlib_client.authorize_access_token(timeout=self.request_timeout)
+                token_data = self.authlib_client.authorize_access_token(
+                    timeout=self.request_timeout,
+                    claims_cls=_ORCIDHandledToken,
+                )
             except Timeout as exc:
                 logging.getLogger('multipass.authlib').error('Getting token timed out')
                 raise MultipassException('Token request timed out, please try again later') from exc
