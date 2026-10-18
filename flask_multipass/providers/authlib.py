@@ -9,7 +9,9 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
+from authlib.oidc.core import CodeIDToken
 from flask import current_app, redirect, request, session, url_for
+from joserfc.errors import InvalidClaimError
 from requests.exceptions import HTTPError, RequestException, Timeout
 
 from flask_multipass.auth import AuthProvider
@@ -38,6 +40,13 @@ class _MultipassOAuth(OAuth):
         # we do not use any of the flask extension functionality nor the registry
         # and do not want to prevent the main application from using it
         pass
+
+
+class _MultipassCodeIDToken(CodeIDToken):
+    def validate_amr(self):
+        amr = self.get('amr')
+        if amr and not isinstance(self['amr'], (list, str)):
+            raise InvalidClaimError('amr')
 
 
 _authlib_oauth = _MultipassOAuth('dummy')
@@ -147,7 +156,10 @@ class AuthlibAuthProvider(AuthProvider):
             raise AuthenticationFailed(error, provider=self)
         try:
             try:
-                token_data = self.authlib_client.authorize_access_token(timeout=self.request_timeout)
+                token_data = self.authlib_client.authorize_access_token(
+                    timeout=self.request_timeout,
+                    claims_cls=_MultipassCodeIDToken,
+                )
             except Timeout as exc:
                 logging.getLogger('multipass.authlib').error('Getting token timed out')
                 raise MultipassException('Token request timed out, please try again later') from exc
