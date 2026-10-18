@@ -42,7 +42,7 @@ class _MultipassOAuth(OAuth):
         pass
 
 
-class _ORCIDHandledToken(CodeIDToken):
+class _MultipassCodeIDToken(CodeIDToken):
     def validate_amr(self):
         amr = self.get('amr')
         if amr and not isinstance(self['amr'], (list, str)):
@@ -158,7 +158,7 @@ class AuthlibAuthProvider(AuthProvider):
             try:
                 token_data = self.authlib_client.authorize_access_token(
                     timeout=self.request_timeout,
-                    claims_cls=_ORCIDHandledToken,
+                    claims_cls=_MultipassCodeIDToken,
                 )
             except Timeout as exc:
                 logging.getLogger('multipass.authlib').error('Getting token timed out')
