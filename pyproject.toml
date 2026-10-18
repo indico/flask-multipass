@@ -20,7 +20,7 @@ dependencies = ['flask', 'blinker']
 
 [project.optional-dependencies]
 dev = ['pytest', 'pytest-cov', 'pytest-mock', 'ruff']
-authlib = ['authlib>=0.14.1', 'requests']
+authlib = ['authlib>=1.9.1', 'requests']
 ldap = ['flask-wtf', 'python-ldap>=3.3.1']
 saml = ['python3-saml>=1.10.1']
 sqlalchemy = ['sqlalchemy', 'flask-wtf']
