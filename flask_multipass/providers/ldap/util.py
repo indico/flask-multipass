@@ -206,7 +206,7 @@ def build_search_filter(criteria, type_filter, mapping=None, exact=False):
     :return: str -- Valid LDAP search filter.
     """
     assertions = convert_app_data(criteria, mapping or {})
-    assert_templates = [_build_assert_template(value, exact) for _, value in assertions.items()]
+    assert_templates = [_build_assert_template(value, exact) for value in assertions.values()]
     assertions = [(k, v) for k, values in assertions.items() if k and values for v in values]
     if not assertions:
         return None

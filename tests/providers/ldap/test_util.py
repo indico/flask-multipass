@@ -45,12 +45,12 @@ from flask_multipass.util import convert_app_data
      '(&(mail=alaindissoir@mail.com)(|(objectClass=Person)(objectCategory=user)))'),
     ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
      '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, False,
-     '(&(|(mail=*alaindissoir@mail.com*)(mail=*alain@dissoir.com*)(mail=*alaindi@mail.com*))'
-     '(|(objectClass=Person)(objectCategory=user)))'),
+     ('(&(|(mail=*alaindissoir@mail.com*)(mail=*alain@dissoir.com*)(mail=*alaindi@mail.com*))'
+     '(|(objectClass=Person)(objectCategory=user)))')),
     ({'email': ['alaindissoir@mail.com', 'alain@dissoir.com', 'alaindi@mail.com']},
      '(|(objectClass=Person)(objectCategory=user))', {'email': 'mail'}, True,
-     '(&(|(mail=alaindissoir@mail.com)(mail=alain@dissoir.com)(mail=alaindi@mail.com))'
-     '(|(objectClass=Person)(objectCategory=user)))'),
+     ('(&(|(mail=alaindissoir@mail.com)(mail=alain@dissoir.com)(mail=alaindi@mail.com))'
+     '(|(objectClass=Person)(objectCategory=user)))')),
 ))
 def test_build_search_filter(monkeypatch, criteria, type_filter, mapping, exact, expected):
     def _convert_app_data(*args, **kwargs):
