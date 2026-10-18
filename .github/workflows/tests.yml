@@ -10,6 +10,9 @@ on:
       - master
       - '*.x'
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: ${{ matrix.name }}
@@ -19,17 +22,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: Style, python: '3.14', tox: style}
+          - {name: Style, python: '3.15', tox: style}
+          - {name: '3.15', python: '3.15', tox: py314}
           - {name: '3.14', python: '3.14', tox: py314}
           - {name: '3.13', python: '3.13', tox: py313}
           - {name: '3.12', python: '3.12', tox: py312}
           - {name: '3.11', python: '3.11', tox: py311}
-          - {name: '3.10', python: '3.10', tox: py310}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
 
@@ -39,10 +44,10 @@ jobs:
           sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
 
       - name: Install tox
-        run: uv pip install --system tox
+        run: uv tool install --with tox-uv tox
 
       - name: Run tests
         run: tox -e ${{ matrix.tox }}

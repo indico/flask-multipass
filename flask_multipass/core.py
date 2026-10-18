@@ -88,7 +88,7 @@ class Multipass:
 
     @property
     def auth_providers(self):
-        """Returns a read-only dict of the active auth providers."""
+        """Read-only dict of the active auth providers."""
         return get_state().auth_providers
 
     @property
@@ -101,12 +101,12 @@ class Multipass:
 
     @property
     def identity_providers(self):
-        """Returns a read-only dict of the active identity providers."""
+        """Read-only dict of the active identity providers."""
         return get_state().identity_providers
 
     @property
     def provider_map(self):
-        """Returns a read-only mapping between auth and identity providers."""
+        """Read-only mapping between auth and identity providers."""
         return get_state().provider_map
 
     def register_provider(self, cls, type_):

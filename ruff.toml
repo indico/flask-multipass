@@ -1,11 +1,13 @@
-target-version = 'py310'
+target-version = 'py311'
 line-length = 120
+output-prefer-rule-codes = true
 
 [lint]
 preview = true
 
 select = [
-    'E',      # pycodestyle
+    'E',      # pycodestyle (errors)
+    'W',      # pycodestyle (warnings)
     'F',      # pyflakes
     'N',      # pep8-naming
     'Q',      # flake8-quotes
@@ -35,6 +37,7 @@ select = [
     'PERF',   # perflint
     'FURB',   # refurb
     'I',      # isort
+    'ERA',    # eradicate
 ]
 ignore = [
     'E226',    # allow omitting whitespace around arithmetic operators
@@ -43,6 +46,8 @@ ignore = [
     'RUF012',  # ultra-noisy and dicts in classvars are very common
     'RUF015',  # not always more readable, and we don't do it for huge lists
     'RUF022',  # autofix messes up our formatting instead of just sorting
+    'RUF105',  # we use the noqa syntax in many places
+    'RUF201',  # we use rule codes everywhere
     'D205',    # too many docstrings which have no summary line
     'D301',    # https://github.com/astral-sh/ruff/issues/8696
     'D1',      # we have way too many missing docstrings :(
@@ -77,6 +82,7 @@ ignore = [
     'PLR6201', # sets are faster (by a factor of 10!) but it's noisy and we're in nanoseconds territory
     'PLR6301', # extremely noisy and generally annoying
     'PLW0108', # a lambda often makes it more clear what you actually want
+    'PLW0717', # noisy and currently also triggering on try..finally
     'PLW1510', # we often do not care about the status code of commands
     'PLW1514', # we expect UTF8 environments everywhere
     'PLW1641', # false positives with SA comparator classes
@@ -89,7 +95,7 @@ ignore = [
     'PERF203', # noisy, false positives, and not applicable for 3.11+
     'FURB113', # less readable
     'FURB140', # less readable and actually slower in 3.12+
-    'PLW0603', # globals are fine here
+    'FURB189', # we pass those objects to code that may expect the real thing
     'COM812',  # formatter conflict
     'ISC001',  # formatter conflict
 ]
@@ -109,6 +115,7 @@ extend-safe-fixes = [
 
 [format]
 quote-style = 'single'
+preview = true
 
 [lint.flake8-builtins]
 builtins-ignorelist = ['id', 'format', 'input', 'type', 'credits', 'copyright']
@@ -129,20 +136,12 @@ multiline-quotes = 'double'
 docstring-quotes = 'double'
 avoid-escape = true
 
-[lint.pep8-naming]
-classmethod-decorators = [
-    'classmethod',
-    'declared_attr',
-    'expression',
-    'comparator',
-]
-
 [lint.pydocstyle]
 convention = 'pep257'
 
 [lint.per-file-ignores]
 'tests/*.py' = ['F811', 'E241', 'S105', 'E272']
-'docs/conf.py' = ['E265']
+'docs/conf.py' = ['E265', 'ERA']
 'example/example.py' = ['S104', 'S105', 'S106']
 
 [lint.ruff]
