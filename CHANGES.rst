@@ -6,6 +6,7 @@ Version 0.12
 
 - Drop support for Python 3.10 (3.10 is EOL since Oct 2026)
 - Add support for Python 3.15
+- Fix handling non-standard amr claim (e.g. from ORCiD)
 
 Version 0.11.2
 --------------
