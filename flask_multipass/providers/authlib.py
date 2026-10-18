@@ -44,22 +44,9 @@ class _MultipassOAuth(OAuth):
 
 class _ORCIDHandledToken(CodeIDToken):
     def validate_amr(self):
-        """OPTIONAL. Authentication Methods References. JSON array of strings
-        that are identifiers for authentication methods used in the
-        authentication. For instance, values might indicate that both password
-        and OTP authentication methods were used. The definition of particular
-        values to be used in the amr Claim is beyond the scope of this
-        specification. Parties using this claim will need to agree upon the
-        meanings of the values used, which may be context-specific. The amr
-        value is an array of case sensitive strings. However, ORCID sends
-        just a string back and this causes a validation error. This patched
-        version fixes it.
-        Copied from https://github.com/authlib/authlib/issues/725
-        """
         amr = self.get('amr')
         if amr and not isinstance(self['amr'], (list, str)):
-            claim_error = 'amr'
-            raise InvalidClaimError(claim_error)
+            raise InvalidClaimError('amr')
 
 
 _authlib_oauth = _MultipassOAuth('dummy')
