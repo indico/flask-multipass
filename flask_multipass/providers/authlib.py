@@ -9,9 +9,9 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.flask_client import FlaskIntegration, OAuth
-from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.core import CodeIDToken
 from flask import current_app, redirect, request, session, url_for
+from joserfc.errors import InvalidClaimError
 from requests.exceptions import HTTPError, RequestException, Timeout
 
 from flask_multipass.auth import AuthProvider
